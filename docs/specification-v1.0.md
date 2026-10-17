@@ -44,13 +44,12 @@ The product is a route planner that answers both *which way* and *when to leave*
 | Source | Role | Notes |
 |---|---|---|
 | GUGiK LiDAR point clouds (LAZ) | Buildings, ground, trees | WFS sheet index `mapy.geoportal.gov.pl/wss/service/PZGIK/DanePomiaroweLidarEVRF2007/WFS/Skorowidze` gives direct download URLs, no login. The **2023-09-05** flight is leaf-on and used for canopy (~7 GB for the district). The **2025-04-27** flight is the newest and used for buildings and ground (~7 GB). |
-| GUGiK NMT / NMPT (optional) | Cross-check of ground and surface models | Derived from the same LiDAR. |
 | Landsat C2 L2 surface temperature | Surface heat pattern, urban surface-heat anomaly, validation | No scene on 06-28. Nearest clear scene: `LC09_L2SP_187024_20260625_02_T1` (06-25, 11:25 CEST, ~5% cloud). Backup: `LC08_L2SP_188024_20260624`. |
 | IMGW stations (Okęcie hourly synop, Filtry) | Air temperature, humidity, wind | Reference meteorology for the heat day. |
 | ERA5 (via Open-Meteo) | Direct and diffuse solar radiation, gap filling | Hourly. |
 | Sentinel-2 L2A (06-27), BDOT10k, OSM | Surface types, albedo, building footprints, walkable network, crossings, covered ways, stop platforms, stop shelters | |
-| City tree inventory | Species, validation of LiDAR trees | 2010–13 survey; does not cover large parks. |
 | BigQuery `hackaton-honory.warsaw_transport` | Recorded vehicle positions (line, brigade, vehicle number), vehicle register with air-conditioning flag, GTFS stops and stop sequences | Sat 2026-10-17 06:00–22:00 is fully covered: every minute, ~1,100 vehicles per hour. |
+| Open street map API | Getting walkable space mask| |
 
 ## 5. Shade model (LiDAR)
 
@@ -61,20 +60,16 @@ From the LiDAR point classes (ground, vegetation, buildings), build these 1 m ra
 - **Canopy:** a canopy height model including crown base height.
 - **Light through crowns:** a crown-transmissivity estimate.
 - **Surface types:** surface type per pixel.
-- **Walkable mask:** public walkable space plus stop waiting areas, from OSM/BDOT10k.
+- **Walkable mask:** using openstreetmap API public walkable space plus stop waiting areas, from OSM/BDOT10k
 
-Known artefacts need handling: cranes and temporary structures, arcades and covered walkways, underground passages, bridges.
+Known artefacts need handling: cranes and temporary structures, arcades and covered walkways, underground passages, bridges. (We are deliberately skipping it in analysis)
 
-### 5.2 Canopy: LiDAR or city data?
+### 5.2 Canopy: LiDAR is better
 
 **LiDAR.** The 2023-09-05 flight is full leaf-on and gives three things the city's canopy data cannot:
 - **Real crown heights.**
 - **Crown base height:** low morning and evening sun passes under crowns.
 - **Measured light transmission per pixel:** the share of laser pulses reaching the ground, so we don't rely on one constant.
-
-The city's tree inventory is old and incomplete. The city's crown map (Mapa Koron Drzew) is view-only and not downloadable. Both remain useful for species information and validation.
-
-Caveat: canopy is as of September 2023. Trees felled since then can be detected with the 2025 flight; trees planted since then are missing.
 
 ### 5.3 Sun and shadows
 
