@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Śródmieście Shade-UTCI Spec</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: decision memo. Sticky TOC rail beside a ~760px reading column; tables and diagrams scroll in their own wrappers. Cool slate neutrals, one heat accent. */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --surface-2: #eef0f2;
+  --fg: #14181d;
+  --fg-2: #4a525c;
+  --muted: #7a828c;
+  --rule: #dde1e5;
+  --rule-strong: #c4cad0;
+  --accent: #c2410c;
+  --accent-soft: #fbe6dc;
+  --link: #1f5fa8;
+
+  --b-m: #1c6b3a; --b-m-bg: #dcf0e2;
+  --b-d: #1f5fa8; --b-d-bg: #dde9f7;
+  --b-l: #6a3fb0; --b-l-bg: #ece4f8;
+  --b-g: #8a5a00; --b-g-bg: #fbeccb;
+  --b-x: #a8261f; --b-x-bg: #f8dedc;
+
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300;
+  --chart-surface: #fcfcfb; --grid: #e1e0d9; --axis: #c3c2b7; --ink-muted: #898781;
+
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111418; --surface: #181c21; --surface-2: #20252b; --fg: #e8ebee; --fg-2: #b3bac2; --muted: #848c96;
+    --rule: #2a3037; --rule-strong: #3a424b; --accent: #f08a5d; --accent-soft: #3a2218; --link: #7fb0ec;
+    --b-m: #7fd49b; --b-m-bg: #173322; --b-d: #8cbcf2; --b-d-bg: #172a40; --b-l: #c3a6f2; --b-l-bg: #2a2040;
+    --b-g: #f2c56b; --b-g-bg: #3a2c0e; --b-x: #f29a93; --b-x-bg: #3d1a18;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300;
+    --chart-surface: #1a1a19; --grid: #2c2c2a; --axis: #383835; --ink-muted: #898781;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111418; --surface: #181c21; --surface-2: #20252b; --fg: #e8ebee; --fg-2: #b3bac2; --muted: #848c96;
+  --rule: #2a3037; --rule-strong: #3a424b; --accent: #f08a5d; --accent-soft: #3a2218; --link: #7fb0ec;
+  --b-m: #7fd49b; --b-m-bg: #173322; --b-d: #8cbcf2; --b-d-bg: #172a40; --b-l: #c3a6f2; --b-l-bg: #2a2040;
+  --b-g: #f2c56b; --b-g-bg: #3a2c0e; --b-x: #f29a93; --b-x-bg: #3d1a18;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300;
+  --chart-surface: #1a1a19; --grid: #2c2c2a; --axis: #383835; --ink-muted: #898781;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 400 16px/1.55 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+a { color: var(--link); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.page { max-width: 1000px; margin: 0 auto; }
+header.top { padding-block: 40px 24px; border-bottom: 1px solid var(--rule); }
+.eyebrow { font: 600 12px/1.3 var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 700 clamp(28px, 4.2vw, 40px)/1.1 var(--font-display); margin: 8px 0 10px; text-wrap: balance; letter-spacing: -.01em; }
+.sub { color: var(--fg-2); margin: 0; max-width: 68ch; }
+.meta { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px 18px; font: 400 13px/1.4 var(--font-mono); color: var(--muted); }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; margin-top: 24px; }
+@media (min-width: 960px) { .layout { grid-template-columns: 180px minmax(0, 1fr); } }
+
+nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); align-self: start; min-width: 0; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc a { text-decoration: none; color: var(--fg-2); display: block; font-size: 14px; line-height: 1.3; }
+nav.toc a:hover { color: var(--accent); }
+nav.toc a .n { font: 500 11px var(--font-mono); color: var(--muted); margin-right: 6px; }
+@media (min-width: 960px) {
+  nav.toc { padding-top: 8px; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+  nav.toc .toc-title { font: 600 11px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  nav.toc ol { display: grid; gap: 2px; border-left: 1px solid var(--rule); }
+  nav.toc a { padding: 6px 0 6px 12px; margin-left: -1px; border-left: 2px solid transparent; }
+  nav.toc a.active { color: var(--fg); border-left-color: var(--accent); }
+}
+@media (max-width: 959px) {
+  nav.toc { margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 8px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--rule); }
+  nav.toc .toc-title { display: none; }
+  nav.toc ol { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  nav.toc li { flex: none; }
+  nav.toc a { padding: 5px 10px; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); font-size: 13px; white-space: nowrap; }
+  nav.toc a.active { border-color: var(--accent); color: var(--fg); }
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+
+main { min-width: 0; }
+section { padding-block: 8px 36px; border-bottom: 1px solid var(--rule); scroll-margin-top: 64px; }
+section:last-child { border-bottom: 0; }
+h2 { font: 700 24px/1.2 var(--font-display); margin: 20px 0 6px; text-wrap: balance; display: flex; gap: 10px; align-items: baseline; }
+h2 .n { font: 500 14px var(--font-mono); color: var(--accent); }
+h3 { font: 600 17px/1.3 var(--font-display); margin: 26px 0 8px; text-wrap: balance; }
+p, li { max-width: 72ch; }
+p { margin: 8px 0; }
+ul, ol.plain { padding-left: 20px; margin: 8px 0; }
+li { margin: 4px 0; }
+.lede { color: var(--fg-2); margin-top: 0; }
+.small { font-size: 14px; color: var(--fg-2); }
+.num, td.num, .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: .92em; }
+strong { font-weight: 700; }
+
+/* Badges */
+.b { display: inline-block; font: 600 10.5px/1 var(--font-mono); padding: 3px 5px 2px; border-radius: 3px; vertical-align: 1px; letter-spacing: .02em; white-space: nowrap; }
+.b.m { color: var(--b-m); background: var(--b-m-bg); }
+.b.d { color: var(--b-d); background: var(--b-d-bg); }
+.b.l { color: var(--b-l); background: var(--b-l-bg); }
+.b.g { color: var(--b-g); background: var(--b-g-bg); }
+.b.nc { color: var(--fg-2); background: var(--surface-2); }
+.st { display: inline-flex; align-items: center; gap: 5px; font: 600 12px/1.2 var(--font-body); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.st::before { font-family: var(--font-mono); font-weight: 700; }
+.st.ok { color: var(--b-m); background: var(--b-m-bg); } .st.ok::before { content: "✓"; }
+.st.fix { color: var(--b-g); background: var(--b-g-bg); } .st.fix::before { content: "~"; }
+.st.no { color: var(--b-x); background: var(--b-x-bg); } .st.no::before { content: "✕"; }
+.st.nc { color: var(--fg-2); background: var(--surface-2); } .st.nc::before { content: "?"; }
+.legend-badges { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--fg-2); margin: 10px 0 0; padding: 0; list-style: none; }
+.legend-badges li { margin: 0; display: flex; gap: 6px; align-items: center; }
+
+/* TL;DR */
+.verdict { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 20px; margin-top: 12px; }
+.verdict .big { font: 700 22px/1.25 var(--font-display); margin: 0 0 4px; text-wrap: balance; }
+.verdict .big em { font-style: normal; color: var(--accent); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; margin-top: 16px; }
+.kpi { background: var(--surface); padding: 14px 14px 12px; min-width: 0; }
+.kpi .k { font: 600 11px/1.3 var(--font-body); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.kpi .v { font: 600 24px/1.15 var(--font-mono); font-variant-numeric: tabular-nums; margin: 6px 0 2px; }
+.kpi .v small { font-size: 13px; color: var(--fg-2); font-weight: 400; }
+.kpi .x { font-size: 13px; color: var(--fg-2); line-height: 1.35; }
+.kpi.hl .v { color: var(--accent); }
+.decisions { display: grid; gap: 10px; margin-top: 18px; padding: 0; list-style: none; }
+.decisions li { display: grid; grid-template-columns: 112px minmax(0,1fr); gap: 12px; margin: 0; max-width: none; padding-bottom: 10px; border-bottom: 1px dashed var(--rule); }
+.decisions li:last-child { border-bottom: 0; padding-bottom: 0; }
+.decisions .lbl { font: 600 12px/1.5 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+@media (max-width: 520px) { .decisions li { grid-template-columns: 1fr; gap: 2px; } }
+
+/* Callouts */
+.note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 14px 0; max-width: 72ch; }
+.note p { margin: 4px 0; }
+
+/* Tables */
+.tw { overflow-x: auto; margin: 12px 0; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.4; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--rule); }
+thead th { font: 600 12px/1.3 var(--font-body); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); position: sticky; top: 0; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tr.hl td { background: var(--accent-soft); }
+tr.ref td { color: var(--fg-2); }
+tr.total td { font-weight: 700; border-top: 2px solid var(--rule-strong); }
+.w-wide { min-width: 900px; }
+.w-mid { min-width: 680px; }
+td .sub2 { display: block; color: var(--muted); font-size: 12.5px; }
+.cap { font-size: 13px; color: var(--muted); margin: 6px 0 0; max-width: 80ch; }
+
+/* Charts */
+.fig { background: var(--chart-surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 14px 10px; margin: 14px 0; position: relative; }
+.fig h4 { margin: 0 0 2px; font: 600 15px/1.3 var(--font-display); }
+.fig .fsub { margin: 0 0 8px; font-size: 13px; color: var(--fg-2); }
+.chart-scroll { overflow-x: auto; }
+.chart-scroll svg { display: block; width: 100%; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--fg-2); margin: 6px 0 4px; padding: 0; list-style: none; }
+.legend li { display: flex; align-items: center; gap: 6px; margin: 0; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+.sw.dot { border-radius: 50%; }
+svg text { font-family: var(--font-body); }
+.ax text { fill: var(--ink-muted); font-size: 11px; font-family: var(--font-mono); }
+.tip { position: absolute; pointer-events: none; background: var(--surface); color: var(--fg); border: 1px solid var(--rule-strong); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; line-height: 1.4; box-shadow: 0 4px 14px rgba(0,0,0,.12); max-width: 240px; z-index: 3; }
+.tip b { font-family: var(--font-mono); font-weight: 500; }
+
+/* Pipeline diagram */
+.diagram { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 10px; margin: 14px 0; }
+.diagram svg { display: block; min-width: 860px; width: 100%; height: auto; }
+.dg-box { fill: var(--surface-2); stroke: var(--rule-strong); }
+.dg-box.key { fill: var(--accent-soft); stroke: var(--accent); }
+.dg-box.in { fill: var(--surface); stroke: var(--rule-strong); stroke-dasharray: 3 3; }
+.dg-t { fill: var(--fg); font-size: 12px; font-weight: 600; }
+.dg-s { fill: var(--fg-2); font-size: 10.5px; }
+.dg-lane { fill: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: .08em; }
+.dg-edge { stroke: var(--fg-2); stroke-width: 1.4; fill: none; }
+.dg-edge.dash { stroke-dasharray: 4 3; stroke: var(--muted); }
+.dg-arrow { fill: var(--fg-2); }
+
+/* Timeline */
+.timeline { list-style: none; padding: 0; margin: 14px 0; display: grid; gap: 0; max-width: none; }
+.timeline li { display: grid; grid-template-columns: 104px minmax(0,1fr); gap: 14px; margin: 0; padding: 10px 0; border-bottom: 1px solid var(--rule); max-width: none; }
+.timeline .t { font: 500 13px/1.5 var(--font-mono); color: var(--accent); }
+.timeline .cp { display: inline-block; font: 600 11px var(--font-mono); color: var(--fg); background: var(--surface-2); border: 1px solid var(--rule-strong); border-radius: 4px; padding: 1px 5px; margin-left: 4px; }
+@media (max-width: 520px) { .timeline li { grid-template-columns: 1fr; gap: 2px; } }
+
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.two > div { min-width: 0; }
+footer { color: var(--muted); font-size: 13px; padding-top: 16px; }
+pre.f { font: 400 13px/1.55 var(--font-mono); background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 6px; padding: 12px 14px; overflow-x: auto; margin: 10px 0; white-space: pre; }
+code { font: 400 .9em var(--font-mono); background: var(--surface-2); padding: 1px 4px; border-radius: 3px; }
+.ans { background: var(--accent-soft); border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+.ans p { margin: 4px 0; }
+.ans .lbl { font: 600 11px/1.3 var(--font-body); letter-spacing: .07em; text-transform: uppercase; color: var(--accent); }
+td code, th code { white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="top">
+  <div class="eyebrow">Specification v1.0 · shade + UTCI + heat-aware walk/transit routing</div>
+  <h1>Śródmieście 2076: planning a trip in space and time to minimise UTCI</h1>
+  <p class="sub">What to build, from which data and with which equations: a LiDAR-based 1 m shade model, a simple time-varying surface and radiant temperature model, a UTCI field every 30 min from 06:00 to 22:00 on the replayed day 2026-06-28, and a walk + air-conditioned tram/bus router that times the walk so the pensioner barely waits at the stop.</p>
+  <div class="meta"><span>Sat 17 Oct 2026, 23:30 CEST</span><span>Scope: Śródmieście (TERYT 146510_8, 15.5 km²)</span><span>Replay day: Sun 2026-06-28</span><span>Version 1.0</span></div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="toc-title">Contents</div>
+  <ol>
+    <li><a href="#tldr"><span class="n">1</span>TL;DR</a></li>
+    <li><a href="#scope"><span class="n">2</span>Story &amp; scope</a></li>
+    <li><a href="#data"><span class="n">3</span>Data</a></li>
+    <li><a href="#geom"><span class="n">4</span>LiDAR geometry</a></li>
+    <li><a href="#shade"><span class="n">5</span>Sun &amp; shade</a></li>
+    <li><a href="#temp"><span class="n">6</span>Temperature model</a></li>
+    <li><a href="#utci"><span class="n">7</span>Tmrt &amp; UTCI</a></li>
+    <li><a href="#metric"><span class="n">8</span>Route metric</a></li>
+    <li><a href="#transit"><span class="n">9</span>Transit &amp; timing</a></li>
+    <li><a href="#router"><span class="n">10</span>Router</a></li>
+    <li><a href="#outputs"><span class="n">11</span>Outputs</a></li>
+    <li><a href="#compute"><span class="n">12</span>Compute &amp; stack</a></li>
+    <li><a href="#valid"><span class="n">13</span>Validation</a></li>
+    <li><a href="#open"><span class="n">14</span>Open decisions</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="tldr">
+<h2><span class="n">01</span>TL;DR</h2>
+<div class="verdict">
+  <p class="big">Build our own <em>1 m LiDAR shade + UTCI field</em> for Śródmieście at <em>33 time slots</em>, and route on a heat dose, not on travel time.</p>
+  <p class="small">Leaf-on LiDAR from 2023-09-05 gives canopy; LiDAR from 2025-04-27 gives buildings and ground. A SOLWEIG-style parametric model turns shade, sky view factor and surface class into Tmrt, and Tmrt into UTCI. The router minimises a convex UTCI dose over walking and waiting. It boards only trams and buses that actually had AC in the recorded BigQuery operations, and times the walk so the pensioner arrives just before the vehicle.</p>
+  <div class="kpis">
+    <div class="kpi hl"><div class="k">Time slots</div><div class="v">33</div><div class="x">06:00–22:00 every 30 min; 30 have sun above the horizon</div></div>
+    <div class="kpi"><div class="k">Raster</div><div class="v">37 <small>Mpx</small></div><div class="x">district + 1 km halo for shadow casters, 1 m, EPSG:2180</div></div>
+    <div class="kpi"><div class="k">LiDAR download</div><div class="v">~24 <small>GB</small></div><div class="x">2023 leaf-on ≈ 9 GB, 2025 ≈ 15 GB (with halo)</div></div>
+    <div class="kpi"><div class="k">Compute</div><div class="v">1–3 <small>vCPU-h</small></div><div class="x">≈ 10–25 min on one 12-vCPU VM, &lt; €2; full 30-min resolution is affordable</div></div>
+  </div>
+</div>
+
+<h3>Your ten points, resolved</h3>
+<ul class="decisions">
+  <li><span class="lbl">1 Shade</span><span>Own model from GUGiK LiDAR at 1 m, every 30 min, 06:00–22:00 (33 slots). Buildings and trees, with per-pixel crown transmissivity. We need our own model because the MIT data shades from building heights only. Trees are the main source of shade on walkable space in Śródmieście, and they are missing there. <a href="#shade">§5</a></span></li>
+  <li><span class="lbl">2 Area</span><span>Śródmieście only, PRG boundary 146510_8 (15.5 km²). Shadow casters are read from a 1 km halo, so towers on Rondo Daszyńskiego still shade the district in the evening. <a href="#scope">§2</a></span></li>
+  <li><span class="lbl">3 Modes</span><span>Walk + tram + bus. No bikes. Metro is out of scope. Transit is <strong>real operations recorded in BigQuery</strong> (Sat 2026-10-17, 06:00–22:00), replayed on the 06-28 heat clock. A run may be boarded only if the vehicle that actually drove it has AC. The walk is timed to arrive a fixed margin before the vehicle's recorded departure, and the stop wait is costed with the UTCI at the stop. <a href="#transit">§9</a></span></li>
+  <li><span class="lbl">4 Canopy</span><span><strong>LiDAR, not city canopy data.</strong> The reasons are below; city data is used for species and validation only. <a href="#geom">§4</a></span></li>
+  <li><span class="lbl">5 Stack</span><span>Pure Python, all pip wheels: laspy[lazrs], numpy, numba, scipy, rasterio, shapely/geopandas, pvlib, pythermalcomfort, pystac-client. No PDAL, QGIS, UMEP or Java. <a href="#compute">§12</a></span></li>
+  <li><span class="lbl">6 Metric</span><span>UTCI field U(x, t) at 1 m × 30 min. The route cost is heat dose H = ∫ g(U) dt, with g convex above 26 / 32 / 38 °C, traded against total time. <a href="#metric">§8</a></span></li>
+  <li><span class="lbl">7 Sources</span><span>LiDAR: GUGiK WFS index → direct LAZ URLs, no auth (verified). Landsat C2 L2 on Planetary Computer has <strong>no scene on 06-28</strong>. LC09 06-25 (5% cloud) calibrates the surface model; air temperature comes from IMGW. <a href="#data">§3</a></span></li>
+  <li><span class="lbl">8 Story</span><span>Replay the 2026-06-28 forcing unchanged as a typical 2076 summer day, with the city geometry as of 2025. The pensioner persona walks at 1.0 m/s and uses elderly-shifted dose weights. <a href="#scope">§2</a></span></li>
+  <li><span class="lbl">9 Grid</span><span>1 m everywhere: shade, SVF, surface class, Tmrt and UTCI. Physics is evaluated only on walkable and stop pixels. <a href="#geom">§4</a></span></li>
+  <li><span class="lbl">10 Physics</span><span>Ta: uniform from IMGW plus an urban offset. Ts: SOLWEIG sine-wave ground temperature with 30-min thermal memory, calibrated to Landsat. Tmrt: six-direction SOLWEIG formulation. A force-restore model is the upgrade if calibration fails. <a href="#temp">§6</a></span></li>
+</ul>
+<ul class="legend-badges">
+  <li><span class="b m">V</span>verified today (query, HEAD, source code)</li>
+  <li><span class="b l">L</span>literature / code, checked</li>
+  <li><span class="b d">D</span>derived arithmetic</li>
+  <li><span class="b g">A</span>assumption, to confirm</li>
+</ul>
+</section>
+
+<section id="scope">
+<h2><span class="n">02</span>Story, scope and time grid</h2>
+<div class="note"><p>“In 2076, as a particularly heat-vulnerable pensioner, I want to go from X to Y. The sun is scorching and I want to minimise my UTCI on the way so I don't get sick or die. We recreate the conditions of 2026-06-28, which will likely match many summer days 50 years from now. I use the app to plan my route not only in space but in time.”</p></div>
+<div class="tw"><table>
+<thead><tr><th>Item</th><th>Specification</th><th></th></tr></thead>
+<tbody>
+<tr><td>Area of interest</td><td>Śródmieście, PRG unit 146510_8 (WFS <code>A05_Granice_jednostek_ewidencyjnych</code>), 15.5 km², perimeter 19.2 km, bbox 5.6 × 6.0 km. Origins and destinations must lie inside; heat is computed only inside.</td><td><span class="b m">V</span></td></tr>
+<tr><td>Caster halo</td><td>District + 1 km buffer = 37.2 km². Buildings come from 2025 LiDAR in the whole halo; canopy (2023) within 200 m of the district (19.5 km²), because tree shadows are short.</td><td><span class="b d">D</span></td></tr>
+<tr><td>CRS / grid</td><td>EPSG:2180 (PL-1992), heights EVRF2007, 1 m cells aligned to integer metres. Outputs are also published in WGS84 for the map.</td><td></td></tr>
+<tr><td>Replay day</td><td>Sunday 2026-06-28: Okęcie Tx 38.1 °C, Filtry 39.7 °C, clear 05–16 h. Sunrise 04:17, sunset 21:01 CEST.</td><td><span class="b m">V</span></td></tr>
+<tr><td>Time grid</td><td>t<sub>k</sub> = 06:00 + 30 min·k, k = 0…32 (33 slots, local CEST). The sun is above 2.9° from 06:00 to 20:30 (30 slots). 21:00–22:00 is longwave only. Values between slots are interpolated linearly in time. Fallback if compute were short (not expected): hourly slots, 17.</td><td><span class="b d">D</span></td></tr>
+<tr><td>2076 framing</td><td>No ΔT is added: the forcing is replayed as observed, and the buildings and trees are those of 2025, not a 2076 city. Both points belong on one caveat slide.</td><td><span class="b g">A</span></td></tr>
+<tr><td>Transit day</td><td>Real operations of <strong>Saturday 2026-10-17</strong>, recorded in BigQuery, mapped clock-time to clock-time onto the 06-28 heat day (10:00 on 10-17 ↔ 10:00 on 06-28). The caveat slide notes that this is an October Saturday's service on a June Sunday's weather.</td><td><span class="b g">A</span></td></tr>
+<tr><td>Persona</td><td>Walking 1.0 m/s; standing while waiting; arrival window and origin/destination chosen by the user. Waiting at home before leaving is indoors and is <strong>not</strong> counted in the dose.</td><td><span class="b g">A</span></td></tr>
+</tbody></table></div>
+</section>
+
+<section id="data">
+<h2><span class="n">03</span>Data sources</h2>
+<div class="tw"><table>
+<thead><tr><th>Source</th><th>Use</th><th>Vintage</th><th>Access</th><th>Size (AOI)</th><th></th></tr></thead>
+<tbody>
+<tr><td>GUGiK LiDAR LAZ, 2023 (GI-FOTO.6201.22.2023)</td><td>Canopy height, crown base, transmissivity</td><td>2023-09-05, <strong>leaf-on</strong>, ~33 pts/m²</td><td>WFS <code>gugik:SkorowidzDanychPomiarowychLIDAR2023</code> → <code>url_do_pobrania</code>, no auth</td><td>74 sheets in district = 7.0 GB; ~9 GB with 200 m halo</td><td><span class="b m">V</span></td></tr>
+<tr><td>GUGiK LiDAR LAZ, 2025 (GK-FOTO.6201.5.2025)</td><td>Buildings, ground (DTM), tree-removal check</td><td>2025-04-27, early leaf-out, ~17 pts/m²</td><td>same, layer <code>…LIDAR2025</code></td><td>74 sheets = 6.7 GB; ~15 GB with 1 km halo</td><td><span class="b m">V</span></td></tr>
+<tr><td><code>warsaw_transport.vehicle_positions</code> (BigQuery, hackaton-honory)</td><td><strong>The transit data:</strong> realised trams and buses (position, line, brigade, vehicle number) → stop events and departures</td><td>Sat 2026-10-17 06:00–22:00 local: all 60 min of every hour present, ~1,100 fresh vehicles and ~0.5M fresh pings per hour</td><td>existing</td><td>~8M fresh rows that day</td><td><span class="b m">V</span></td></tr>
+<tr><td><code>warsaw_transport.ztm_vehicles</code> + <code>ztm_vehicle_models</code></td><td>AC of the vehicle that actually ran (<code>air_conditioning</code> BOOL), joined on <code>(mode, vehicle_number)</code> → <code>model_id</code></td><td>register snapshots since 10-16</td><td>existing</td><td>31k / 3.7k rows</td><td><span class="b m">V</span></td></tr>
+<tr><td><code>warsaw_transport.gtfs_*</code> (mkuran feed 2026-10-16)</td><td>Stop locations and stop sequences only (service <code>2026-10-17:SbS</code>), to snap positions to stops</td><td>valid 10-16…10-24</td><td>existing</td><td>7.85M stop_times</td><td><span class="b m">V</span></td></tr>
+<tr><td>IMGW synop Okęcie (12375) hourly + klimat Filtry</td><td>Ta, RH, wind, cloud; urban Ta offset</td><td>2026-06-28</td><td>danepubliczne.imgw.pl zips</td><td>&lt;1 MB</td><td><span class="b m">V</span></td></tr>
+<tr><td>ERA5 via Open-Meteo archive</td><td>DNI, DHI, GHI; gap-fill; optional sky longwave</td><td>hourly, preceding-hour means</td><td>open API</td><td>KB</td><td><span class="b m">V</span></td></tr>
+<tr><td>Landsat C2 L2 ST, <code>LC09_L2SP_187024_20260625_02_T1</code></td><td>Calibration of the surface-temperature model (not a model input on 06-28)</td><td>2026-06-25 09:25 UTC (11:25 CEST), 4.96% scene cloud</td><td>Planetary Computer STAC <code>landsat-c2-l2</code>, asset <code>lwir11</code> + <code>qa_pixel</code></td><td>~2 MB clipped</td><td><span class="b m">V</span></td></tr>
+<tr><td>Landsat backup <code>LC08_L2SP_188024_20260624</code></td><td>Second calibration view</td><td>06-24, 19.8% cloud</td><td>same</td><td>~2 MB</td><td><span class="b m">V</span></td></tr>
+<tr><td>Sentinel-2 L2A 06-27 (34UDC/34UEC)</td><td>Albedo and NDVI per surface class (grass vs paving)</td><td>2026-06-27, 0–8% cloud</td><td>Earth Search / PC STAC</td><td>~100 MB clipped</td><td><span class="b l">L</span></td></tr>
+<tr><td>BDOT10k Warszawa (GPKG)</td><td>Building footprints (mask clean-up), surface material, water, land cover</td><td>2025-06</td><td>GUGiK, open</td><td>88 MB</td><td><span class="b l">L</span></td></tr>
+<tr><td>OSM extract (Geofabrik/BBBike PBF)</td><td>Walk graph, sidewalks, crossings, covered/tunnel ways, stop platforms, <code>shelter=yes</code>, surface tags</td><td>2026-10</td><td>PBF, pyosmium</td><td>300 MB (Mazowieckie)</td><td><span class="b l">L</span></td></tr>
+<tr><td>City tree inventory (old API)</td><td>Species/genus for τ prior; validation of LiDAR crown heights</td><td>survey 2010–13; 8,142 trees in Śródmieście</td><td>local copy <code>downloads/trees/</code></td><td>63 MB</td><td><span class="b m">V</span></td></tr>
+<tr><td>Not used: Mapa Koron Drzew, Meta canopy, ORS Shaded / MIT shade</td><td>See §4; baselines for the related-work slide only</td><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div>
+<h3>Forcing for 2026-06-28 (ERA5 grid point 52.27 N 20.96 E, local time)</h3>
+<p class="small">Ta below is ERA5. The spec takes Ta, RH and wind from IMGW Okęcie hourly and uses ERA5 only for radiation. Radiation values are means over the hour <em>ending</em> at the stamp, so a value stamped hh:00 belongs to hh−1:30. <span class="b m">V</span></p>
+<div class="tw"><table>
+<thead><tr><th>h</th><th class="num">Ta °C</th><th class="num">RH %</th><th class="num">v10 m/s</th><th class="num">DNI W/m²</th><th class="num">DHI W/m²</th><th class="num">Cloud %</th></tr></thead>
+<tbody>
+<tr><td>06</td><td class="num">24.5</td><td class="num">55</td><td class="num">2.0</td><td class="num">379</td><td class="num">37</td><td class="num">3</td></tr>
+<tr><td>08</td><td class="num">28.5</td><td class="num">45</td><td class="num">1.1</td><td class="num">690</td><td class="num">75</td><td class="num">0</td></tr>
+<tr><td>10</td><td class="num">33.5</td><td class="num">34</td><td class="num">1.2</td><td class="num">811</td><td class="num">96</td><td class="num">9</td></tr>
+<tr><td>12</td><td class="num">36.3</td><td class="num">27</td><td class="num">1.8</td><td class="num">865</td><td class="num">101</td><td class="num">0</td></tr>
+<tr><td>13</td><td class="num">37.1</td><td class="num">25</td><td class="num">1.8</td><td class="num">871</td><td class="num">101</td><td class="num">1</td></tr>
+<tr><td>15</td><td class="num">38.1</td><td class="num">24</td><td class="num">2.7</td><td class="num">827</td><td class="num">105</td><td class="num">9</td></tr>
+<tr><td>17</td><td class="num">38.1</td><td class="num">22</td><td class="num">2.5</td><td class="num">743</td><td class="num">95</td><td class="num">30</td></tr>
+<tr><td>19</td><td class="num">37.1</td><td class="num">22</td><td class="num">2.6</td><td class="num">459</td><td class="num">78</td><td class="num">49</td></tr>
+<tr><td>21</td><td class="num">35.3</td><td class="num">29</td><td class="num">0.9</td><td class="num">84</td><td class="num">14</td><td class="num">14</td></tr>
+<tr><td>22</td><td class="num">34.2</td><td class="num">31</td><td class="num">0.9</td><td class="num">0</td><td class="num">0</td><td class="num">9</td></tr>
+</tbody></table></div>
+<p class="small">The table shows selected hours; ingest all 06–22 h. The cloud in the evening (30–63% from 17 h) is real ERA5 cloud. Use ERA5 DNI/DHI as they are, not a clear-sky model.</p>
+</section>
+
+<section id="geom">
+<h2><span class="n">04</span>Geometry from LiDAR</h2>
+<div class="ans">
+  <div class="lbl">Answer to question 4: canopy from LiDAR or from city data?</div>
+  <p><strong>LiDAR.</strong> The 2023-09-05 scan is full leaf-on and LiDAR-derived (the earlier “image-matched” suspicion was wrong) <span class="b m">V</span>. It gives the canopy top <em>and</em> crown base: low sun at 06–08 and 19–21 h passes under crowns, which no 2D crown map can represent. It also gives a measured per-pixel gap fraction, so τ is not a single constant.</p>
+  <p>The city data can't do this:</p>
+  <ul>
+    <li><strong>Tree inventory:</strong> 2010–13 points, crown diameter but no crown shape, large parks missing. Śródmieście holds 8,142 trees and 15.8 ha of crowns.</li>
+    <li><strong>Mapa Koron Drzew:</strong> 7.1M crown polygons, but view-only. Getting the file needs a request to the city environment office (BOŚ). <span class="b m">V</span></li>
+  </ul>
+  <p>Use the city data for genus and health (a prior on τ) and as validation of crown heights.</p>
+</div>
+
+<h3>4.1 Ingest</h3>
+<ol class="plain">
+  <li>Query the WFS indexes for the district + halo bbox. The URL is <code>https://mapy.geoportal.gov.pl/wss/service/PZGIK/DanePomiaroweLidarEVRF2007/WFS/Skorowidze</code>; the bbox order is <strong>northing, easting</strong>. Keep <code>godlo</code>, <code>akt_data</code> and <code>url_do_pobrania</code>.</li>
+  <li>Download VM → GCS with 8 parallel streams. The server ignores HTTP Range, so always fetch whole files.</li>
+  <li>Read with <code>laspy</code> + <code>lazrs</code> in chunks and bin to the 1 m grid with <code>numpy</code>/<code>numba</code>. Classes per GUGiK: 2 ground, 3/4/5 vegetation (&lt;0.4 / 0.4–2 / &gt;2 m), 6 buildings, 7 noise, 8 water. Drop 7 and 12 (overlap).</li>
+</ol>
+
+<h3>4.2 Rasters (1 m, float32 COG)</h3>
+<div class="tw"><table>
+<thead><tr><th>Raster</th><th>Rule</th><th>Epoch</th></tr></thead>
+<tbody>
+<tr><td><code>dtm</code></td><td>Mean z of class 2 per cell. Fill holes (under buildings) by linear interpolation (<code>scipy.interpolate</code> on the hole boundary). Cross-check against GUGiK NMT 1 m, |Δ| &lt; 0.3 m.</td><td>2025 (leaf-off → best ground)</td></tr>
+<tr><td><code>bldg_dsm</code></td><td>Max z of class 6 per cell; 3×3 morphological close; elsewhere <code>dtm</code>. Bridges and footbridges come from OSM <code>bridge=yes</code> ways: they are walkable surfaces, not casters over the deck.</td><td>2025</td></tr>
+<tr><td><code>chm_top</code></td><td>p95 z of class 5 − dtm, minus building cells. Remove cells where the 2025 scan has no class 3–5 return within 2 m, i.e. trees felled since 2023.</td><td>2023, 2025 check</td></tr>
+<tr><td><code>chm_base</code></td><td>p10 z of class 5 − dtm, smoothed (median 5×5 inside each connected crown). Fallback: 0.25·chm_top (SOLWEIG trunk-zone default).</td><td>2023</td></tr>
+<tr><td><code>gap_frac</code></td><td>Within canopy cells: first returns reaching the ground or below 1.5 m (classes 2/3) ÷ all first returns, aggregated 3×3 (~300 pts). τ<sub>v</sub> = clip(gap_frac, 0.02, 0.5).</td><td>2023</td></tr>
+<tr><td><code>surface_class</code></td><td>Priority order: building (class 6 / BDOT) → water (class 8 / BDOT) → canopy-covered ground (keep underlying class) → grass (S2 NDVI &gt; 0.4, class 2/3) → asphalt / granite-concrete paving / cobble from OSM <code>surface=*</code> and BDOT material → default paving.</td><td>mixed</td></tr>
+<tr><td><code>walk_mask</code></td><td>Not building, not water, and one of: inside OSM pedestrian/plaza areas; within w/2 of a footway/sidewalk/path/crossing (w from OSM <code>width</code>, else 2.5 m sidewalk, 4 m pedestrian street, 3 m crossing); within 15 m of a stop platform. Expect roughly 3–5 km² (20–30% of the district).</td><td>OSM + BDOT</td></tr>
+</tbody></table></div>
+<p class="small">Known artefacts to check in a visual QA of 5 spots: cranes and scaffolding in 2025 (they will cast false shadows); arcades on Marszałkowska and MDM (covered walkways → OSM <code>covered=yes</code> overrides to full shade); underground passages at Centralna and Rondo Dmowskiego (OSM <code>tunnel</code>/<code>indoor</code> → indoor rule, §7).</p>
+</section>
+
+<section id="shade">
+<h2><span class="n">05</span>Sun and shade</h2>
+<h3>5.1 Sun positions</h3>
+<p>Use <code>pvlib.solarposition.get_solarposition</code> at the district centroid (52.230 N, 21.012 E) for each slot; the 6 km extent changes elevation by &lt;0.05°. Spot values <span class="b d">D</span>:</p>
+<div class="tw"><table>
+<thead><tr><th>CEST</th><th>06:00</th><th>08:00</th><th>10:00</th><th>12:30</th><th>15:00</th><th>18:00</th><th>20:00</th><th>20:30</th><th>21:00</th></tr></thead>
+<tbody>
+<tr><td>elev °</td><td class="num">12.5</td><td class="num">30.4</td><td class="num">48.1</td><td class="num">61.0</td><td class="num">50.5</td><td class="num">24.1</td><td class="num">6.8</td><td class="num">2.9</td><td class="num">−0.7</td></tr>
+<tr><td>azim °</td><td class="num">68</td><td class="num">91</td><td class="num">118</td><td class="num">176</td><td class="num">236</td><td class="num">277</td><td class="num">300</td><td class="num">305</td><td class="num">311</td></tr>
+</tbody></table></div>
+
+<h3>5.2 Shadow algorithm (per slot, numba)</h3>
+<p>Use the SOLWEIG / Ratti &amp; Richens shift-and-compare, written in numba. For each slot, march the DSM toward the sun in 1 m steps. A pixel p is shaded if some cell at horizontal distance d along the sun azimuth has height &gt; z(p) + d·tan β.</p>
+<pre class="f">bldg_sunlit[p,k]  ∈ {0,1}      # casters: bldg_dsm only
+veg_hit[p,k]      ∈ {0,1}      # ray intersects the canopy slab chm_base…chm_top
+tau_hit[p,k]      = τ_v(first crown cell hit) ** (1 / sin β)    # slant path (Beer–Lambert)
+s[p,k] = bldg_sunlit · (1 − veg_hit · (1 − tau_hit))          # sunlit fraction of the direct beam, 0…1</pre>
+<ul>
+  <li><strong>Reach cap:</strong> min(ΔH<sub>max</sub>/tan β, 2 km), with ΔH<sub>max</sub> the tallest relative height in the halo (Varso ≈ 310 m, PKiN 237 m). Early exit when the ray rises above the halo maximum. PKiN at 18:00 casts 237/tan 24.1° ≈ 530 m.</li>
+  <li><strong>Trunk zone:</strong> below chm_base the ray passes, so low sun lights the pavement under crowns.</li>
+  <li><strong>τ prior:</strong> where gap_frac has &lt;100 first returns, use τ by genus from the inventory, else 0.03 (Lindberg &amp; Grimmond 2011; Konarska 2014) <span class="b l">L</span>.</li>
+  <li><strong>τ sensitivity:</strong> the LiDAR gap fraction may run above radiometric τ (it includes gaps at crown edges). Run once with τ ≡ 0.03 and report the change in dose. Pick the default at checkpoint 2.</li>
+  <li><strong>Storage:</strong> s as uint8 (0–255) per slot, 30 slots × 37 Mpx ≈ 1.1 GB raw, compressed COG.</li>
+</ul>
+
+<h3>5.3 Sky view factors (once)</h3>
+<p>Compute 32 azimuths with horizon angles up to 200 m:</p>
+<ul>
+  <li><code>svf_b</code>: buildings only.</li>
+  <li><code>svf_bv</code>: buildings + canopy as obstacles, transmitting τ<sub>v</sub>.</li>
+  <li>Effective sky view: ψ<sub>s</sub> = svf_b − (svf_b − svf_bv)(1 − τ<sub>v</sub>).</li>
+  <li>Wall view ≈ 1 − svf_b; canopy view ≈ svf_b − ψ<sub>s</sub>.</li>
+</ul>
+</section>
+
+<section id="temp">
+<h2><span class="n">06</span>Temperature model (question 10)</h2>
+<p>Three temperatures matter, and they vary very differently.</p>
+<ul>
+  <li><strong>Air temperature Ta</strong> varies by ~1–2 K within the district. At Ta = 37 °C that moves UTCI by ~1–2 K.</li>
+  <li><strong>Ground and wall temperatures Ts and Tw</strong> differ by 10–25 K between sun and shade.</li>
+  <li><strong>Tmrt</strong> differs by 25–35 K, which gives a 6–9 K UTCI difference. UTCI rises ~0.25 K per K of Tmrt at these conditions (official polynomial) <span class="b l">L</span>.</li>
+</ul>
+<p>So keep Ta simple, and spend the modelling effort on surface temperature and radiation.</p>
+
+<h3>6.1 Options considered</h3>
+<div class="tw"><table>
+<thead><tr><th>Option</th><th>What it does</th><th>Verdict</th></tr></thead>
+<tbody>
+<tr class="hl"><td><strong>A. SOLWEIG ground-temperature wave + memory</strong></td><td>Ts − Ta = class amplitude × sine of time since sunrise × sunlit fraction, with a 30-min half-life memory. Per-class parameters are from UMEP's land-cover table and calibrated to Landsat.</td><td><strong>Chosen.</strong> Simple and published (Lindberg 2008/2016). Pixel-local, so it vectorises trivially.</td></tr>
+<tr><td>B. Force-restore surface energy balance</td><td>dTs/dt from absorbed shortwave/longwave, convection and ground storage (Deardorff 1978), with class thermal inertia.</td><td>Upgrade path, if A misses Landsat by &gt; 3 K on open paving or under-predicts the evening pavement.</td></tr>
+<tr><td>C. Landsat LST used directly</td><td>Rescale the 06-25 11:25 LST map to every slot.</td><td>Rejected. One instant, 100 m native, sees roofs and canopy tops (not pavement under trees), wrong day.</td></tr>
+<tr><td>D. Ta from LST anomaly</td><td>Ta(x) = Ta<sub>ref</sub> + β·ΔLST.</td><td>Rejected for v1: it double-counts surface heat. At most a damped β ≈ 0.1–0.2 as a sensitivity run.</td></tr>
+</tbody></table></div>
+
+<h3>6.2 Air temperature, humidity, wind (uniform over the district)</h3>
+<pre class="f">Ta(t)  = Ta_Okęcie(t) + δ(t)          # IMGW hourly, linear to :30 slots
+δ(t)   = +1.6 K (08–20 h, from Filtry−Okęcie Tx 39.7−38.1), ramping to
+         +2.1 K at night (night Tn 26.8 vs 24.7); linear between 06–08 and 20–22
+e(t)   = vapour pressure from Okęcie RH and Ta_Okęcie → held uniform; RH(x,t) recomputed at Ta(t)
+v10(t) = Okęcie 10 m wind;  v_utci(p,t) = max(0.5, v10 · (0.4 + 0.4·svf_b(p)))   # canyon damping</pre>
+<p class="small">δ is anchored on one day's daily extremes <span class="b g">A</span>. The canyon factor is a heuristic <span class="b g">A</span>, but between 0.5 and 2 m/s UTCI changes by ≤0.5 K on this day <span class="b l">L</span>, so wind is second-order. Most street pixels will sit on the 0.5 m/s floor.</p>
+
+<h3>6.3 Ground and wall surface temperature (option A)</h3>
+<pre class="f">β_max   = 61.0°   (solar noon elevation, 06-28)
+Tg_amp  = k_c · (TgK_c · β_max + Tstart_c)                      # k_c = calibration multiplier (init 1)
+φ(t)    = (t − t_sunrise) / (TmaxLST_c − t_sunrise) · π/2       # TmaxLST in solar time (15:00 solar ≈ 15:37 CEST)
+CI(t)   = clear-sky index G/G0 corrected as in SOLWEIG, capped at 1
+ΔTg(t)  = max(0, Tg_amp · sin φ(t) · CI(t))
+s_mem(p,t_k) = 0.5·s(p,t_k) + 0.5·s_mem(p,t_{k−1})             # exp(−33.27·Δt[d]) = 0.5 at 30 min
+Ts(p,t) = Ta(t) + ΔTg(t)·s_mem(p,t) + ΔT_night_c·[t ≥ 19:00]·(1 − s_mem)   # evening release floor
+Tw(t)   = Ta(t) + 0.5 · ΔTg_wall(t)                              # ≈ half of the walls in view are sunlit</pre>
+<div class="tw"><table>
+<thead><tr><th>Class</th><th class="num">albedo</th><th class="num">ε</th><th class="num">TgK</th><th class="num">Tstart</th><th class="num">TmaxLST</th><th class="num">Tg_amp at 61°</th><th class="num">ΔT_night <span class="b g">A</span></th></tr></thead>
+<tbody>
+<tr><td>granite / concrete paving</td><td class="num">0.20</td><td class="num">0.95</td><td class="num">0.37</td><td class="num">−3.41</td><td class="num">15</td><td class="num">19.2 K</td><td class="num">+3 K</td></tr>
+<tr><td>asphalt</td><td class="num">0.18</td><td class="num">0.95</td><td class="num">0.58</td><td class="num">−9.78</td><td class="num">15</td><td class="num">25.6 K</td><td class="num">+4 K</td></tr>
+<tr><td>grass</td><td class="num">0.16</td><td class="num">0.94</td><td class="num">0.21</td><td class="num">−3.38</td><td class="num">14</td><td class="num">9.4 K</td><td class="num">0</td></tr>
+<tr><td>bare soil / gravel</td><td class="num">0.25</td><td class="num">0.94</td><td class="num">0.33</td><td class="num">−3.01</td><td class="num">14</td><td class="num">17.1 K</td><td class="num">+1 K</td></tr>
+<tr><td>water</td><td class="num">0.05</td><td class="num">0.98</td><td class="num">0</td><td class="num">0</td><td class="num">12</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>walls (all)</td><td class="num">0.20</td><td class="num">0.90</td><td class="num">0.37</td><td class="num">−3.41</td><td class="num">15</td><td class="num">19.2 K</td><td class="num">+2 K</td></tr>
+</tbody></table></div>
+<p class="small">The first five columns are from UMEP <code>parametersforsolweig.json</code> / <code>landcoverclasses_2016a.txt</code> <span class="b l">L</span>. The ΔT_night floor is our addition, because SOLWEIG drops shaded and evening ground to Ta, while real Śródmieście paving releases stored heat. If time allows, calibrate it on the ECOSTRESS night pass of 06-29 01:44 UTC.</p>
+
+<h3>6.4 Calibration with Landsat (06-25, 11:25 CEST)</h3>
+<ol class="plain">
+  <li>Read <code>lwir11</code> (ST_B10: K = DN·0.00341802 + 149.0) and <code>qa_pixel</code> for the district window. Mask clouds and shadow. The district is inside the path-187 footprint (east of 20.91 °E).</li>
+  <li>Run §5–6.3 for one extra slot: sun at 06-25 11:25, IMGW Ta of 06-25. Build the <em>top-of-scene</em> field: roofs (class wave), canopy tops (Ta + 2 K), visible ground (model Ts).</li>
+  <li>Aggregate in radiance space (εσT⁴) with a Gaussian PSF of σ ≈ 40 m (TIRS is 100 m native, delivered at 30 m), then sample at the 30 m pixels.</li>
+  <li>Fit k<sub>c</sub> for paving, asphalt, roof and grass by least squares on (LST − Ta). Use only pixels whose footprint is ≥ 60% one class; large open plazas (Plac Defilad, Pl. Piłsudskiego) and the rail yard constrain paving. Target RMSE &lt; 3 K and |bias| &lt; 1 K.</li>
+</ol>
+</section>
+
+<section id="utci">
+<h2><span class="n">07</span>Mean radiant temperature and UTCI</h2>
+<p>Per walkable/stop pixel p and slot k, use the SOLWEIG six-direction standing-person formulation, isotropic simplification. Code verified against UMEP <code>Solweig_2025a_calc</code> <span class="b l">L</span>.</p>
+<pre class="f">I  = DNI(t),  D = DHI(t),  G = I·sin β + D,  σ = 5.670e-8
+ε_sky = 1 − (1 + w)·exp(−√(1.2 + 3w)),  w = 46.5·e[hPa]/Ta[K]          # Prata 1996 (or ERA5 strd)
+L_sky = ε_sky·σ·Ta⁴
+
+K↓  = s·I·sin β + ψ_s·D + α_w(1 − svf_b)·[G·(1 − F_sh) + D·F_sh]       # F_sh ≈ 0.5
+K↑  = α_g·[ s̄·I·sin β + ψ_s·D ]                                         # s̄ = s smoothed 5×5 (ground in view)
+L↓  = ψ_s·L_sky + (1 − svf_b)·ε_w·σ·Tw⁴ + (svf_b − ψ_s)·σ·(Ta + 1)⁴      # canopy ≈ Ta + 1 K
+L↑  = ε_g·σ·Ts⁴
+K_side = ½[ψ_s·D + α_w(1 − svf_b)·G] + ½·K↑
+L_side = ½·L↓ + ½·L↑
+
+S_str = a_K·[ s·I·cos β·F_cyl + (K↓ + K↑)·F_up + 4·K_side·F_side ]
+      + a_L·[ (L↓ + L↑)·F_up + 4·L_side·F_side ]
+Tmrt  = (S_str / (a_L·σ))^0.25 − 273.15
+       a_K = 0.70, a_L = 0.97, F_up = 0.06, F_side = 0.22, F_cyl = 0.28 (standing)</pre>
+<ul>
+  <li><strong>Night (β ≤ 0):</strong> all K = 0.</li>
+  <li><strong>Covered, arcade and tunnel walkways:</strong> s = 0, ψ<sub>s</sub> = 0, Tw = Ta.</li>
+  <li><strong>Indoor/underground passages:</strong> Tmrt = Ta<sub>in</sub> = 28 °C <span class="b g">A</span>.</li>
+  <li><strong>Stop shelters</strong> (OSM <code>shelter=yes</code>): inside a 3 × 1.5 m footprint at the platform node, s = 0 and ψ<sub>s</sub> × 0.3.</li>
+</ul>
+
+<h3>UTCI</h3>
+<pre class="f">from pythermalcomfort.models import utci
+U = utci(tdb=Ta, tr=Tmrt, v=v_utci, rh=RH, units="SI", limit_inputs=True, round_output=False).utci
+assert finite(U) on walk_mask      # NaN if Ta∉[−50,50], Tmrt−Ta∉[−30,70], v∉[0.5,17]</pre>
+<ul>
+  <li><strong>Inputs:</strong> Ta and Tmrt in °C, wind at 10 m in m/s (UTCI convention), RH in %. The Bröde 2012 polynomial (pythermalcomfort 4.6.2) holds within Ta −50…50 °C, Tmrt−Ta −30…+70 K and v 0.5…17 m/s <span class="b l">L</span>.</li>
+  <li><strong>Expected ranges on 06-28:</strong> sunlit asphalt at 13:00 ≈ 44–46 °C; deep tree shade ≈ 37–39 °C; at 22:00 ≈ Ta ± 2 ≈ 34–36 °C.</li>
+  <li><strong>Reference person:</strong> UTCI assumes a person walking 4 km/h (1.1 m/s) with adaptive clothing. The pensioner at 1.0 m/s is close. Standing at a stop slightly overstates UTCI (less metabolic heat). We accept this and keep one UTCI field for walking and waiting.</li>
+  <li><strong>In an AC vehicle:</strong> Ta<sub>in</sub> = Tmrt = 26 °C, v = 0.5, RH = 45%, so UTCI ≈ 26 and g = 0. Based on the EN 14750 interior-temperature rule of thumb; the standard text was not retrieved <span class="b g">A</span>.</li>
+</ul>
+</section>
+
+<section id="metric">
+<h2><span class="n">08</span>The route metric: UTCI in time</h2>
+<p>A trip is a schedule x(t) for t ∈ [t<sub>dep</sub>, t<sub>arr</sub>]. Each instant is in one state: <em>walking</em> on a pixel, <em>waiting</em> at a stop pixel, or <em>riding</em> an AC vehicle. Waiting at home before t<sub>dep</sub> is indoors and free. The felt temperature along the trip is U(t) = UTCI(x(t), t), interpolated linearly between the 30-min slots.</p>
+
+<h3>8.1 Dose function</h3>
+<pre class="f">g(U) = max(0, U − 26) + max(0, U − 32) + 2·max(0, U − 38)     # K, per minute of exposure
+H    = Σ_legs ∫ g(U(t)) dt   [K·min]                           # heat dose, the quantity to minimise</pre>
+<div class="tw"><table>
+<thead><tr><th>UTCI band</th><th>UTCI category</th><th class="num">slope of g</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>&lt; 26</td><td>no heat stress</td><td class="num">0</td><td></td></tr>
+<tr><td>26–32</td><td>moderate</td><td class="num">1</td><td>Counting starts one category early for the elderly: there is no official age-adjusted UTCI, and heat mortality in Europe already rises above 26 (Di Napoli 2018) <span class="b l">L</span></td></tr>
+<tr><td>32–38</td><td>strong</td><td class="num">2</td><td>Mortality RR +10–20% above 32 in 8 Polish cities incl. Warsaw (Kuchcik 2020) <span class="b l">L</span></td></tr>
+<tr><td>≥ 38</td><td>very strong / extreme</td><td class="num">4</td><td>RR +25–30% above 38 (Kuchcik 2020) <span class="b l">L</span></td></tr>
+</tbody></table></div>
+<p class="small">g is continuous and convex, so one minute at 44 °C costs more than two minutes at 35 °C. Example for 13:00 <span class="b d">D</span>: sunlit sidewalk U ≈ 44.5 → g = 44 K per minute; tree-shaded U ≈ 38.5 → g = 20. A 10-minute walk costs 440 vs 200 K·min.</p>
+
+<h3>8.2 Objective and outputs</h3>
+<pre class="f">J(route, t_dep) = H + μ · T_total                     # T_total = t_arr − t_dep [min]
+minimise J over routes and over t_dep ∈ [t_earliest, t_latest_arrival − T]
+subject to:  boarded runs had AC (recorded vehicle);  t_arr ≤ deadline (if given);  single walk leg ≤ 1.5 km</pre>
+<ul>
+  <li><strong>Route cards:</strong> three cards from one search: <em>coolest</em> (μ = 0.5), <em>balanced</em> (μ = 2) and <em>fastest</em> (μ → ∞, still AC-only). Each card has its own best departure time.</li>
+  <li><strong>Per card, report:</strong> H; T<sub>total</sub>; peak U; minutes in each UTCI category; minutes ≥ 38; shade share of walking.</li>
+  <li><strong>Departure-time curve:</strong> H(t<sub>dep</sub>) over the day, for the “when should I go?” chart.</li>
+  <li><strong>Rejected metrics:</strong>
+    <ul>
+      <li>Mean UTCI: rewards long cool detours and hides peaks.</li>
+      <li>Max UTCI alone: ignores duration. It is kept as a reported value.</li>
+      <li>Full physiology (<code>two_nodes_gagge_ji</code>, an elderly-tuned bioheat model): reserved for validating the 3 cards, not for routing.</li>
+    </ul>
+  </li>
+  <li><strong>Edge evaluation:</strong>
+    <ul>
+      <li>Per walk edge (≤ 20 m) and slot, store Ū = mean U over the edge's walk-mask pixels within 1 m of its centreline (a 2 m strip).</li>
+      <li>Store g(Ū) as well. Using g of the mean rather than the mean of g is a deliberate simplification, because a pedestrian walks a line, not an area.</li>
+      <li>Traversal cost = g(Ū(t<sub>enter</sub>))·len/v.</li>
+      <li>A signalised crossing adds a 30 s wait at the crossing pixel's U.</li>
+    </ul>
+  </li>
+</ul>
+</section>
+
+<section id="transit">
+<h2><span class="n">09</span>Public transport: AC only, timed walks</h2>
+<h3>9.1 Source: real operations from BigQuery, not a timetable</h3>
+<p>The router does not use a timetable. It uses what trams and buses actually did on <strong>Saturday 2026-10-17, 06:00–22:00</strong>, as recorded in <code>hackaton-honory.warsaw_transport.vehicle_positions</code>. Every minute of that window is present, with ~1,100 fresh vehicles per hour <span class="b m">V</span>. These events are replayed on the 06-28 heat clock.</p>
+<ul>
+  <li><strong>Modes:</strong> trams and buses only. Metro and rail are dropped.</li>
+  <li><strong>Stops:</strong> boarding and alighting only at stops inside the district: 250 bus, 76 tram, 4 bus+tram <span class="b m">V</span>. Runs may leave the district between two inside stops.</li>
+  <li><strong>Stop locations:</strong> the OSM platform node via <code>ref</code> (81% match), else a 30 m spatial fallback. Shelter flags: 297 <code>yes</code>, 79 <code>no</code>, 29 unknown <span class="b m">V</span>.</li>
+</ul>
+
+<h3>9.2 From positions to stop events (BigQuery SQL, one-off)</h3>
+<ol class="plain">
+  <li><strong>Clean:</strong> keep <code>report_age_s &lt; 120</code>, de-duplicate the old/new API copies on <code>(vehicle_type, vehicle_number, reported_at)</code>, and drop vehicles frozen &gt; 10 min or outside Warsaw.</li>
+  <li><strong>Runs:</strong> split each vehicle's track into runs on <code>(vehicle_type, vehicle_number, line, brigade)</code>, with a new run when the line/brigade changes or there is a gap &gt; 15 min.</li>
+  <li><strong>Candidate stops:</strong> match runs to <code>gtfs_trips</code> of service <code>2026-10-17:SbS</code> on <code>(route_id = line, LTRIM(block_short_name,'0') = LTRIM(brigade,'0'))</code>, which gives the stop sequence. Fallback: all stops of that line within 30 m.</li>
+  <li><strong>Stop events:</strong> for each stop in the sequence, take the pings within 30 m of the stop.
+    <ul>
+      <li>arr = first ping, dep = last ping.</li>
+      <li>With no ping inside 30 m (a fast pass), interpolate the time of closest approach between the two bracketing pings.</li>
+      <li>Keep only monotonically increasing events along the sequence.</li>
+    </ul>
+  </li>
+  <li><strong>Connections:</strong> consecutive stop events of the same run (dep at stop i → arr at stop i+1) form the connections for the router.</li>
+</ol>
+<p class="small">The earlier pass matched 21.8k tram and 31.3k bus stop passes on this exact day with this method <span class="b m">V</span>. Gaps: a run with &lt; 50% of its sequence matched is dropped, not repaired.</p>
+
+<h3>9.3 AC: the actual vehicle, not a prediction</h3>
+<pre class="f">ac(run) = ztm_vehicle_models.air_conditioning
+          via ztm_vehicles ON (mode, vehicle_number) → model_id   # always join on mode: fleet numbers collide
+board only if ac(run) = TRUE        # NULL / unregistered vehicle → treated as no AC</pre>
+<p class="small">On this Saturday, 96.4% of tram and 99.1% of bus vehicle-minutes in Śródmieście were AC. Tram line 7 (36% AC) and line 28 (70%) are the mixed ones <span class="b m">V</span>. Non-AC trams are mainly the 105N/105Na and 116N types.</p>
+
+<h3>9.4 Arriving just in time</h3>
+<p>The recorded departure plays the role of a 2076 real-time prediction. The traveller aims to reach the stop a fixed margin b before it:</p>
+<pre class="f">t_at_stop = dep_recorded − b,          b = 60 s (safety margin for prediction error)   [A]
+wait      = b  (+ transfer: dep_next − arr_prev, as recorded)
+dose_wait = ∫ g(U_stop(t)) dt over the wait
+U_stop(t) = min( U over walk_mask pixels within 15 m of the platform, U_shelter )   # stand in the best spot</pre>
+<ul>
+  <li><strong>Sensitivity:</strong> b ∈ {30, 60, 120} s.</li>
+  <li><strong>Transfers:</strong> the wait between alighting and the next recorded departure is charged in full at the transfer stop's UTCI, so the router prefers transfers with short waits in shade.</li>
+  <li><strong>Walk legs:</strong> costed by the walk graph at their real entry time.</li>
+</ul>
+</section>
+
+<section id="router">
+<h2><span class="n">10</span>Router</h2>
+<ol class="plain">
+  <li><strong>Walk graph:</strong> OSM ways clipped to the district, split at intersections, resegmented to ≤ 20 m. Edge attributes: <code>len</code>, <code>Ū[33]</code>, <code>g[33]</code>, <code>covered</code>, <code>crossing_signals</code>. Mapped sidewalks are used as they are. Where a street has no mapped sidewalk, sample both 2 m strips and keep the cooler one per slot (flagged “side assumed”).</li>
+  <li><strong>Access/egress:</strong> a time-dependent Dijkstra (FIFO, cost evaluated at entry time) from the origin to every stop within 1.5 km, for each candidate departure time. The same runs backwards from the destination.</li>
+  <li><strong>Transit:</strong> McRAPTOR with two criteria (arrival time, H) and ≤ 2 transfers, over the recorded AC runs only (stop events from §9.2 used as the trips). Śródmieście has ~330 stops, so it is small enough for Python + numba.</li>
+  <li><strong>Walk-only:</strong> the walk-only route is always a candidate.</li>
+  <li><strong>Departure sweep:</strong> run t<sub>dep</sub> every 5 min across the user's window, up to 193 runs for 06–22 h. Pick the J-minimal (route, t<sub>dep</sub>) per μ.</li>
+  <li><strong>Fallback</strong> if McRAPTOR slips: generate K = 10 itineraries by plain earliest-arrival CSA with walking penalties, then re-rank by J.</li>
+</ol>
+<p class="small">ORS Shaded and the MIT building-only shade are not engines here, only “related work” baselines. Running our walk-only route on the same O–D pairs makes that comparison fair.</p>
+</section>
+
+<section id="outputs">
+<h2><span class="n">11</span>Outputs and data contract</h2>
+<div class="tw"><table>
+<thead><tr><th>Artifact</th><th>Shape</th><th>Format</th></tr></thead>
+<tbody>
+<tr><td>Static rasters</td><td><code>dtm, bldg_dsm, chm_top, chm_base, tau_v, svf_b, svf_bv, surface_class, walk_mask</code> at 1 m</td><td>COG, EPSG:2180</td></tr>
+<tr><td>Slot rasters</td><td><code>s</code> (uint8), <code>Ts</code>, <code>Tmrt</code>, <code>UTCI</code> (int16 ×10), 33 bands, masked to walk_mask</td><td>COG per variable</td></tr>
+<tr><td><code>walk_edges</code></td><td>edge_id, u, v, geom, len, covered, crossing_signals, U[33], g[33], shade_frac[33]</td><td>GeoParquet</td></tr>
+<tr><td><code>stop_heat</code></td><td>stop_id, shelter, U_stop[33], U_pole[33]</td><td>Parquet</td></tr>
+<tr><td><code>stop_events</code></td><td>run_id, mode, line, brigade, vehicle_number, ac, seq, stop_id, arr, dep, method (ping / interpolated)</td><td>BigQuery table (needs OK) or Parquet</td></tr>
+<tr><td><code>route_results</code></td><td>od_id, μ, t_dep, legs[mode, line, from, to, dep, arr, H_leg, peak_U], H, T, minutes per category</td><td>Parquet</td></tr>
+<tr><td>Map</td><td>UTCI tiles per slot with a time slider; route cards; H(t<sub>dep</sub>) curve</td><td>PMTiles / PNG tiles + small web page</td></tr>
+</tbody></table></div>
+<p class="small">Storage is GCS Parquet/COG. A BigQuery dataset is optional and needs your OK. OSM-derived tables are ODbL. Attribute GUGiK, IMGW, USGS/Landsat, Copernicus and Mobility Database/ZTM.</p>
+</section>
+
+<section id="compute">
+<h2><span class="n">12</span>Compute and Python stack</h2>
+<div class="tw"><table>
+<thead><tr><th>Stage</th><th>Volume</th><th class="num">vCPU-h</th><th>Basis</th></tr></thead>
+<tbody>
+<tr><td>LiDAR download → GCS</td><td>~24 GB, ~260 sheets</td><td class="num">0.2</td><td>I/O bound; 8 streams</td></tr>
+<tr><td>LAZ decode + gridding</td><td>~0.65 G pts (2023) + ~0.63 G pts (2025)</td><td class="num">0.2–0.4</td><td>lazrs ~10–20 M pts/s/core <span class="b g">A</span></td></tr>
+<tr><td>Shade, 30 sunlit slots, 2 passes</td><td>37 Mpx × Σ steps (4.4k at 1 m, 100 m caster, 300 m cap)</td><td class="num">0.2–0.4</td><td>2.2 ns/px-step <span class="b d">D</span></td></tr>
+<tr><td>Tall-caster pass (&gt; 80 m, reach ≤ 2 km)</td><td>~10 towers</td><td class="num">0.2–0.5</td><td>earlier estimate <span class="b d">D</span></td></tr>
+<tr><td>SVF ×2 (32 az, 200 m)</td><td>37 Mpx</td><td class="num">0.3</td><td><span class="b d">D</span></td></tr>
+<tr><td>Ts / Tmrt / UTCI</td><td>~4 Mpx × 34 slots (incl. calibration slot)</td><td class="num">0.1–0.3</td><td>~2 µs/px <span class="b g">A</span></td></tr>
+<tr><td>Edge aggregation, router sweep</td><td>~40–60k edges; ≤ 193 departures × 3 μ</td><td class="num">&lt; 0.2</td><td></td></tr>
+<tr class="total"><td>Total</td><td></td><td class="num">1.2–2.5</td><td>≈ 10–25 min on n2-custom-12-49152, &lt; €2 + ~€0.5/month storage</td></tr>
+</tbody></table></div>
+<p><strong>Stack</strong> (all pip wheels): <code>laspy[lazrs]</code>, <code>numpy</code>, <code>numba</code>, <code>scipy</code>, <code>rasterio</code>, <code>shapely</code>, <code>geopandas</code>, <code>pyproj</code>, <code>pvlib</code>, <code>pythermalcomfort</code>, <code>pystac-client</code> + <code>planetary-computer</code>, <code>osmium</code>, <code>pandas</code>/<code>pyarrow</code>, <code>igraph</code> (optional, for Dijkstra), <code>requests</code>.</p>
+<ul>
+  <li><strong>Avoided:</strong> PDAL, QGIS/UMEP, OTP/Java. SOLWEIG equations are re-implemented and cited, not copied.</li>
+  <li><strong>Where it runs:</strong> all heavy stages run on GCP (hackaton-honory, europe-central2), in line with “no local analysis”. Creating the VM and bucket needs your OK.</li>
+</ul>
+<p class="small">Module layout: <code>ingest_lidar.py · rasters.py · sun.py · shade.py · svf.py · surface.py · tmrt_utci.py · calibrate_landsat.py · walkgraph.py · transit.py · router.py · app/</code>.</p>
+</section>
+
+<section id="valid">
+<h2><span class="n">13</span>Validation and acceptance</h2>
+<div class="tw"><table>
+<thead><tr><th>Check</th><th>Pass criterion</th></tr></thead>
+<tbody>
+<tr><td>DTM vs GUGiK NMT 1 m</td><td>median |Δ| &lt; 0.15 m on open ground</td></tr>
+<tr><td>CHM vs inventory tree heights (Śródmieście, 8,142 trees)</td><td>median |Δ| &lt; 2 m (excluding trees felled since 2013)</td></tr>
+<tr><td>PKiN shadow at 18:00</td><td>tip ≈ 530 m east of the base, ±5%</td></tr>
+<tr><td>Visual QA, 5 spots (Marszałkowska arcades, Nowy Świat trees, Pl. Defilad, Centralna, Varso)</td><td>no crane / scaffold shadows; arcades fully shaded; tree shade has trunk gaps at 07:00</td></tr>
+<tr><td>Ts vs Landsat 06-25 (radiance-aggregated)</td><td>RMSE &lt; 3 K, |bias| &lt; 1 K on class-pure pixels after calibration</td></tr>
+<tr><td>UTCI sanity</td><td>0 NaN on walk_mask; sun–shade ΔUTCI at 13:00 of 5–10 K; 22:00 field within Ta ± 3 K</td></tr>
+<tr><td>Router</td><td>For 5 demo O–D pairs: dose reduction % vs time increase % against fastest AC; walk-only baseline; ORS Shaded screenshot</td></tr>
+<tr><td>Sensitivity</td><td>τ ≡ 0.03 vs LiDAR τ; wind factor ±50%; δ ±1 K; report how the ranking of the 3 route cards changes</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="open">
+<h2><span class="n">14</span>Open decisions and risks</h2>
+<h3>Decisions for you</h3>
+<ol class="plain">
+  <li><strong>Rail:</strong> is SKM/KM rail (Śródmieście, Centralna, Powiśle) out together with metro? The spec assumes yes: trams and buses only.</li>
+  <li><strong>Transit day:</strong> Saturday 10-17 is the only full day recorded before the deadline. Sunday 10-18 is recorded only after submission. Keep Saturday?</li>
+  <li><strong>Dose function:</strong> the threshold of 26 and slopes 1/2/4, and the μ values for the three cards.</li>
+  <li><strong>Waiting before departure:</strong> waiting at home costs nothing (assumed cool indoors). In 2076 the pensioner's flat may itself be hot. Keep it free?</li>
+  <li><strong>GCP:</strong> OK to create one VM (n2-custom-12-49152, on-demand) and one bucket in hackaton-honory, europe-central2?</li>
+</ol>
+<h3>Risks</h3>
+<div class="tw"><table>
+<thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+<tbody>
+<tr><td>Canopy is from 2023 and buildings from 2025, a 9–20-month gap. New street trees planted 2024–26 are missing; felled trees are removed by the 2025 check.</td><td>Say “canopy as of 2023-09”. Spot-check 3 recent planting sites.</td></tr>
+<tr><td>LiDAR gap fraction ≠ shortwave τ</td><td>Sensitivity run with τ = 0.03; choose at checkpoint 2.</td></tr>
+<tr><td>Landsat is 3 days before the replay day</td><td>Calibrate the anomaly Ts − Ta, not absolute Ts; use 06-24 as a second view.</td></tr>
+<tr><td>Evening pavement heat release is not physical in option A</td><td>ΔT_night floor; force-restore (option B) as the upgrade.</td></tr>
+<tr><td>Transit is an October Saturday replayed on a June Sunday</td><td>State it; clock times are kept, and the service level is a Saturday's.</td></tr>
+<tr><td>Stop-event extraction misses fast passes or mis-snaps at shared stops</td><td>Closest-approach interpolation; check sequence monotonicity; drop runs with &lt; 50% matched; compare event counts with the GTFS stop_times for 10-17.</td></tr>
+<tr><td>GUGiK server: no HTTP Range, throughput unknown from GCP</td><td>Download from the VM, whole files, 8 streams; start first.</td></tr>
+<tr><td>DSM artefacts (cranes, temporary structures in April 2025)</td><td>Visual QA; mask class-6 cells with no BDOT footprint and area &lt; 20 m² as non-buildings.</td></tr>
+</tbody></table></div>
+<p class="small">Method: synthesis of the earlier heat_routing, heat_compute and prior_art memos plus three new research passes on 2026-10-17: the LiDAR/canopy index, UTCI/SOLWEIG physics from source code, and GTFS/AC/positions from BigQuery. A Mobility Database feed valid on 06-28 exists (mdb-2092-202606280122) but is not used, because transit comes from recorded operations. Literature flagged <span class="b l">L</span> was checked via DOI metadata or abstracts, not full texts. The EN 14750 in-vehicle temperature and the Filtry offset method are unverified assumptions. No GCP resources were created. While reading LAS headers, one research pass downloaded about 400 MB of LAZ to the laptop (the server ignores Range requests); it was deleted immediately.</p>
+</section>
+
+</main>
+</div>
+
+<footer class="small" style="margin-top:32px;color:var(--muted)">Specification v1.0 · 2026-10-17. Markdown version: <a href="specification-v1.0.md">specification-v1.0.md</a>.</footer>
+</div>
+</body>
+</html>
