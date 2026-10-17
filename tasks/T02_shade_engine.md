@@ -10,7 +10,7 @@ Build a reusable engine that, given 1 m elevation rasters and a date-time, says 
 - `f_tree`: shaded by trees only
 - `f_both`: shaded by both
 
-Also compute a sky view factor once, because the thermal model may need it.
+Also compute a sky view factor once, because the thermal model may need it. The mrt factors for shade zones are [1, 0.1, 0.2, 0.08].
 
 ## Why it matters
 
