@@ -33,7 +33,7 @@ The six tasks below were chosen because together they cover every input the UTCI
 | Grid | 1 m cells. Extent = halo bounding box snapped outward to multiples of 1,000 m. Cell edges on integer metres. Every raster product uses exactly this grid, cropped only by masking. |
 | Time steps | 2026-06-28, 06:00–22:00 CEST, every 30 min: 33 steps. Timestamps stored in UTC (04:00Z–20:00Z), labelled with local time where useful. |
 | Transit day | Saturday 2026-10-17, 06:00–22:00 local, mapped clock time to clock time onto the heat day. |
-| Shade zone shares | `f_sun`, `f_bldg`, `f_tree`, `f_both` in [0, 1], summing to 1. These are the inputs of `compute_inputs_for_utci` (spec §13). |
+| Shade zone shares | `f_sun`, `f_bldg`, `f_tree`, `f_both` in [0, 1], preferably The mrt factors for shade zones are [1, 0.1, 0.2, 0.08]. These are the inputs of `compute_inputs_for_utci` (spec §13). |
 | Cloud | GCP project `hackaton-honory`, region `europe-central2`. Any infrastructure that fits the goal may be created (free tier, cost is not a concern). Proposed shared names: bucket `gs://hackaton-honory-heat/<task-id>/…`, BigQuery dataset `hackaton-honory.warsaw_heat`. Heavy processing runs in the cloud, not on laptops. |
 | Formats | Rasters: Cloud-Optimised GeoTIFF. Vectors and tables: GeoParquet/Parquet in GCS and/or BigQuery tables. Each output has a short README (source, vintage, units, nodata). |
 | Stack | Python. Prefer pip-installable libraries; anything else needs a one-line justification. |
