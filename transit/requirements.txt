@@ -1,0 +1,11 @@
+numpy
+pandas
+pyarrow
+db-dtypes
+scipy
+shapely>=2
+pyproj
+google-cloud-bigquery
+google-cloud-bigquery-storage
+google-cloud-storage
+matplotlib
