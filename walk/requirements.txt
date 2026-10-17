@@ -1,0 +1,10 @@
+osmium
+shapely>=2
+geopandas
+pyproj
+rasterio
+networkx
+pyarrow
+numpy
+pandas
+matplotlib
