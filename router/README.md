@@ -18,6 +18,7 @@ HTTP: `uvicorn router.api:app --port 8080` → `POST /api/plan {origin, destinat
 | `ROUTER_BUNDLE` | `gs://hackaton-honory-heat/T09/bundle` | network + stops + stop events bundle (local dir or gs://) |
 | `ROUTER_CACHE` | `/tmp/router_bundle` | where a gs:// bundle is downloaded |
 | `HEAT_SEGMENT_PATH`, `HEAT_STOP_PATH` | | optional parquet (local/gs://) with the T08 columns, tried before the defaults |
+| `HEAT_STRICT` | `0` | `1` = fail if the requested source is missing; otherwise `final` falls back to `stub`, then `placeholder`, with a note in every answer (heat is loaded once at startup: restart / redeploy after T08 lands) |
 
 T08 tables are read from `gs://hackaton-honory-heat/T08/t08_*.parquet` (final) or `T08/stub/t08_*.parquet` (stub) first, then BigQuery `warsaw_heat.t08_*[_stub]`.
 

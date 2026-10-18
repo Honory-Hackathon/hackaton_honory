@@ -210,7 +210,27 @@ def from_frames(edges: pd.DataFrame, stops: pd.DataFrame, seg: pd.DataFrame, stp
 
 
 def load(source: str, edges: pd.DataFrame, stops: pd.DataFrame, forcing: pd.DataFrame | None) -> HeatField:
+    """Load the requested source; unless HEAT_STRICT=1, fall back final -> stub -> placeholder with a note."""
     source = (source or "placeholder").lower()
+    chain = {"final": ["final", "stub", "placeholder"], "stub": ["stub", "placeholder"]}.get(source, [source])
+    if os.environ.get("HEAT_STRICT") == "1":
+        chain = chain[:1]
+    errors = []
+    for src in chain:
+        try:
+            H = _load_one(src, edges, stops, forcing)
+        except Exception as exc:
+            if src == chain[-1]:
+                raise
+            errors.append(f"{src}: {str(exc)[:200]}")
+            log.warning("heat source %s unavailable, falling back: %s", src, exc)
+            continue
+        if errors:
+            H.notes.insert(0, f"HEAT_SOURCE={source} requested but unavailable; using {src}")
+        return H
+
+
+def _load_one(source: str, edges: pd.DataFrame, stops: pd.DataFrame, forcing: pd.DataFrame | None) -> HeatField:
     if source == "placeholder":
         return placeholder(edges, stops, forcing)
     suffix = "_stub" if source == "stub" else ""
