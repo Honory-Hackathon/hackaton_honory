@@ -75,7 +75,12 @@ What the data turned out to be (water is LiDAR class 9, not 8; bridges are in cl
   - Shadows from towers beyond a tile's halo are missing at low sun; T07 compares with T02.
   - Air temperature comes from a park station, so it is a cool-side estimate; the Filtry-adjusted series is the warm sensitivity case.
   - No street-canyon wind reduction.
-  - Surfaces have no thermal memory beyond what SOLWEIG models.
+  - **No evening heat release from pavement.**
+    - SOLWEIG's default ground scheme makes surface temperature excess a sinusoid of the time of day. It is zero in shade and set to zero at sunset.
+    - The only memory is a smoothing filter with a ~43 min time constant.
+    - After sunset, Tmrt is therefore about 1 K *below* air temperature (pilot: 30.5 °C at 21:00 vs Ta 31.3 °C).
+    - The night steps (21:00–22:00) are a lower bound.
+    - SOLWEIG's storage scheme (force-restore, "2026a") is experimental, needs a land-cover grid and refuses tiled runs, so it is not used.
   - Landsat `pmwc` is not a model input.
 
 ## 7. Metric: heat dose
