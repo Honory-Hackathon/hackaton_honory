@@ -16,7 +16,7 @@ this was written). The main tables below are on the **placeholder** field, the s
 | Test-pair answers, 4 pairs × 8 windows × 4 options | [`examples.csv`](examples.csv) |
 | Full sample answer (contract shape, Plac Zbawiciela → Uniwersytet, 13:00–14:00) | [`examples/plan_sample.json`](examples/plan_sample.json) |
 | Container image (reference deployment; T10 vendors the package) | `europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t09-router:latest` |
-| Reference HTTP service (Cloud Run `t09-router`, europe-central2, public, `HEAT_SOURCE=stub`) | https://t09-router-269831067246.europe-central2.run.app/api/health |
+| Reference HTTP service (Cloud Run `t09-router`, europe-central2, public, `HEAT_SOURCE=final`, serving the stub until T08 lands and the service is redeployed) | https://t09-router-269831067246.europe-central2.run.app/api/health |
 
 Contract (shared with T10/T11):
 
