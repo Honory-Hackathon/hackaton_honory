@@ -34,7 +34,7 @@ def main() -> None:
     ap.add_argument("--t03-network", default="gs://hackaton-honory-heat/T03/network")
     ap.add_argument("--t03-stops", default="gs://hackaton-honory-heat/T03/stops")
     ap.add_argument("--t04", default="gs://hackaton-honory-heat/T04/2026-10-17")
-    ap.add_argument("--line-delays", default=str(Path(__file__).resolve().parents[1] / "reports/T04/line_delays.csv"))
+    ap.add_argument("--line-delays", default=str(Path(__file__).resolve().parents[1] / "transit/line_delays.csv"))
     ap.add_argument("--out", required=True)
     ap.add_argument("--upload", default=None)
     a = ap.parse_args()

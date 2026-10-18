@@ -15,7 +15,7 @@ import numpy as np
 import rasterio
 from rasterio.transform import from_origin
 
-EXTENT = (630000, 483000, 643000, 494000)  # caster extent, tasks/README.md
+EXTENT = (630000, 483000, 643000, 494000)  # caster extent, root README.md
 GRID = (634000, 483000, 642000, 492000)    # shared grid
 
 

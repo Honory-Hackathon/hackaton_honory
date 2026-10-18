@@ -18,7 +18,7 @@ OUT_PREFIX = "T12"
 WORK = os.environ.get("WORK", "/tmp/t12")
 os.makedirs(WORK, exist_ok=True)
 
-# Shared 1 m grid (tasks/README.md)
+# Shared 1 m grid (root README.md)
 GE0, GE1, GN0, GN1 = 634000, 642000, 483000, 492000
 GW, GH = GE1 - GE0, GN1 - GN0
 GRID_TRANSFORM = from_origin(GE0, GN1, 1, 1)

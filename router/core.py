@@ -1,6 +1,6 @@
 """Heat-aware router: walking + air-conditioned trams/buses, lowest heat dose, best departure time.
 
-Method (see reports/T09/README.md):
+Method (see the root README.md):
 * Every option minimises one scalar cost  C = dose [K s] + lam * duration [s]  over trips inside the
   time window; lam picks the option (coolest 0.3 K, balanced 10 K, fastest 100 K). Waiting at home is free.
 * Walking: time-dependent costs are handled by one Dijkstra per 30-min step (edge weight

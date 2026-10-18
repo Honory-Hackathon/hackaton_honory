@@ -1,6 +1,6 @@
 # lidar: T01 LiDAR → 1 m geometry
 
-Report: [`reports/T01`](../reports/T01/README.md). Outputs: `gs://hackaton-honory-heat/T01/output/`.
+Method and results: root [`README.md`](../README.md). Outputs: `gs://hackaton-honory-heat/T01/output/`.
 
 The Cloud Run jobs run the copy in `gs://hackaton-honory-heat/T01/code/`; this folder mirrors it. After changing a script here, copy it there before rerunning.
 

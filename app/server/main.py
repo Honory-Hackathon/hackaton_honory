@@ -8,7 +8,6 @@ Env:
   SHADOW_COG      same for SOLWEIG shadow
   HEAT_SOURCE     passed to router/ (placeholder | stub | final)
   HEAT_VIEWS_URL  base URL of the T13 heat-views service ('' = links shown as 'coming soon')
-  ROUTER          'auto' (router/ if importable, else stub) | 'stub'
 """
 from __future__ import annotations
 
@@ -49,22 +48,17 @@ ROUTER = {"impl": None, "name": "loading", "error": None}
 
 
 def _load_router():
-    mode = os.environ.get("ROUTER", "auto")
-    if mode != "stub":
-        try:
-            import router as r  # T09 package
-            if hasattr(r, "warmup"):
-                r.warmup()
-            elif hasattr(r, "get_router"):
-                r.get_router()  # loads the bundle + heat once
-            ROUTER.update(impl=r, name=f"router ({os.environ.get('HEAT_SOURCE', 'default')})")
-            log.info("using T09 router")
-            return
-        except Exception as e:  # noqa: BLE001
-            ROUTER["error"] = repr(e)
-            log.exception("router/ not usable, falling back to stub")
-    import stub_router
-    ROUTER.update(impl=stub_router, name="stub")
+    try:
+        import router as r  # T09 package
+        if hasattr(r, "warmup"):
+            r.warmup()
+        elif hasattr(r, "get_router"):
+            r.get_router()  # loads the bundle + heat once
+        ROUTER.update(impl=r, name=f"router ({os.environ.get('HEAT_SOURCE', 'default')})")
+        log.info("using T09 router")
+    except Exception as e:  # noqa: BLE001
+        ROUTER.update(name="failed", error=repr(e))
+        log.exception("router/ not usable")
 
 
 sys.path.insert(0, str(HERE))

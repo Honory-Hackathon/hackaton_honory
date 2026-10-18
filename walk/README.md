@@ -1,7 +1,7 @@
 # T03 outputs: walkable mask, walk network, stop waiting areas
 
 Location: `gs://hackaton-honory-heat/T03/`. Code: `walk/` in this repo (`fetch.sh` → `python -m walk.run` → `python -m walk.routes`).
-Report: `reports/T03/README.md`.
+Method and results: root [`README.md`](../README.md).
 
 ## Sources and vintage
 

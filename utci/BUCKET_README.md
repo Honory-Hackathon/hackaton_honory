@@ -1,6 +1,6 @@
 # T07: UTCI and Tmrt on walkable pixels, 2026-06-28
 
-Produced by `utci/field.py` in the repo (report: `reports/T07/README.md`), Cloud Run Job `t07-final` (europe-west4), 2026-10-18.
+Produced by `utci/field.py` in the repo (method: the repo's root `README.md`), Cloud Run Job `t07-final` (europe-west4), 2026-10-18.
 
 **Source:** SOLWEIG 0.1.0b96 district run (T06): the 27 tile cores in
 `gs://hackaton-honory-heat/T06/district/tiles/{e0}_{n0}/{tmrt,utci,shadow}.tif` (1 km cores, halo 500 m or 1000 m).

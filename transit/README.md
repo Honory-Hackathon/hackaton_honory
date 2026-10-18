@@ -3,14 +3,14 @@
 Turns the vehicle positions recorded in BigQuery into what trams and buses actually did at the
 Śródmieście stops on a service day: one arrival and departure per run and stop, with the AC flag of
 the vehicle that drove the run. The router (T09) uses these events instead of a timetable and boards
-only `ac_boardable` runs. The report for 2026-10-17 is in [`reports/T04/`](../reports/T04/README.md).
+only `ac_boardable` runs. Method and results: root [`README.md`](../README.md).
 
 ## Run
 
 ```bash
 pip install -r transit/requirements.txt
 python -m transit.stop_events --date 2026-10-17 --start 06:00 --end 22:00 --out t04_out/2026-10-17
-python -m transit.report t04_out/2026-10-17          # writes reports/T04/
+python -m transit.report t04_out/2026-10-17          # writes transit/line_delays.csv (router input)
 ```
 
 Needs read access to `hackaton-honory.warsaw_transport` and the AOI in

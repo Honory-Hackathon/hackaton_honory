@@ -122,7 +122,7 @@ def build():
 
 README = """# T12 visual layers (Śródmieście, heat day 2026-06-28)
 
-Produced by `layers/` in the repo (report `reports/T12/README.md`). **Start from `manifest.json`**: it lists every
+Produced by `layers/` in the repo (method in the repo's root `README.md`). **Start from `manifest.json`**: it lists every
 layer, its path (relative to this folder), format, frame bounds, legend, and step meaning.
 
 - `points/` cool and water points (GeoJSON + GeoParquet; BigQuery `warsaw_heat.t12_cool_points`) and park/water polygons.

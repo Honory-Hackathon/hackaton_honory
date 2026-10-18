@@ -1,6 +1,6 @@
 # shade: T02 shade engine
 
-Per-pixel direct-sun shade on a 1 m grid, split into building/terrain shade and tree shade, for the 33 time steps of 2026-06-28 (see [tasks/T02](../tasks/T02_shade_engine.md), report in [reports/T02](../reports/T02/README.md)).
+Per-pixel direct-sun shade on a 1 m grid, split into building/terrain shade and tree shade, for the 33 time steps of 2026-06-28. Method and results: root [`README.md`](../README.md).
 
 ## Interface
 
@@ -34,7 +34,7 @@ Inputs are T01's layers on the shared grid: `dtm` ground (m), `dsm` buildings + 
 - **Terrain shade counts as `f_bldg`:** the "solid" layer is ground + buildings. On the dev DTM, micro-relief (curbs, ramps, walls) shades 1–2 % of cells at sun below 20°.
 - **Sky view factor:** 32 azimuths × 8 elevation bands. A patch is visible when its central ray reaches the pixel. Weights are `(sin² e_hi − sin² e_lo) / 32` (cosine-weighted solid angle). Band 1 is buildings + terrain, band 2 also applies crown transmission.
 - **Receiver height:** default 0 m (shade on the surface, comparable with orthophotos). `--receiver-height 1.1` evaluates at body height instead.
-- **Caster extent:** the grid's 1 km halo only covers sun above ~13° for a 237 m tower. The [caster extent](../tasks/README.md) (13 × 11 km) covers the real shadow of a 310 m tower at every sunlit step (5.7 km at 20:30), so the full shade is computed when `--far-dsm` is given. Without it, casters outside the grid are missing.
+- **Caster extent:** the grid's 1 km halo only covers sun above ~13° for a 237 m tower. The caster extent (13 × 11 km, E 630,000–643,000, N 483,000–494,000) covers the real shadow of a 310 m tower at every sunlit step (5.7 km at 20:30), so the full shade is computed when `--far-dsm` is given. Without it, casters outside the grid are missing.
 - **Point sun:** the sun is treated as a point. The real disc (0.53°) means the full shadow of an object of width w ends after about 107·w: for a 40 m wide tower that is ~4 km, so building shadows are real at these lengths, but a 2 m spire's shadow turns into penumbra after ~200 m. Thin spires are therefore slightly overstated far away; the area involved is negligible.
 
 ## Production run
@@ -51,9 +51,6 @@ Outputs, all COG on the input grid:
 - `svf.tif`: float32, 2 bands as above.
 - `timings.json` (runtime and peak memory per step) and `preview_0700.png`, `preview_1300.png`, `preview_1900.png`.
 
-## Development tools
+## Far-caster surface
 
-- `tests/`: synthetic box, tower (100 m at 3–12.5° sun, shadows up to 1.9 km), cylinder tree (analytic Beer–Lambert crossing, light under the crown), mixed building + tree, a far caster outside the grid, infinite canyon SVF, sun positions. Run with `python -m pytest shade/tests`.
 - `far_dsm.py`: the far-caster surface over the caster extent from 2025 LAZ sheets, with the same rule as T01's `dsm` (max of class 6, else mean of class 2), left empty inside the shared grid.
-- `dev_geometry.py`: crude LAZ → 1 m layers, a stand-in for T01 used only for development.
-- `validate_ortho.py`: compares engine shade with dark pixels of the 2023-09-05 orthophoto.

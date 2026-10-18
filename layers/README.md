@@ -1,6 +1,6 @@
 # layers/ (T12): web-ready visual layers
 
-Builds everything in `gs://hackaton-honory-heat/T12/` (see `T12/manifest.json`, report `reports/T12/README.md`).
+Builds everything in `gs://hackaton-honory-heat/T12/` (see `T12/manifest.json`). Method and results: root [`README.md`](../README.md).
 One image, `europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t12-layers`, run as Cloud Run Jobs:
 
 | Job args | What |
@@ -13,4 +13,3 @@ One image, `europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t12-layers`
 | `manifest` | Rebuild `T12/manifest.json` from `T12/parts/*.json` (every mode does this at the end) |
 
 Build: `gcloud builds submit --tag europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t12-layers:vN layers/`.
-Previews for the report: `python layers/previews.py reports/T12` (downloads a few MB).

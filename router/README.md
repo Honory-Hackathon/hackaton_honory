@@ -1,7 +1,7 @@
 # router (T09): heat-aware trip planner
 
 Walk + air-conditioned trams and buses on the heat day 2026-06-28, lowest heat dose, best departure time.
-Report: [`reports/T09/README.md`](../reports/T09/README.md).
+Method and results: root [`README.md`](../README.md).
 
 ```python
 from router import plan, price_path

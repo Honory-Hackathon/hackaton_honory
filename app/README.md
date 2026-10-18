@@ -10,7 +10,6 @@ app/
   cloudbuild.yaml     builds the heat-app image
   .gcloudignore       limits the upload to app/ and router/
   server/main.py      FastAPI: static page, /frames proxy, /api/config, /api/plan, /api/price, /api/point
-  server/stub_router.py   STUB with the T09 contract shape (fake numbers); used only when router/ cannot be imported
   server/static/      index.html, app.js (Leaflet 1.9.4 from unpkg), style.css
   render/render_frames.py  any 33-band raster(s) -> EPSG:3857 XYZ PNG frames in GCS (Cloud Run Job)
   render/Dockerfile   t10-render image
@@ -76,7 +75,6 @@ Env vars (all optional):
 | `UTCI_FRAMES` / `SHADE_FRAMES` | `pilot_utci` / `pilot_shadow` | frame sources shown on the map (override per page: `?utci=<source>&shade=<source>`) |
 | `UTCI_COG` / `SHADOW_COG` | T06 pilot COGs | 33-band rasters for the click time series; may contain `{e}_{n}` for 1 km tiles, e.g. `gs://hackaton-honory-heat/T06/district/tiles/{e}_{n}/utci.tif` |
 | `HEAT_SOURCE` | — | passed through to router/ (`placeholder` / `stub` / `final`) |
-| `ROUTER` | `auto` | `auto` = import `router` (T09) if it imports, else the stub; `stub` = force stub |
 | `HEAT_VIEWS_URL` | empty | base URL of the T13 `heat-views` service; nav links go to `<url>/routes/`, `/shadows3d/`, `/temperature/` (trailing slash: the heat-views redirect drops the query and points at :8080). Empty = greyed "soon" chips |
 | `FRAMES_PREFIX` | `gs://hackaton-honory-heat/T10/frames` | |
 

@@ -29,7 +29,7 @@ const CAT_COL = ["#78bec8","#fad664","#f07832","#d73027","#6e0a5a"];
 const CAT_KEYS = ["<26","26-32","32-38","38-46",">46"];
 const KCOL = {coolest:"#1f6fb2", balanced:"#16a085", fastest:"#333", walk_only:"#8e44ad", external:"#7f8c8d"};
 const PRESETS = [
-  // T11 demo set (demo/demo_trips.json).
+  // Demo trips.
   {pl:"pl. Zbawiciela → Uniwersytet, 12:30–14:30", en:"Pl. Zbawiciela → University, 12:30–14:30", o:[21.01864,52.21971], d:[21.01661,52.24007], e:"12:30", l:"14:30"},
   {pl:"Dw. Centralny → Łazienki, 14–15:30", en:"Central Station → Łazienki, 14–15:30", o:[21.00404,52.22887], d:[21.02645,52.21636], e:"14:00", l:"15:30"},
   {pl:"rondo Dmowskiego → pl. Trzech Krzyży, 18:30–20", en:"Dmowskiego roundabout → Pl. Trzech Krzyży, 18:30–20", o:[21.01173,52.22983], d:[21.0234,52.2283], e:"18:30", l:"20:00"},

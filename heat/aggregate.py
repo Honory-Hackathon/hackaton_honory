@@ -9,7 +9,7 @@ Cloud Run entry point. Environment:
   SUCCESS  '1' (default) writes T08/_SUCCESS after a final run
   LOCAL    optional local dir with segments.parquet, segment_pixels.parquet, stop_areas.parquet (testing)
 
-Rules (see reports/T08/README.md):
+Rules (see the Method section of the root README.md):
   segment  utci_mean / utci_p90 / g over the segment's footprint pixels (g = pixel mean of g(U), exact for any weights
            via the exceedance columns exc26..exc46). shade_share = pixel mean of (1 - SOLWEIG shadow); 1 at night.
   indoor   constant UTCI 26 °C (g = 0), shade_share 1.

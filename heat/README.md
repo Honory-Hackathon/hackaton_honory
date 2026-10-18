@@ -1,11 +1,10 @@
 # T08: heat per walk segment and per stop
 
-Code for [tasks/T08](../tasks/T08_segment_stop_heat.md). Report: [reports/T08](../reports/T08/README.md).
+Method and results: root [`README.md`](../README.md).
 
 | File | Role |
 |---|---|
 | `aggregate.py` | Cloud Run entry point: samples the UTCI field and SOLWEIG shadow at every T03 segment pixel and stop-area pixel (all 33 bands per row block), applies the special-case rules, writes Parquet + BigQuery |
-| `report.py` | Local, on the small outputs: shady vs sunny side of Marszałkowska and Aleje Ujazdowskie, maps at 13:00/18:00, rule counts |
 
 ## Inputs
 
@@ -57,7 +56,6 @@ gcloud run jobs execute t08-heat --region europe-central2 --update-env-vars SOUR
 ```
 
 Local test on the pilot (small): `LOCAL=<dir with the T03 parquet + walkable.tif> SOURCE=pilot DRYRUN=<out dir> python aggregate.py`.
-Report: `python report.py <dir with segments.parquet, t08_*.parquet, streets.json> ../reports/T08`.
 
 Runtime: ~2 min on the 27 T06 tiles; the final run on `T07/utci.tif` (one 72 Mpx, 33-band pixel-interleaved COG)
 took 17 min in image `:4`, almost all in the block reads. Image `:5` reads 512-row blocks aligned to the COG tiles,

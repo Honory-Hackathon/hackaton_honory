@@ -1,6 +1,6 @@
 """T04 report: coverage, AC, timetable deviation and gaps from the outputs of transit.stop_events.
 
-usage: python -m transit.report OUT_DIR [--report-dir reports/T04]
+usage: python -m transit.report OUT_DIR [--report-dir transit]
 """
 
 import argparse
@@ -46,7 +46,7 @@ def pct(a, b):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("out", type=Path)
-    ap.add_argument("--report-dir", type=Path, default=Path("reports/T04"))
+    ap.add_argument("--report-dir", type=Path, default=Path("transit"))
     a = ap.parse_args()
     rd = a.report_dir
     rd.mkdir(parents=True, exist_ok=True)

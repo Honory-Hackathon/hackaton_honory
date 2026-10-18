@@ -1,6 +1,6 @@
 # T06: SOLWEIG on Śródmieście (pilot comparison + district production run)
 
-Code for [tasks/T06](../tasks/T06_solweig_reference.md). Report: [reports/T06](../reports/T06/README.md).
+Method and results: root [`README.md`](../README.md).
 
 | File | Role |
 |---|---|
