@@ -132,8 +132,8 @@ so these are closer to the real thing than the placeholder but still not the fin
 | Dworzec Centralny → Łazienki, 10:00–18:00 | 10:05–10:30, 6,385 K·s (520) | 11:15–11:37, 10,061 K·s (520) | −37 % | +2.4 min (and leaves 70 min earlier) |
 | Rondo Dmowskiego → Pl. Trzech Krzyży, 08:00–09:00 | 08:10–08:20, 181 K·s (517) | 08:40–08:49, 594 K·s (517) | −69 % | +1.4 min (leaves 30 min earlier) |
 
-Walk-only at midday is 4–7 times the dose of the AC options (Plac Zbawiciela → Uniwersytet 13:00: 60,051 K·s,
-43.8 min). The stub's shade share of the coolest walking is 0.73–0.96 against 0.32–0.53 for the fastest.
+Walk-only at 13:00–14:00 is 3–7 times the dose of the AC options (Plac Zbawiciela → Uniwersytet: 60,051 K·s,
+43.8 min). On that pair the coolest option's walking is 75 % in shade, the fastest's 32 %.
 `106 + 106` (two runs of the same line) is a legitimate coolest answer: the router prefers waiting at a shaded pole
 for the next run over walking; balanced (one 106, 25 min) is the sensible choice there.
 
