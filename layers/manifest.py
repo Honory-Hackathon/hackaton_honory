@@ -85,7 +85,7 @@ def build():
           "layers": {}}
     if scene:
         v2["layers"].update(scene)
-    for key, part in (("shadow_solweig", f_sol), ("shadow_t02", f_t02)):
+    for key, part in (("shadow_solweig", f_sol), ("shadow_solweig_4m", f_sol), ("shadow_t02", f_t02)):
         if part and key in part:
             v2["layers"][key] = dict(part[key], format="PNG frames EPSG:3857, paletted with alpha, one per step",
                                      encoding="navy = building/terrain shade, green = tree-only shade; alpha "

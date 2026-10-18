@@ -76,14 +76,14 @@ def png_palette_alpha(codes, pal, alpha):
     return buf.getvalue()
 
 
-def write_shadow_frames(src_name, bldg_stack, tree_stack, wf, sun_up):
+def write_shadow_frames(src_name, bldg_stack, tree_stack, wf, sun_up, res=SHADOW_RES):
     pal, alpha = shadow_palette()
     frames = []
     sizes = []
 
     def one(i):
-        b = wf.warp(bldg_stack[i], SHADOW_RES)
-        t = wf.warp(tree_stack[i], SHADOW_RES)
+        b = wf.warp(bldg_stack[i], res)
+        t = wf.warp(tree_stack[i], res)
         data = png_palette_alpha(encode_shadow(b, t), pal, alpha)
         p = f"{OUT}/frames/shadow_{src_name}/{i:02d}.png"
         upload_bytes(data, p, "image/png")
@@ -167,8 +167,17 @@ def solweig_run(win, wf_sh, wf_th, statics):
             os.remove(os.path.join(WORK, f"T06/district/tiles/{key}/{v}.tif".replace("/", "__")))
         return te, tn, out
 
-    with ThreadPoolExecutor(2) as ex:
-        for te, tn, d in ex.map(load, sorted(tiles)):
+    def prefetched(keys):
+        # one tile in flight while the current one is processed (Executor.map would load all tiles at once)
+        with ThreadPoolExecutor(1) as ex:
+            fut = ex.submit(load, keys[0]) if keys else None
+            for j in range(len(keys)):
+                cur = fut.result()
+                fut = ex.submit(load, keys[j + 1]) if j + 1 < len(keys) else None
+                yield cur
+
+    if True:
+        for te, tn, d in prefetched(sorted(tiles)):
             # tile placement in window (tiles are 1 km cores aligned to km)
             ce0, cn1 = max(te, e0), min(tn + 1000, n1)
             ce1, cn0 = min(te + 1000, e1), max(tn, n0)
@@ -231,7 +240,12 @@ def solweig_run(win, wf_sh, wf_th, statics):
     lay["shadow_solweig"] = write_shadow_frames("solweig", bl, tr, wf_sh, sun_up)
     lay["shadow_solweig"]["tiles_covered"] = len(covered)
     lay["shadow_solweig"]["tiles_planned"] = len(plan)
+    k = THERMAL_RES // SHADOW_RES
+    bl4 = np.stack([block_mean(bl[i].astype(np.float32), k) for i in range(STEPS)])
+    tr4 = np.stack([block_mean(tr[i].astype(np.float32), k) for i in range(STEPS)])
     del bl, tr
+    lay["shadow_solweig_4m"] = write_shadow_frames("solweig_4m", bl4, tr4, wf_th, sun_up, res=THERMAL_RES)
+    del bl4, tr4
     lay["utci"] = write_value_frames("utci", ut, wf_th, UTCI_STOPS, UTCI_RANGE, "°C")
     lay["tmrt"] = write_value_frames("tmrt", tm, wf_th, TMRT_STOPS, TMRT_RANGE, "°C")
     for v in lay.values():
@@ -443,6 +457,11 @@ def main():
             log("points enrich skipped:", repr(e))
     upload_json(parts, f"{OUT}/parts/frames_{src}.json")
     log("done", list(parts))
+    if src == "solweig" and parts["utci"]["tiles_covered"] == parts["utci"]["tiles_planned"]:
+        import manifest
+        manifest.build()
+        upload_bytes(b"T12 final layers on the complete T06 district run\n", f"{OUT}/_SUCCESS", "text/plain")
+        log("_SUCCESS written")
 
 
 if __name__ == "__main__":

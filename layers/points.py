@@ -157,7 +157,7 @@ def sample_stack(path_fn, e, n, steps=STEPS, radius=1, scale=1.0, nodata=None, b
     return out
 
 
-def write_outputs(df, note):
+def write_outputs(df, note, areas=True):
     import geopandas as gpd
     os.makedirs(os.path.join(WORK, "pts"), exist_ok=True)
     pts = gpd.GeoDataFrame(df.drop(columns="geometry"),
@@ -189,6 +189,13 @@ def write_outputs(df, note):
     fc = {"type": "FeatureCollection", "name": "t12_cool_points", "steps": STEP_LABELS, "note": note,
           "features": feats}
     upload_json(fc, f"{OUT_PREFIX}/points/cool_points.geojson", gzip_encode=True)
+    if areas:
+        write_areas(df)
+    to_bq(pts)
+
+
+def write_areas(df):
+    import geopandas as gpd
     # areas (parks, water) as simplified polygons for context
     ar = df[df.category.isin(["park", "water_body", "cool_indoor"]) & (df.geometry.geom_type.isin(
         ["Polygon", "MultiPolygon"]))].copy()
@@ -199,7 +206,6 @@ def write_outputs(df, note):
     for f in afc["features"]:
         f["geometry"] = _round_geom(f["geometry"])
     upload_json(afc, f"{OUT_PREFIX}/points/cool_areas.geojson", gzip_encode=True)
-    to_bq(pts)
 
 
 def _round_geom(g, nd=6):
@@ -254,8 +260,8 @@ def enrich_with_solweig():
     from frames import list_tiles
     if not exists(PARQUET):
         raise RuntimeError("no points yet")
-    df = gpd.read_parquet(fetch(PARQUET)).to_crs(2180)
-    df["geometry"] = gpd.points_from_xy(df.e, df.n, crs=2180)
+    base = pd.DataFrame(gpd.read_parquet(fetch(PARQUET)).drop(columns="geometry"))
+    df = gpd.GeoDataFrame(base, geometry=gpd.points_from_xy(base.e, base.n), crs="EPSG:2180")
     tiles = list_tiles()
     res = {v: np.full((len(df), STEPS), np.nan, np.float32) for v in ("shadow", "utci", "tmrt")}
     e = df.e.values
@@ -295,7 +301,7 @@ def enrich_with_solweig():
     df["solweig_covered"] = have
     flag(df)
     df = df.to_crs(4326)
-    write_outputs(df, f"shade_share/utci/tmrt from SOLWEIG district tiles ({len(tiles)} tiles; points outside "
+    write_outputs(df, areas=False, note=f"shade_share/utci/tmrt from SOLWEIG district tiles ({len(tiles)} tiles; points outside "
                       f"tiles keep T02 shade, utci null); shade_share_t02 from T02")
     upload_json({"points": {"count": int(len(df)), "by_category": df.category.value_counts().to_dict(),
                             "solweig_covered": int(have.sum()), "tiles": len(tiles)}},

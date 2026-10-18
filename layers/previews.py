@@ -19,7 +19,9 @@ def img(path):
 
 
 def js(path):
-    return json.loads(gcs().blob(f"T12/{path}").download_as_text())
+    import gzip
+    b = gcs().blob(f"T12/{path}").download_as_bytes(raw_download=True)
+    return json.loads(gzip.decompress(b) if b[:2] == b"\x1f\x8b" else b)
 
 
 def main():
