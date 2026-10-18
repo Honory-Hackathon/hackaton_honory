@@ -6,6 +6,7 @@
 <title>Temperatura i albedo · Temperature and albedo</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <link rel="stylesheet" href="/common.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%23d73027%22/%3E%3C/svg%3E">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="/common.js"></script>
@@ -58,6 +59,7 @@
 <div id="side">
   <h2>Teraz <span id="nowt"></span> · Now</h2>
   <table class="now" id="now"></table>
+  <div id="late"></div>
   <h2>UTCI na nawierzchniach w ciągu dnia · UTCI by surface through the day</h2>
   <p class="sub">Średnia na pikselach naziemnych SOLWEIG; linia przerywana: temperatura powietrza · Mean over SOLWEIG ground pixels; dashed: air temperature.</p>
   <div class="chart"><canvas id="c1"></canvas></div>
@@ -209,6 +211,7 @@ function charts() {
 function nowTable() {
   const s = S.ser, k = S.step, f = s.forcing;
   document.getElementById("nowt").textContent = HV.LABELS[k];
+  document.getElementById("late").innerHTML = HV.lateNote(k);
   const rows = ["paved", "grass", "under_trees", "water"].map(n => {
     const b = s.by_surface[n];
     return `<tr><td><i style="background:${SURF[n][0]}"></i>${SURF[n][1]} / ${SURF[n][2]}</td><td>${Math.round(b.sun_share[k] * 100)}%</td><td>${HV.fmt(b.tmrt_mean[k])}</td><td style="background:${HV.CATS[HV.catIndex(b.utci_mean[k])].color}55">${HV.fmt(b.utci_mean[k])}</td></tr>`;

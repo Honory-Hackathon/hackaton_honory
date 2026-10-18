@@ -75,6 +75,8 @@ const HV = (() => {
     return { set, get: () => step, start: () => set(step, false) };
   }
 
+  // SOLWEIG has no evening heat release from pavement (spec: known limit)
+  const lateNote = (k) => k >= 30 ? '<div class="extra" style="color:#9a3412">Po 21:00 SOLWEIG nie oddaje ciepła nagrzanych nawierzchni: wartości są zaniżone · After 21:00 SOLWEIG has no heat release from warm pavement: values are a lower bound.</div>' : "";
   const isPhone = () => Math.min(window.innerWidth, window.innerHeight) < 600;
   const fmt = (v, d = 1) => (v == null || Number.isNaN(v) ? "–" : v.toFixed(d));
 
@@ -97,5 +99,5 @@ const HV = (() => {
     return { get, ready, around, all: () => { for (let k = 0; k < N; k++) get(k); } };
   }
 
-  return { N, LABELS, TS_UTC, CATS, catIndex, utciRGB, ramp, hex, legendHTML, navHTML, timeControl, isPhone, fmt, framePreloader, APP_URL };
+  return { lateNote, N, LABELS, TS_UTC, CATS, catIndex, utciRGB, ramp, hex, legendHTML, navHTML, timeControl, isPhone, fmt, framePreloader, APP_URL };
 })();
