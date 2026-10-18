@@ -1,0 +1,14 @@
+numpy==2.1.3
+pandas==2.2.3
+pyarrow==18.1.0
+rasterio==1.4.3
+pyproj==3.8.0
+shapely==2.0.6
+geopandas==1.0.1
+scipy==1.15.2
+scikit-image==0.25.0
+pillow==11.0.0
+osmium==4.0.2
+google-cloud-storage==2.18.2
+google-cloud-bigquery==3.27.0
+db-dtypes==1.3.1
