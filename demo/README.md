@@ -10,7 +10,8 @@ Report: [`reports/T11/README.md`](../reports/T11/README.md). Brief: [`tasks/T11`
 | `ors_shaded.py` | ORS Shaded client; every answer cached in `T11/ors_cache/` |
 | `engine.py` | Walk-only pricer/router on any T08-column table: like-for-like pricing of foreign lines (ORS, router legs) and the walk-only candidates |
 | `run_demo.py` | Comparison table per trip + dose-weight sensitivity + maps (`--heat final|stub|standin`) |
-| `headline.py` | Pitch numbers from the comparison |
+| `headline.py` | Pitch numbers from the comparison, weight-sensitivity summary |
+| `plot_summary.py` | Dose bar chart per trip (`reports/T11/summary_<tag>.png`) |
 | `run_final.sh` | **Integration rerun on the final field: `bash demo/run_final.sh`** |
 
 Router: `run_demo` imports `router` from the repo root (or `ROUTER_PATH`); without it, it runs walk-only and tags outputs `_walkonly`.

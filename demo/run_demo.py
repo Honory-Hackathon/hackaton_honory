@@ -361,6 +361,9 @@ def main():
         from demo import headline
         sys.argv = [sys.argv[0], "--heat", tag]
         headline.main()
+        from demo import plot_summary
+        sys.argv = [sys.argv[0], "--heat", tag]
+        plot_summary.main()
 
 
 if __name__ == "__main__":

@@ -74,12 +74,15 @@ Dose saved = 1 − ours / baseline; minutes = ours − baseline.
 | Kopernik → Mirowska | **−81 %** (−9 min) | −13 % (+9 min) | −15 % (+6 min) | −11 % (+4 min) | **−9 %** (−6 min) |
 | Zamkowy → Zbawiciela, all day | **−94 %** (−38 min) | −90 % (+4 min) | −52 % (+16 min) | −6 % (+8 min) | 0 % |
 
+![](summary_stub.png)
+
 - **Pitch line (preview):** planning in space *and* time with AC trams and buses cuts the heat dose by **81–94 %** against walking at the requested time, and it is also **9–38 min faster**. Most of the gain is from the AC ride and from the departure time. Shade routing alone gives **1–17 %** at a fixed departure (52 % on the all-day trip, where the shaded early-morning route is 16 min longer).
 - **ORS Shaded on our field:** our coolest walk has **6–11 % less dose** than ORS Shaded's route, at +0–8 min. On the noon trip the ORS Shaded route has *more* dose than ORS's own unweighted route on our field (61.7 vs 61.1 k K·s). Its shade layer (synthetic nDSM, 4 fixed slots on 21 June) disagrees with SOLWEIG at that hour.
 - **Trees (building-only):**
   - For walking, routing on building-only shade costs **0–4 %** more dose on four trips and **9 %** on Kopernik → Mirowska, where the building-only route is 360 m longer *and* hotter.
   - For the multimodal trip, building-only routing gives the same answer as ours: the walk legs are 270–680 m and the ride dominates.
   - The tree effect is real but small where SOLWEIG's tree shade is close to building shade (U_tree ≈ U_bldg in the calibration).
+- **Router behaviour worth a look (T09):** on the noon trip, `ours_coolest` rides tram 4 north past Uniwersytet, transfers, and rides bus 111 back (see map). Riding is dose-free, so this is optimal for the metric, but it looks odd in a demo. A small per-transfer or ride-time penalty would avoid it.
 - **Router check:**
   - We re-priced the router's own options independently on the same field: median −2.3 %, 17 of 20 within ±8 %.
   - The worst case, −23 %, is the 991 K·s early-morning transit option of the Zamkowy trip, where small absolute differences in the wait and stop rules weigh a lot.
