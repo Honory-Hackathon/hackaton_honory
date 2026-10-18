@@ -2,7 +2,7 @@
 
 > **Heat App** by **Team 4 — Honory** (Tadeusz Furykiewicz, Stanisław Sender, Adam Zienkowicz)
 >
-> 🌡️ **Try it:** https://heat-app-269831067246.europe-central2.run.app · 📊 **Pitch:** [`pitch-presentation.pptx`](pitch-presentation.pptx)
+> 🌡️ **Try it:** https://heat-app-269831067246.europe-central2.run.app · 📊 **Pitch:** [`1_Honory_HeatApp.pptx`](1_Honory_HeatApp.pptx)
 
 **Heat App** is a route planner for a heat-vulnerable pedestrian in central Warsaw that answers two questions: **which way** and
 **when to leave**. It minimises the felt heat (UTCI) over the whole trip, walking, waiting at stops and riding
