@@ -1,0 +1,304 @@
+{
+ "app_desktop": {
+  "status": 200,
+  "load_s": 3.8,
+  "overflow": [
+   1440,
+   1440,
+   1440
+  ],
+  "wide_elems": [],
+  "slider": {
+   "max": "32",
+   "labels": [
+    [
+     0,
+     "06:00"
+    ],
+    [
+     16,
+     "14:00"
+    ],
+    [
+     32,
+     "22:00"
+    ]
+   ]
+  },
+  "has_pl": false,
+  "has_en": true,
+  "legend_text": [
+   "26",
+   "32",
+   "38",
+   "46"
+  ],
+  "console_errors": [],
+  "http_fail": []
+ },
+ "app_phone": {
+  "status": 200,
+  "load_s": 4.4,
+  "overflow": [
+   390,
+   390,
+   390
+  ],
+  "wide_elems": [
+   "A:437"
+  ],
+  "slider": {
+   "max": "32",
+   "labels": [
+    [
+     0,
+     "06:00"
+    ],
+    [
+     16,
+     "14:00"
+    ],
+    [
+     32,
+     "22:00"
+    ]
+   ]
+  },
+  "has_pl": false,
+  "has_en": true,
+  "legend_text": [],
+  "console_errors": [],
+  "http_fail": []
+ },
+ "routes_desktop": {
+  "status": 200,
+  "load_s": 5.7,
+  "overflow": [
+   1440,
+   1440,
+   1440
+  ],
+  "wide_elems": [],
+  "slider": {
+   "max": "32",
+   "labels": [
+    [
+     0,
+     "06:00"
+    ],
+    [
+     16,
+     "14:00"
+    ],
+    [
+     32,
+     "22:00"
+    ]
+   ]
+  },
+  "has_pl": true,
+  "has_en": true,
+  "legend_text": [
+   "26",
+   "32",
+   "38",
+   "46"
+  ],
+  "console_errors": [],
+  "http_fail": []
+ },
+ "routes_phone": {
+  "status": 200,
+  "load_s": 5.0,
+  "overflow": [
+   390,
+   390,
+   390
+  ],
+  "wide_elems": [
+   "A:502",
+   "A:564"
+  ],
+  "slider": {
+   "max": "32",
+   "labels": [
+    [
+     0,
+     "06:00"
+    ],
+    [
+     16,
+     "14:00"
+    ],
+    [
+     32,
+     "22:00"
+    ]
+   ]
+  },
+  "has_pl": false,
+  "has_en": true,
+  "legend_text": [
+   "26",
+   "32",
+   "38",
+   "46"
+  ],
+  "console_errors": [],
+  "http_fail": []
+ },
+ "shadows3d_desktop": {
+  "status": 200,
+  "load_s": 3.7,
+  "overflow": [
+   1440,
+   1440,
+   1440
+  ],
+  "wide_elems": [],
+  "slider": {
+   "max": "32",
+   "labels": [
+    [
+     0,
+     "06:00"
+    ],
+    [
+     16,
+     "14:00"
+    ],
+    [
+     32,
+     "22:00"
+    ]
+   ]
+  },
+  "has_pl": true,
+  "has_en": true,
+  "legend_text": [
+   "26",
+   "32",
+   "38",
+   "46"
+  ],
+  "console_errors": [],
+  "http_fail": []
+ },
+ "shadows3d_phone": {
+  "status": 200,
+  "load_s": 12.6,
+  "overflow": [
+   390,
+   390,
+   390
+  ],
+  "wide_elems": [
+   "A:502",
+   "A:564"
+  ],
+  "slider": {
+   "max": "32",
+   "labels": [
+    [
+     0,
+     "06:00"
+    ],
+    [
+     16,
+     "14:00"
+    ],
+    [
+     32,
+     "22:00"
+    ]
+   ]
+  },
+  "has_pl": false,
+  "has_en": true,
+  "legend_text": [
+   "26",
+   "32",
+   "38",
+   "46"
+  ],
+  "console_errors": [],
+  "http_fail": []
+ },
+ "temperature_desktop": {
+  "status": 200,
+  "load_s": 5.0,
+  "overflow": [
+   1440,
+   1440,
+   1440
+  ],
+  "wide_elems": [],
+  "slider": {
+   "max": "32",
+   "labels": [
+    [
+     0,
+     "06:00"
+    ],
+    [
+     16,
+     "14:00"
+    ],
+    [
+     32,
+     "22:00"
+    ]
+   ]
+  },
+  "has_pl": true,
+  "has_en": true,
+  "legend_text": [
+   "26",
+   "32",
+   "38",
+   "46"
+  ],
+  "console_errors": [],
+  "http_fail": []
+ },
+ "temperature_phone": {
+  "status": 200,
+  "load_s": 4.0,
+  "overflow": [
+   390,
+   390,
+   390
+  ],
+  "wide_elems": [
+   "on:502",
+   "A:564"
+  ],
+  "slider": {
+   "max": "32",
+   "labels": [
+    [
+     0,
+     "06:00"
+    ],
+    [
+     16,
+     "14:00"
+    ],
+    [
+     32,
+     "22:00"
+    ]
+   ]
+  },
+  "has_pl": false,
+  "has_en": true,
+  "legend_text": [
+   "26",
+   "32",
+   "38",
+   "46"
+  ],
+  "console_errors": [],
+  "http_fail": []
+ }
+}
