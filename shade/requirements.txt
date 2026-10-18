@@ -1,0 +1,10 @@
+numpy
+numba
+pandas
+pvlib
+rasterio
+psutil
+matplotlib
+pytest
+laspy[lazrs]
+scipy

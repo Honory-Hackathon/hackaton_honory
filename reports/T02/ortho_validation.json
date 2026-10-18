@@ -1,0 +1,82 @@
+[
+ {
+  "spot": "pkin_plaza",
+  "E": 636960.0,
+  "N": 486960.0,
+  "best_utc": "2023-09-05 09:36:00+00:00",
+  "azimuth": 159.8,
+  "elevation": 43.04,
+  "iou": 0.603,
+  "accuracy": 0.865,
+  "precision": 0.871,
+  "recall": 0.663,
+  "iou_range": [
+   0.347,
+   0.603
+  ]
+ },
+ {
+  "spot": "varso_north",
+  "E": 636620.0,
+  "N": 486850.0,
+  "best_utc": "2023-09-05 09:33:00+00:00",
+  "azimuth": 158.9,
+  "elevation": 42.88,
+  "iou": 0.708,
+  "accuracy": 0.836,
+  "precision": 0.89,
+  "recall": 0.776,
+  "iou_range": [
+   0.445,
+   0.708
+  ]
+ },
+ {
+  "spot": "swietokrzyska",
+  "E": 637200.0,
+  "N": 487080.0,
+  "best_utc": "2023-09-05 09:51:00+00:00",
+  "azimuth": 164.9,
+  "elevation": 43.74,
+  "iou": 0.357,
+  "accuracy": 0.758,
+  "precision": 0.865,
+  "recall": 0.379,
+  "iou_range": [
+   0.306,
+   0.357
+  ]
+ },
+ {
+  "spot": "chmielna",
+  "E": 637500.0,
+  "N": 486900.0,
+  "best_utc": "2023-09-05 09:51:00+00:00",
+  "azimuth": 164.9,
+  "elevation": 43.74,
+  "iou": 0.793,
+  "accuracy": 0.879,
+  "precision": 0.886,
+  "recall": 0.883,
+  "iou_range": [
+   0.552,
+   0.793
+  ]
+ },
+ {
+  "spot": "nowy_swiat",
+  "E": 637900.0,
+  "N": 487000.0,
+  "best_utc": "2023-09-05 09:39:00+00:00",
+  "azimuth": 160.8,
+  "elevation": 43.2,
+  "iou": 0.662,
+  "accuracy": 0.834,
+  "precision": 0.857,
+  "recall": 0.744,
+  "iou_range": [
+   0.47,
+   0.662
+  ]
+ }
+]

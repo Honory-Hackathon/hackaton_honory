@@ -55,6 +55,7 @@ COG rasters on the shared 1 m grid, each with a README:
 - **Ground and surface models:** ground elevation (DTM) and building surface (DSM, buildings + ground).
 - **Canopy:** canopy top height and crown base height above ground, plus an estimate of crown light transmission (a value in 0–1 per canopy pixel, with a note on how it was derived).
 - **Masks:** building mask and water mask.
+- **Far casters:** a ground + buildings surface model on the 1 m cells over the [caster extent](README.md) (13 × 11 km), for the low-sun shadows of tall buildings beyond the halo. Only objects above ~55 m matter there, so a simpler or coarser source resampled to the 1 m cells is acceptable.
 - **Surface types:** a simple surface-type raster (e.g. building / water / grass / paved / other).
 - **Report:** sheet list, processing notes, previews.
 

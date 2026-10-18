@@ -15,7 +15,7 @@ The product is a route planner that answers both *which way* and *when to leave*
 | # | Topic | Decision |
 |---|---|---|
 | 1 | Shade | Our own shade model from LiDAR, covering buildings **and trees**. The MIT data shades from building heights only. Shade is computed on the 2D map of public walkable space and transit stops, every 30 min from 06:00 to 22:00. If that is too heavy, use fewer time steps. |
-| 2 | Area | Śródmieście only (PRG unit 146510_8, ≈15.5 km²). A surrounding halo is included as shadow casters only. |
+| 2 | Area | Śródmieście only (PRG unit 146510_8, ≈15.5 km²). Surroundings are included as shadow casters only, as far as real shadows reach (§5.3). |
 | 3 | Modes | Walking and public transport. Public transport means **trams and buses only**: no bikes, no metro, no suburban rail (SKM, KM, WKD). Only vehicles with air conditioning are boarded. The walk is timed so the wait at the stop is short, and the stop itself is part of the exposure. |
 | 4 | Canopy | From **LiDAR**; see §5.2. |
 | 5 | Stack | Pure Python, unless a component clearly needs something else. |
@@ -30,7 +30,7 @@ The product is a route planner that answers both *which way* and *when to leave*
 
 ## 3. Scope and time
 
-- **Area:** Śródmieście district boundary. Origins and destinations lie inside it, and heat is evaluated only inside it. Shadow casters come from a ~1 km halo, because tall buildings just outside the district (e.g. around Rondo Daszyńskiego) shade it at low sun.
+- **Area:** Śródmieście district boundary. Origins and destinations lie inside it, and heat is evaluated only inside it. Shadow casters come from a ~1 km halo, because tall buildings just outside the district (e.g. around Rondo Daszyńskiego) shade it at low sun. Shadow length is not capped at the halo: for buildings and terrain the caster area extends as far as real shadows reach (§5.3).
 - **Grid:** 1 m, EPSG:2180 (PL-1992), heights EVRF2007.
 - **Heat day:** Sunday 2026-06-28.
   - Warszawa-Okęcie Tmax 38.1 °C; Filtry 39.7 °C.
@@ -75,7 +75,7 @@ Known artefacts need handling: cranes and temporary structures, arcades and cove
 
 For each time step:
 - **Sun position:** computed for the district (e.g. with pvlib).
-- **Shadows:** cast from buildings and from trees, including low-sun shadows of tall buildings in the halo.
+- **Shadows:** cast from buildings and from trees, including low-sun shadows of tall buildings outside the district. Shadow length is not capped: at 20:30 (sun 3.1°) a 310 m tower casts a shadow about 5.7 km long, so building and terrain casters are taken from as far as the longest real shadow reaches (≈5.7 km to the west-north-west, ≈1.4 km to the east-north-east at 06:00). Beyond the 1 km halo only objects taller than about 55 m can reach the district, so there a surface model of buildings and ground is enough.
 - **Sky view factor:** computed once.
 
 Per walkable pixel and time step the shade model yields the **shade zone shares** used by the thermal model (§13):
@@ -288,3 +288,4 @@ def compute_inputs_for_utci(
 - **Missing effects:** there is no sky-view-factor or thermal-memory term. Surface heating follows the current sun elevation only, so evening pavement heat release is not represented.
 - **Landsat anomaly:** `pmwc` enters both air temperature (×0.15) and longwave (×0.20). It is a static map from one Landsat scene.
 - **Coefficients:** zone transmissivities (1.00 / 0.12 / 0.07 / 0.03), surface offsets and the 0.40 ground view factor are the natural parameters to tune against SOLWEIG.
+- **Light through crowns may be counted twice:** the shade model already puts the light measured to pass through crowns into the shares (a pixel under a crown with transmission τ gets `f_sun = τ`, `f_tree = 1 − τ`). A tree-zone factor above zero then adds light through crowns a second time. Either the tree-zone factor covers only what the shares leave out (mainly diffuse light), or the shares are thresholded to 0/1 and the factor carries all the light through crowns. Decide when tuning against SOLWEIG.

@@ -36,7 +36,7 @@ Shade is what changes the felt temperature most between two sides of a street: m
 
 ## Constraints and things to handle
 
-- Casters can be up to ~1 km outside the AOI (towers around Rondo Daszyńskiego at low evening sun); the halo exists for this. PKiN's shadow is about 530 m long at 18:00.
+- Casters can be far outside the AOI (towers around Rondo Daszyńskiego at low evening sun). Do not cap shadow length: at 20:30 (3.1°) a 310 m tower casts ≈5.7 km, so casters come from the wider [caster extent](README.md), not only the 1 km halo. PKiN's shadow is about 530 m long at 18:00.
 - Light passing under crowns at low sun (crown base) should be possible to represent.
 - Must scale to ~37 Mpx × 30 sunlit time steps in reasonable time on a cloud VM. Pick the algorithm and parallelism accordingly.
 - Pure Python preferred (numpy/numba-level performance is fine).
