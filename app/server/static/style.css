@@ -20,6 +20,7 @@ html,body{margin:0;height:100%;font:14px/1.35 system-ui,-apple-system,"Segoe UI"
 #legend{position:fixed;left:12px;bottom:24px;z-index:900;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;max-width:230px}
 .lg-title{font-weight:650;margin-bottom:4px}
 .lg-row,.lg-shade{display:flex;align-items:center;gap:6px;margin:2px 0}
+.lg-row .rng{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .sw{width:22px;height:12px;border-radius:3px;flex:none}
 .sw.shade{background:rgba(20,30,70,.6)}
 #panel{position:fixed;right:12px;top:118px;bottom:24px;width:360px;z-index:950;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 14px rgba(0,0,0,.14);display:flex;flex-direction:column;overflow:hidden}
@@ -67,6 +68,8 @@ html,body{overflow:hidden;max-width:100vw}
   .toggles{width:100%;justify-content:center}
   #legend{top:150px;bottom:auto;left:8px;padding:5px 7px;font-size:11px;max-width:150px}
   #legend .lg-title{display:none}
+  #legend .desc{display:none}
+  .brand{font-size:13px}
   #panel{left:0;right:0;top:auto;bottom:0;width:auto;max-height:52vh;border-radius:14px 14px 0 0}
   #panel:not(.open){bottom:0}
 }

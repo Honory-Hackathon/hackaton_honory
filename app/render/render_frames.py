@@ -153,8 +153,12 @@ def load_mosaic(paths: list[str], bands: list[int]) -> tuple[np.ndarray, rasteri
     def read_one(m):
         p, b, _, _, nod = m
         with rasterio.open(vsi(p)) as d:
-            a = d.read(bands).astype(np.float32)
-        if nod is not None and not np.isnan(nod):
+            raw = d.read(bands)
+        a = raw.astype(np.float32)
+        if raw.dtype == np.uint8:  # T07 sun_solweig.tif: share of direct beam x 250, 255 = nodata
+            a[raw == 255] = np.nan
+            a /= 250.0
+        elif nod is not None and not np.isnan(nod):
             a[a == nod] = np.nan
         r0 = int(round((top - b.top) / res[1])); c0 = int(round((b.left - left) / res[0]))
         return r0, c0, a
@@ -302,7 +306,7 @@ def main(argv=None):
         night = False
         if a.kind == "shadow":
             fin = band[np.isfinite(band)]
-            night = fin.size > 0 and bool(np.all(fin >= 0.999))  # SOLWEIG writes all-sunlit after sunset
+            night = fin.size == 0 or bool(np.all(fin >= 0.999))  # SOLWEIG: all-sunlit after sunset; T07: 255 (nodata)
             if night:
                 log(f"step {s}: all pixels sunlit -> treated as night, no shade tiles")
         b3857 = transform_bounds(crs, "EPSG:3857", *rasterio.transform.array_bounds(band.shape[0], band.shape[1], tr))

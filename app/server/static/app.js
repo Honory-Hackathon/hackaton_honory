@@ -29,10 +29,11 @@ const CAT_COL = ["#78bec8","#fad664","#f07832","#d73027","#6e0a5a"];
 const CAT_KEYS = ["<26","26-32","32-38","38-46",">46"];
 const KCOL = {coolest:"#1f6fb2", balanced:"#16a085", fastest:"#333", walk_only:"#8e44ad", external:"#7f8c8d"};
 const PRESETS = [
-  {pl:"pl. Zbawiciela → pl. Konstytucji", en:"Pl. Zbawiciela → Pl. Konstytucji", o:[21.0187,52.2196], d:[21.0156,52.2223]},
-  {pl:"Dw. Centralny → pl. Zbawiciela", en:"Central Station → Pl. Zbawiciela", o:[21.0031,52.2287], d:[21.0187,52.2196]},
-  {pl:"pl. Bankowy → Nowy Świat", en:"Pl. Bankowy → Nowy Świat", o:[21.0006,52.2441], d:[21.0196,52.2327]},
-  {pl:"Hala Mirowska → Park Ujazdowski", en:"Hala Mirowska → Ujazdowski Park", o:[20.9953,52.2389], d:[21.0270,52.2206]},
+  // Placeholder demo trips; replace with the T11 demo set at integration.
+  {pl:"pl. Zbawiciela → pl. Bankowy, 13–15", en:"Pl. Zbawiciela → Pl. Bankowy, 13–15", o:[21.0187,52.2196], d:[21.0006,52.2441], e:"13:00", l:"15:00"},
+  {pl:"Dw. Centralny → pl. Zbawiciela, 12–14", en:"Central Station → Pl. Zbawiciela, 12–14", o:[21.0031,52.2287], d:[21.0187,52.2196], e:"12:00", l:"14:00"},
+  {pl:"Hala Mirowska → Park Ujazdowski, 15–17", en:"Hala Mirowska → Ujazdowski Park, 15–17", o:[20.9953,52.2389], d:[21.0270,52.2206], e:"15:00", l:"17:00"},
+  {pl:"pl. Konstytucji → Nowy Świat, 18:30–20", en:"Pl. Konstytucji → Nowy Świat, 18:30–20", o:[21.0156,52.2223], d:[21.0196,52.2327], e:"18:30", l:"20:00"},
 ];
 const q = new URLSearchParams(location.search);
 let lang = q.get("lang") || ((navigator.language || "pl").toLowerCase().startsWith("pl") ? "pl" : "en");
@@ -90,7 +91,8 @@ $("#play").addEventListener("click", () => {
 
 // ---------------------------------------------------------------- legend, i18n, nav
 function renderLegend() {
-  $("#lg-rows").innerHTML = I18N[lang].cats.map((c, i) => `<div class="lg-row"><span class="sw" style="background:${CAT_COL[i]}"></span>${c}</div>`).join("");
+  $("#lg-rows").innerHTML = I18N[lang].cats.map((c, i) => { const [r, ...d] = c.match(/^([<>]?\s?[\d–]+(?: °C)?)\s(.*)$/).slice(1);
+    return `<div class="lg-row"><span class="sw" style="background:${CAT_COL[i]}"></span><b class="rng">${r}</b> <span class="desc">${d.join(" ")}</span></div>`; }).join("");
 }
 function renderNav() {
   const base = CFG?.heat_views_url || "";
@@ -103,6 +105,7 @@ function renderPresets() {
   $("#presets").innerHTML = PRESETS.map((p, i) => `<button data-i="${i}">${p[lang]}</button>`).join("");
   $("#presets").querySelectorAll("button").forEach(b => b.onclick = () => {
     const p = PRESETS[+b.dataset.i]; setPt("o", p.o); setPt("d", p.d);
+    if (p.e) $("#t-e").value = p.e; if (p.l) $("#t-l").value = p.l;
     map.fitBounds(L.latLngBounds([[p.o[1], p.o[0]], [p.d[1], p.d[0]]]).pad(0.4));
   });
 }
@@ -187,6 +190,7 @@ $("#go").addEventListener("click", async () => {
     $("#status").textContent = `${t("router")}: ${lastPlan.router || "?"} · ${lastPlan.elapsed_s ?? "?"} s`;
     renderCards(lastPlan); drawRoutes();
     if (lastPlan.options?.[0]) showStep(stepOf(lastPlan.options[0].depart));
+    $("#status").scrollIntoView({behavior: "smooth", block: "start"});
   } catch (e) { $("#status").textContent = `${t("err")}: ${e.message}`; }
   finally { $("#go").disabled = false; }
 });
@@ -252,5 +256,12 @@ function drawOption(o, sel) {
     if (q.get("shadeOn") === "1") $("#tg-shade").checked = true;
   } catch (e) { console.error(e); }
   renderNav(); showStep(step);
+  // deep link: ?o=lon,lat&d=lon,lat&e=HH:MM&l=HH:MM&go=1
+  const pp = k => (q.get(k) || "").split(",").map(Number);
+  if (q.get("o") && q.get("d")) {
+    setPt("o", pp("o")); setPt("d", pp("d"));
+    if (q.get("e")) $("#t-e").value = q.get("e"); if (q.get("l")) $("#t-l").value = q.get("l");
+    if (q.get("go") === "1") { $("#panel").classList.add("open"); $("#go").click(); }
+  }
 })();
 })();
