@@ -15,7 +15,7 @@ Heat-aware trip planner for Śródmieście on the heat day 2026-06-28: shade fro
 | T03 Walk network, walkable mask, stop areas | [`walk/`](walk/README.md) | [`reports/T03`](reports/T03/README.md) | done |
 | T04 Recorded tram/bus stop events + AC | [`transit/`](transit/README.md) | [`reports/T04`](reports/T04/README.md) | done |
 | T05 Weather forcing + Landsat `pmwc` | [`meteo/`](meteo/README.md) | [`reports/T05`](reports/T05/README.md) | done |
-| T06 SOLWEIG: pilot, then the district run (the production thermal model) | [`solweig_ref/`](solweig_ref/README.md) | [`reports/T06`](reports/T06/README.md) | done: 27/27 district tiles + mosaic (report not yet committed by the T06 session) |
+| T06 SOLWEIG: pilot, then the district run (the production thermal model) | [`solweig_ref/`](solweig_ref/README.md) | [`reports/T06`](reports/T06/README.md) | done |
 | T07 UTCI and Tmrt on walkable space (from district SOLWEIG) | [`utci/`](utci/) | [`reports/T07`](reports/T07/README.md) | done |
 | T08 Heat per walk segment and per stop | [`heat/`](heat/) | [`reports/T08`](reports/T08/README.md) | done |
 | T09 Heat-aware router (walk + AC trams/buses) | [`router/`](router/) | [`reports/T09`](reports/T09/README.md) | done |
