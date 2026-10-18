@@ -160,16 +160,19 @@ def load_inputs():
         seg = pd.read_parquet(f"{local}/segments.parquet")
         pix = pd.read_parquet(f"{local}/segment_pixels.parquet")
         stops = pd.read_parquet(f"{local}/stop_areas.parquet")
-        walk_path = f"{local}/walkable.tif"
+        walk_path, roof_path = f"{local}/walkable.tif", f"{local}/building_mask.tif"
     else:
         p = download(["T03/network/segments.parquet", "T03/network/segment_pixels.parquet",
-                      "T03/stops/stop_areas.parquet", "T03/walkable.tif"])
+                      "T03/stops/stop_areas.parquet", "T03/walkable.tif", "T01/output/building_mask.tif"])
         seg, pix, stops = (pd.read_parquet(x) for x in p[:3])
-        walk_path = p[3]
+        walk_path, roof_path = p[3], p[4]
     with rasterio.open(walk_path) as s:
         assert s.transform == GRID_T and s.shape == (NROWS, NCOLS)
         walk = s.read(1) > 0
-    return seg, pix, stops, walk
+    with rasterio.open(roof_path) as s:
+        assert s.transform == GRID_T and s.shape == (NROWS, NCOLS)
+        roof = s.read(1) > 0
+    return seg, pix, stops, walk, roof
 
 
 def forcing():
@@ -190,8 +193,8 @@ def bbox_pixels(bounds, walk, r=LOCAL_R):
     return (rr[m] * NCOLS + cc[m]).astype(np.int64)
 
 
-def stop_pixels(stops, walk):
-    """flat pixel indices per stop: area pixels (walkable if any) and the 30 m neighbourhood."""
+def stop_pixels(stops, walk, open_):
+    """flat pixel indices per stop: area pixels (walkable open ground if any) and the 30 m neighbourhood."""
     area, hood = [], []
     for g in stops.geometry:
         geom = wkb.loads(g) if isinstance(g, (bytes, bytearray)) else g
@@ -206,11 +209,13 @@ def stop_pixels(stops, walk):
         rr, cc = rr + r0, cc + c0
         ok = (rr >= 0) & (rr < NROWS) & (cc >= 0) & (cc < NCOLS)
         rr, cc = rr[ok], cc[ok]
-        w = walk[rr, cc]
-        if w.any():
-            rr, cc = rr[w], cc[w]
+        for msk in (open_, walk):
+            w = msk[rr, cc]
+            if w.any():
+                rr, cc = rr[w], cc[w]
+                break
         area.append((rr * NCOLS + cc).astype(np.int64))
-        hood.append(bbox_pixels(geom.bounds, walk))
+        hood.append(bbox_pixels(geom.bounds, open_))
     return area, hood
 
 
@@ -223,6 +228,14 @@ def local_shade(u, sh, idx):
     return float(np.median(uu[m])) if m.sum() >= 5 else np.nan
 
 
+def local_median(u, idx):
+    if len(idx) == 0:
+        return np.nan
+    uu = u[idx]
+    uu = uu[np.isfinite(uu)]
+    return float(np.median(uu)) if len(uu) >= 5 else np.nan
+
+
 # ---------------------------------------------------------------- main
 
 def run():
@@ -233,7 +246,8 @@ def run():
     kind, utci_names, shadow_names = list_sources(source)
     log("source", kind, len(utci_names), "utci file(s),", len(shadow_names), "shadow file(s)", utci_names[:2])
     f = forcing()
-    seg, pix, stops, walk = load_inputs()
+    seg, pix, stops, walk, roof = load_inputs()
+    open_ = walk & ~roof  # walkable ground not under a DSM roof
     log("inputs", len(seg), "segments", len(pix), "segment pixels", len(stops), "stops")
 
 
@@ -249,15 +263,21 @@ def run():
     starts = np.searchsorted(si, np.arange(nseg))
     counts = np.bincount(si, minlength=nseg)
 
-    covered_i = np.nonzero((seg.covered.fillna(False).values) & ~(seg.indoor.fillna(False).values))[0]
+    # roof pixels: SOLWEIG evaluates Tmrt on the DSM surface, i.e. on the roof top -> never a pedestrian value
+    rp = roof.ravel()[flat]
+    roof_share = np.bincount(si, weights=rp, minlength=nseg) / np.maximum(counts, 1)
+    covered = seg.covered.fillna(False).values.astype(bool)
+    indoor_ = seg.indoor.fillna(False).values.astype(bool)
+    covered_i = np.nonzero((covered | (roof_share >= 0.5)) & ~indoor_)[0]  # "under roof" segments
     cov_hood = []
     for i in covered_i:
         fp = seg.footprint.iloc[i]
         geom = wkb.loads(fp) if isinstance(fp, (bytes, bytearray)) else fp
-        cov_hood.append(bbox_pixels(geom.bounds, walk))
-    st_area, st_hood = stop_pixels(stops, walk)
+        cov_hood.append(bbox_pixels(geom.bounds, open_))
+    st_area, st_hood = stop_pixels(stops, walk, open_)
     shelter = stops.shelter.fillna(False).values.astype(bool)
-    log("pixel lists ready; covered", len(covered_i), "sheltered stops", int(shelter.sum()))
+    log("pixel lists ready; under roof", len(covered_i), "(covered", int((covered & ~indoor_).sum()), ") roof pixel share",
+        round(float(rp.mean()), 4), "sheltered stops", int(shelter.sum()))
     needed = np.unique(np.concatenate([flat] + st_area + st_hood + cov_hood))
     pos = lambda a: np.searchsorted(needed, a)
     flat = pos(flat)
@@ -278,13 +298,15 @@ def run():
          ["utci", "g", "utci_area_mean", "shade_share"] + [f"exc{t}" for t in EXC]}
     st_rule = np.full((NSTEP, nst), "best_spot", object)
     shade_cap_hits = 0
+    cap_deltas = []
+    shelter_deltas = []
 
     for b in range(NSTEP):
         u = U[b]
         sh = SH[b]
         night = f.sun_elev_deg.iloc[b] <= 0
         v = u[flat]
-        ok = np.isfinite(v)
+        ok = np.isfinite(v) & ~rp
         shv = np.where(night, 0.0, sh[flat])
         n = np.bincount(si, weights=ok, minlength=nseg)
         vz = np.where(ok, v, 0.0)
@@ -310,18 +332,22 @@ def run():
         p90[has] = (vs[starts[has] + lo[has]] * (1 - fr[has]) + vs[starts[has] + hi[has]] * fr[has])
         S["utci_p90"][b] = p90
 
-        # covered segments: cap at local shade if SOLWEIG left them sunlit
-        if not night:
-            for k, i in enumerate(covered_i):
-                if nvalid[b, i] > 0 and S["shade_share"][b, i] < 0.5:
-                    ls = local_shade(u, sh, cov_hood[k])
-                    if np.isfinite(ls) and ls < S["utci_mean"][b, i]:
-                        d = S["utci_mean"][b, i] - ls
-                        S["utci_mean"][b, i] = ls
-                        S["utci_p90"][b, i] = S["utci_p90"][b, i] - d
-                        S["shade_share"][b, i] = 1.0
-                        rule[b, i] = "covered_shade"
-                        shade_cap_hits += 1
+        # under-roof segments (OSM covered, or >= 50 % of pixels on the DSM building mask):
+        # day -> capped at the local shade UTCI; night or no open pixels -> local median of open ground
+        for k, i in enumerate(covered_i):
+            own = S["utci_mean"][b, i]
+            ls = local_median(u, cov_hood[k]) if night else local_shade(u, sh, cov_hood[k])
+            if not np.isfinite(ls):
+                continue
+            if not np.isfinite(own) or ls < own:
+                d = (own - ls) if np.isfinite(own) else np.nan
+                if np.isfinite(d):
+                    cap_deltas.append(float(d))
+                S["utci_mean"][b, i] = ls
+                S["utci_p90"][b, i] = (S["utci_p90"][b, i] - d) if np.isfinite(d) else ls
+                S["shade_share"][b, i] = 1.0
+                rule[b, i] = "under_roof"
+                shade_cap_hits += 1
 
         # stops
         for j in range(nst):
@@ -345,6 +371,7 @@ def run():
             if shelter[j] and not night:
                 ls = local_shade(u, sh, st_hood[j])
                 if np.isfinite(ls) and ls < best:
+                    shelter_deltas.append(best - ls)
                     best = ls
                     st_rule[b, j] = "shelter"
             T["utci"][b, j] = best
@@ -461,7 +488,13 @@ def run():
         "c0_outdoor_pixel_based_all_steps": int(((rule == "pixels").all(0) & c0 & ~indoor).sum()),
         "rule_counts_segment_steps": pd.Series(rule.ravel()).value_counts().to_dict(),
         "rule_counts_stop_steps": pd.Series(st_rule.ravel()).value_counts().to_dict(),
-        "covered_segments": int(len(covered_i)),
+        "covered_segments": int((covered & ~indoor_).sum()),
+        "under_roof_segments": int(len(covered_i)),
+        "roof_pixel_share": round(float(rp.mean()), 4),
+        "covered_cap_segment_steps": len(cap_deltas),
+        "covered_cap_mean_delta_k": round(float(np.mean(cap_deltas)), 2) if cap_deltas else None,
+        "shelter_cap_stop_steps": len(shelter_deltas),
+        "shelter_cap_mean_delta_k": round(float(np.mean(shelter_deltas)), 2) if shelter_deltas else None,
         "runtime_s": round(time.time() - t_start, 1),
     }
     log(json.dumps(chk, default=str))

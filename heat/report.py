@@ -51,7 +51,7 @@ def side_table(seg, heat, line, name, maxd=30):
         tn = np.hypot(tx, ty)
         if tn == 0 or c.distance(p) < 2:
             continue
-        a, b = g.coords[0], g.coords[-1]
+        a, b = g.interpolate(0, normalized=True).coords[0], g.interpolate(1, normalized=True).coords[0]
         dx, dy = b[0] - a[0], b[1] - a[1]
         dn = np.hypot(dx, dy)
         if dn == 0 or abs(dx * tx + dy * ty) / (dn * tn) < 0.85:  # roughly parallel (< ~32°)
@@ -71,21 +71,32 @@ def side_table(seg, heat, line, name, maxd=30):
 
 
 def seg_lines(seg):
-    return [np.asarray(wkb.loads(g).coords)[:, :2] for g in seg.geometry]
+    out, idx = [], []
+    for i, g in enumerate(seg.geometry):
+        g = wkb.loads(g)
+        for part in getattr(g, "geoms", [g]):
+            out.append(np.asarray(part.coords)[:, :2])
+            idx.append(i)
+    return out, np.asarray(idx)
 
 
-def map_fig(seg, heat, bbox, title, out, steps=("13:00", "18:00")):
+def map_fig(seg, heat, bbox, title, out, steps=("13:00", "18:00"), line=None):
     x0, y0, x1, y1 = bbox
     fig, axes = plt.subplots(1, len(steps), figsize=(4.2 * len(steps), 4.6), constrained_layout=True)
     b = seg.geometry.map(lambda g: wkb.loads(g).bounds)
     inb = b.map(lambda t: t[2] > x0 and t[0] < x1 and t[3] > y0 and t[1] < y1)
     s = seg[inb.values & ~seg.indoor.values]
-    lines = seg_lines(s)
+    lines, li = seg_lines(s)
     for ax, lab in zip(np.atleast_1d(axes), steps):
         h = heat[heat.step == STEPS[lab]].set_index("segment_id").loc[s.segment_id]
-        lc = LineCollection(lines, array=h.utci_mean.values, cmap="RdYlBu_r", linewidths=1.6)
-        lc.set_clim(28, 46)
+        lw = 1.6 if (x1 - x0) < 1500 else 0.5
+        lc = LineCollection(lines, array=h.utci_mean.values[li], cmap="RdYlBu_r", linewidths=lw)
+        lc.set_clim(30, 45)
         ax.add_collection(lc)
+        if line is not None:
+            for part in getattr(line, "geoms", [line]):
+                xy = np.asarray(part.coords)
+                ax.plot(xy[:, 0], xy[:, 1], color="k", lw=0.6, ls=(0, (4, 3)), alpha=0.6)
         ax.set_xlim(x0, x1)
         ax.set_ylim(y0, y1)
         ax.set_aspect("equal")
@@ -132,8 +143,10 @@ def main(data, out):
     plt.close(fig)
 
     # maps: Marszałkowska around Pl. Konstytucji / Zbawiciela, Al. Ujazdowskie at Pl. Trzech Krzyży..Piękna
-    map_fig(seg, heat, (637300, 485350, 638000, 486250), "Marszałkowska", out / "map_marszalkowska.png")
-    map_fig(seg, heat, (638250, 485300, 638950, 486200), "Aleje Ujazdowskie", out / "map_ujazdowskie.png")
+    map_fig(seg, heat, (637350, 485000, 638100, 486000), "Marszałkowska", out / "map_marszalkowska.png",
+            line=st.get("Marszałkowska"))
+    map_fig(seg, heat, (637900, 485300, 638650, 486300), "Aleje Ujazdowskie", out / "map_ujazdowskie.png",
+            line=st.get("Aleje Ujazdowskie"))
     map_fig(seg, heat, (636000, 485000, 640500, 489500), "Śródmieście", out / "map_overview.png")
 
     # rules summary
