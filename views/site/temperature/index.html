@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Temperatura i albedo · Temperature and albedo</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="/common.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/common.js"></script>
+<style>
+  #map { right: 430px; }
+  #side { position: absolute; z-index: 4; top: 0; right: 0; bottom: 0; width: 430px; overflow-y: auto; background: #fff;
+    border-left: 1px solid var(--line); padding: 10px 14px 20px; }
+  #side h2 { font-size: 13px; margin: 14px 0 2px; }
+  #side .sub { font-size: 11.5px; color: var(--muted); margin: 0 0 6px; }
+  .chart { position: relative; height: 230px; }
+  .chart.small { height: 190px; }
+  #ctrl { right: 440px; }
+  #head { max-width: 420px; }
+  .ramp { height: 10px; border-radius: 2px; margin-top: 4px; }
+  .ramp-l { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
+  #readout { font-size: 12px; margin-top: 4px; min-height: 16px; }
+  table.now { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.now td, table.now th { padding: 3px 4px; border-bottom: 1px solid #eee; text-align: right; }
+  table.now td:first-child, table.now th:first-child { text-align: left; }
+  table.now i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  @media (max-width: 900px) {
+    html, body { overflow: auto; height: auto; }
+    #map { position: relative; height: 62vh; right: 0; }
+    #head { position: absolute; }
+    #ctrl { position: sticky; bottom: 0; left: 0; right: 0; margin: 0; border-radius: 0; max-width: none; }
+    #side { position: static; width: auto; border-left: 0; padding: 4px 12px 30px; }
+  }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="head" class="card">
+  <div id="nav"></div>
+  <h1>Temperatura i albedo <span class="en">· Temperature and albedo</span></h1>
+  <p class="cap pl">Jak nagrzewa się dzielnica: powietrze, promieniowanie (Tmrt) i UTCI na różnych nawierzchniach oraz ile światła odbijają.</p>
+  <p class="cap en">How the district heats up: air, radiant (Tmrt) and felt (UTCI) temperature on each surface type, and how much light surfaces reflect.</p>
+</div>
+<div id="ctrl" class="card">
+  <div id="tc"></div>
+  <div class="row" style="flex-wrap:wrap;gap:6px;margin-top:2px">
+    <div class="seg" id="lay">
+      <button data-l="utci" class="on">UTCI</button><button data-l="tmrt">Tmrt</button><button data-l="albedo">albedo</button><button data-l="lst">LST 11:25</button>
+    </div>
+    <label style="font-size:12px"><input type="range" id="op" min="0.2" max="1" step="0.05" value="0.85" style="width:80px;vertical-align:middle"> krycie / opacity</label>
+  </div>
+  <div id="lyrlegend"></div>
+  <div id="legend"></div>
+  <div id="readout" class="extra">Najedź lub dotknij mapy, by odczytać wartość · Hover or tap the map to read a value</div>
+</div>
+<div id="side">
+  <h2>Teraz <span id="nowt"></span> · Now</h2>
+  <table class="now" id="now"></table>
+  <h2>UTCI na nawierzchniach w ciągu dnia · UTCI by surface through the day</h2>
+  <p class="sub">Średnia na pikselach naziemnych SOLWEIG; linia przerywana: temperatura powietrza · Mean over SOLWEIG ground pixels; dashed: air temperature.</p>
+  <div class="chart"><canvas id="c1"></canvas></div>
+  <h2>Słońce a cień · Sun vs shade</h2>
+  <p class="sub">UTCI i Tmrt w nasłonecznionych i zacienionych pikselach · UTCI and Tmrt in sunlit vs shaded pixels.</p>
+  <div class="chart"><canvas id="c2"></canvas></div>
+  <h2>Odbite i pochłonięte światło · Reflected and absorbed sunlight</h2>
+  <p class="sub">Szacunek: promieniowanie krótkofalowe docierające (K↓) i odbite (K↑ = albedo × K↓) na nawierzchni · Estimate: incoming shortwave and reflected part.</p>
+  <div class="chart"><canvas id="c3"></canvas></div>
+  <h2>Albedo i temperatura powierzchni · Albedo and surface temperature</h2>
+  <p class="sub">Albedo: Sentinel-2, 27.06.2026. Temperatura powierzchni: Landsat, 25.06.2026 11:25 · Albedo: Sentinel-2; LST: Landsat.</p>
+  <div class="chart small"><canvas id="c4"></canvas></div>
+  <p class="sub" id="src"></p>
+</div>
+<div id="loading">Ładowanie… · Loading…</div>
+<script>
+document.getElementById("nav").innerHTML = HV.navHTML("temperature");
+document.getElementById("legend").innerHTML = HV.legendHTML();
+const SURF = {
+  paved: ["#6b7280", "utwardzone", "paved"], grass: ["#84cc16", "trawa", "grass"], shrubs: ["#65a30d", "krzewy", "shrubs"],
+  under_trees: ["#166534", "pod drzewami", "under trees"], water: ["#2563eb", "woda", "water"], other: ["#a16207", "inne", "other"],
+  roofs: ["#9f1239", "dachy", "roofs"], all_ground: ["#111827", "cały teren", "all ground"],
+};
+const phone = HV.isPhone();
+const map = new maplibregl.Map({
+  container: "map", style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  center: [21.012, 52.2305], zoom: phone ? 12.6 : 13.4, minZoom: 11, maxZoom: 18, attributionControl: { compact: true },
+});
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+const S = { step: 18, layer: "utci", man: null, ser: null, charts: [], valImg: {}, valCanvas: null, valKey: null };
+const lay = () => S.man.views.temperature_albedo.layers;
+const pad = k => String(k).padStart(2, "0");
+const url = (l, k, value = false) => {
+  if (l === "albedo") return `/data/t12/frames/albedo${value ? "_value" : ""}.png`;
+  if (l === "lst") return `/data/t12/frames/lst_1125${value ? "_value" : ""}.png`;
+  return `/data/t12/frames/${l}${value ? "_value" : ""}/${pad(k)}.png`;
+};
+const key = l => (l === "lst" ? "lst_1125" : l);
+
+function setImage() {
+  const L = lay()[key(S.layer)], coords = L.frame.coordinates_maplibre, u = url(S.layer, S.step);
+  const src = map.getSource("heat");
+  if (!src) {
+    map.addSource("heat", { type: "image", url: u, coordinates: coords });
+    const firstSymbol = map.getStyle().layers.find(l => l.type === "symbol")?.id;
+    map.addLayer({ id: "heat", type: "raster", source: "heat", paint: { "raster-opacity": +document.getElementById("op").value, "raster-fade-duration": 0, "raster-resampling": "nearest" } }, firstSymbol);
+  } else src.updateImage({ url: u, coordinates: coords });
+  // preload neighbours
+  if (S.layer === "utci" || S.layer === "tmrt") for (const d of [1, 2, -1]) { const j = S.step + d; if (j >= 0 && j < HV.N) { const im = new Image(); im.src = url(S.layer, j); } }
+  // legend of the layer ramp
+  const lg = L.legend, lo = lg[0].value, hi = lg[lg.length - 1].value;
+  const grad = lg.map(s => `${s.color} ${((s.value - lo) / (hi - lo) * 100).toFixed(1)}%`).join(",");
+  const name = { utci: "UTCI °C", tmrt: "Tmrt °C (średnia temperatura promieniowania / mean radiant temperature)", albedo: "albedo (0–1)", lst: "temperatura powierzchni / land surface temperature °C (25.06, 11:25)" }[S.layer];
+  const ticks = lg.filter((_, i) => i % 2 === 0 || i === lg.length - 1).map(s => `<span>${s.value}</span>`).join("");
+  document.getElementById("lyrlegend").innerHTML = S.layer === "utci" ? "" : `<div class="ramp" style="background:linear-gradient(90deg,${grad})"></div><div class="ramp-l">${ticks}</div><div class="extra">${name}</div>`;
+  loadValue();
+}
+
+function loadValue() {
+  const k = (S.layer === "utci" || S.layer === "tmrt") ? S.layer + S.step : S.layer;
+  if (S.valKey === k) return;
+  S.valKey = k; S.valCanvas = null;
+  const im = new Image();
+  im.onload = () => {
+    if (S.valKey !== k) return;
+    const c = document.createElement("canvas"); c.width = im.width; c.height = im.height;
+    const ctx = c.getContext("2d", { willReadFrequently: true }); ctx.drawImage(im, 0, 0);
+    S.valCanvas = { ctx, w: im.width, h: im.height };
+  };
+  im.src = url(S.layer, S.step, true);
+}
+
+function readValue(lngLat) {
+  if (!S.valCanvas) return null;
+  const L = lay()[key(S.layer)], [W, Sx, E, N] = L.frame.deckgl_bitmap_bounds;
+  const merc = lat => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+  const fx = (lngLat.lng - W) / (E - W), fy = (merc(N) - merc(lngLat.lat)) / (merc(N) - merc(Sx));
+  if (fx < 0 || fx >= 1 || fy < 0 || fy >= 1) return null;
+  const px = S.valCanvas.ctx.getImageData(Math.floor(fx * S.valCanvas.w), Math.floor(fy * S.valCanvas.h), 1, 1).data;
+  const d = L.value_decode, g = px[0];
+  if (px[3] === 0 || g === d.nodata_gray) return null;
+  const m = d.formula.match(/value = ([\d.-]+) \+ \(gray - 0\.5\) \* ([\d.]+)/);
+  return +m[1] + (g - 0.5) * +m[2];
+}
+
+map.on("mousemove", e => {
+  const v = readValue(e.lngLat), r = document.getElementById("readout");
+  if (v == null) { r.textContent = "Brak danych w tym miejscu (dachy, poza obszarem) · No data here (roofs, outside area)"; return; }
+  const unit = S.layer === "albedo" ? "" : " °C", dig = S.layer === "albedo" ? 2 : 1;
+  let cat = "";
+  if (S.layer === "utci") { const c = HV.CATS[HV.catIndex(v)]; cat = ` · ${c.pl} / ${c.en}`; }
+  r.innerHTML = `<b>${S.layer === "lst" ? "LST" : S.layer.toUpperCase()} ${v.toFixed(dig)}${unit}</b>${cat}`;
+});
+map.on("click", e => map.fire("mousemove", e));
+
+function vline(k) {
+  return { id: "vline", afterDraw(c) {
+    const x = c.scales.x.getPixelForValue(S.step), { top, bottom } = c.chartArea, ctx = c.ctx;
+    ctx.save(); ctx.strokeStyle = "#c2410c"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke(); ctx.restore();
+  } };
+}
+function catBands() {
+  return { id: "bands", beforeDatasetsDraw(c) {
+    const y = c.scales.y, { left, right } = c.chartArea, ctx = c.ctx;
+    if (!c.options.plugins.bands) return;
+    for (const cat of HV.CATS) {
+      const lo = Math.max(cat.min ?? -99, y.min), hi = Math.min(cat.max ?? 99, y.max);
+      if (hi <= lo) continue;
+      ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = cat.color;
+      ctx.fillRect(left, y.getPixelForValue(hi), right - left, y.getPixelForValue(lo) - y.getPixelForValue(hi)); ctx.restore();
+    }
+  } };
+}
+
+function charts() {
+  const s = S.ser, lab = HV.LABELS;
+  Chart.defaults.font.size = 11; Chart.defaults.color = "#444";
+  const base = (yt, bands = false) => ({ responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
+    plugins: { bands, legend: { labels: { boxWidth: 10, boxHeight: 10 } } },
+    scales: { x: { ticks: { maxTicksLimit: 9 } }, y: { title: { display: true, text: yt } } },
+    onClick: (e, els, c) => { const x = c.scales.x.getValueForPixel(e.x); if (x != null) tc.set(Math.max(0, Math.min(HV.N - 1, Math.round(x)))); } });
+  const order = ["paved", "grass", "under_trees", "water"];
+  const ds1 = order.map(k => ({ label: `${SURF[k][1]} / ${SURF[k][2]}`, data: s.by_surface[k].utci_mean, borderColor: SURF[k][0], backgroundColor: SURF[k][0], pointRadius: 0, borderWidth: 2 }));
+  ds1.push({ label: "powietrze / air", data: s.forcing.ta_c, borderColor: "#111", borderDash: [5, 4], pointRadius: 0, borderWidth: 1.5 });
+  S.charts.push(new Chart(document.getElementById("c1"), { type: "line", data: { labels: lab, datasets: ds1 }, options: base("°C", true), plugins: [vline(), catBands()] }));
+  const z = s.by_zone;
+  S.charts.push(new Chart(document.getElementById("c2"), { type: "line", data: { labels: lab, datasets: [
+    { label: "UTCI słońce / sun", data: z.sun.utci_mean, borderColor: "#d73027", pointRadius: 0, borderWidth: 2 },
+    { label: "UTCI cień / shade", data: z.shade.utci_mean, borderColor: "#4575b4", pointRadius: 0, borderWidth: 2 },
+    { label: "Tmrt słońce / sun", data: z.sun.tmrt_mean, borderColor: "#d73027", borderDash: [4, 3], pointRadius: 0, borderWidth: 1.5 },
+    { label: "Tmrt cień / shade", data: z.shade.tmrt_mean, borderColor: "#4575b4", borderDash: [4, 3], pointRadius: 0, borderWidth: 1.5 },
+  ] }, options: base("°C"), plugins: [vline()] }));
+  const p = s.by_surface.paved, g = s.by_surface.grass, t = s.by_surface.under_trees;
+  S.charts.push(new Chart(document.getElementById("c3"), { type: "line", data: { labels: lab, datasets: [
+    { label: "K↓ utwardzone / paved", data: p.k_in_est_wm2, borderColor: "#6b7280", pointRadius: 0, borderWidth: 2 },
+    { label: "K↑ utwardzone / paved", data: p.k_up_est_wm2, borderColor: "#6b7280", borderDash: [4, 3], pointRadius: 0, borderWidth: 1.5 },
+    { label: "K↓ trawa / grass", data: g.k_in_est_wm2, borderColor: "#84cc16", pointRadius: 0, borderWidth: 2 },
+    { label: "K↓ pod drzewami / under trees", data: t.k_in_est_wm2, borderColor: "#166534", pointRadius: 0, borderWidth: 2 },
+    { label: "GHI", data: s.forcing.ghi_wm2, borderColor: "#f59e0b", borderDash: [2, 2], pointRadius: 0, borderWidth: 1.2 },
+  ] }, options: base("W/m²"), plugins: [vline()] }));
+  const st = s.static_by_surface, ks = ["paved", "roofs", "grass", "under_trees", "water", "other"].filter(k => st[k]);
+  S.charts.push(new Chart(document.getElementById("c4"), { type: "bar", data: { labels: ks.map(k => SURF[k][1] + " / " + SURF[k][2]), datasets: [
+    { label: "albedo", data: ks.map(k => st[k].albedo_mean), backgroundColor: "#d6c08f", yAxisID: "y" },
+    { label: "LST °C", data: ks.map(k => st[k].lst_1125_mean_c), backgroundColor: ks.map(k => SURF[k][0]), yAxisID: "y1" },
+  ] }, options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { labels: { boxWidth: 10 } } },
+    scales: { y: { position: "left", title: { display: true, text: "albedo" }, min: 0, max: 0.25 }, y1: { position: "right", title: { display: true, text: "LST °C" }, min: 25, max: 45, grid: { drawOnChartArea: false } }, x: { ticks: { maxRotation: 50, minRotation: 30 } } } } }));
+}
+
+function nowTable() {
+  const s = S.ser, k = S.step, f = s.forcing;
+  document.getElementById("nowt").textContent = HV.LABELS[k];
+  const rows = ["paved", "grass", "under_trees", "water"].map(n => {
+    const b = s.by_surface[n];
+    return `<tr><td><i style="background:${SURF[n][0]}"></i>${SURF[n][1]} / ${SURF[n][2]}</td><td>${Math.round(b.sun_share[k] * 100)}%</td><td>${HV.fmt(b.tmrt_mean[k])}</td><td style="background:${HV.CATS[HV.catIndex(b.utci_mean[k])].color}55">${HV.fmt(b.utci_mean[k])}</td></tr>`;
+  }).join("");
+  document.getElementById("now").innerHTML =
+    `<tr><td colspan="4" style="text-align:left">powietrze / air <b>${HV.fmt(f.ta_c[k])} °C</b> · RH ${Math.round(f.rh_pct[k])}% · wiatr / wind ${f.wind_ms[k]} m/s · GHI ${Math.round(f.ghi_wm2[k])} W/m² · chmury / cloud ${f.cloud_okta[k]}/8</td></tr>` +
+    `<tr><th>nawierzchnia / surface</th><th>w słońcu<br>sunlit</th><th>Tmrt °C</th><th>UTCI °C</th></tr>` + rows;
+}
+
+function render() {
+  if (!S.man) return;
+  setImage(); nowTable();
+  for (const c of S.charts) c.draw();
+}
+
+const tc = HV.timeControl(document.getElementById("tc"), k => { S.step = k; render(); }, 18);
+document.getElementById("lay").addEventListener("click", e => {
+  const l = e.target.dataset.l; if (!l) return;
+  S.layer = l; for (const b of document.querySelectorAll("#lay button")) b.classList.toggle("on", b.dataset.l === l); render();
+});
+document.getElementById("op").addEventListener("input", e => map.getLayer("heat") && map.setPaintProperty("heat", "raster-opacity", +e.target.value));
+map.on("load", async () => {
+  try {
+    const [man, ser] = await Promise.all([fetch("/data/t12/manifest.json").then(r => r.json()), fetch("/data/t12/series/district_series.json").then(r => r.json())]);
+    S.man = man; S.ser = ser;
+    document.getElementById("src").textContent = `Źródło / source: SOLWEIG, ${ser.tiles_covered}/${ser.tiles_planned} kafli 1 km (T06/T12); wymuszenie / forcing: warsaw_heat.t05_forcing_20260628.`;
+    charts();
+  } catch (e) { document.getElementById("loading").textContent = "Błąd danych / data error: " + e; return; }
+  document.getElementById("loading").remove();
+  tc.start();
+});
+</script>
+</body>
+</html>

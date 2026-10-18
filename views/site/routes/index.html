@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trasy w upale · Route heat map</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="/common.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
+<script src="/common.js"></script>
+<style>
+  .pts { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .pts i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 3px; vertical-align: -1px; border: 1px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="head" class="card">
+  <div id="nav"></div>
+  <h1>Trasy piesze w upale <span class="en">· Walking routes in the heat</span></h1>
+  <p class="cap pl">Odczuwalna temperatura UTCI na każdym odcinku chodnika, 28.06.2026; kropki: woda, cień i chłodne miejsca.</p>
+  <p class="cap en">Felt temperature UTCI on every footway segment, 2026-06-28; dots: water, shade and cool places.</p>
+  <span id="badge" class="badge"></span>
+</div>
+<div id="ctrl" class="card">
+  <div id="tc"></div>
+  <div id="legend"></div>
+  <div class="extra" id="stat"></div>
+  <div class="toggles">
+    <label><input type="checkbox" id="t-seg" checked> chodniki / footways</label>
+    <label><input type="checkbox" id="t-cool" checked> woda i chłód / water &amp; cool</label>
+    <label><input type="checkbox" id="t-bench"> ławki w cieniu / shaded benches</label>
+    <label><input type="checkbox" id="t-stop" checked> przystanki / stops</label>
+  </div>
+  <div class="pts hide-phone" id="pts"></div>
+</div>
+<div id="tip"></div>
+<div id="loading">Ładowanie danych… · Loading data…</div>
+<script>
+const COOL = {
+  drinking_water: ["#0ea5e9", "poidełko", "drinking water"],
+  fountain: ["#0369a1", "fontanna", "fountain"],
+  water_curtain_or_splash: ["#1e3a8a", "kurtyna wodna", "water curtain"],
+  water_body: ["#2563eb", "woda", "water body"],
+  park: ["#15803d", "park", "park"],
+  cool_indoor: ["#7c3aed", "chłodne wnętrze", "cool indoor"],
+  shelter: ["#475569", "wiata", "shelter"],
+  toilet: ["#a8a29e", "toaleta", "toilet"],
+  bench: ["#10b981", "ławka w cieniu", "shaded bench"],
+};
+document.getElementById("nav").innerHTML = HV.navHTML("routes");
+document.getElementById("legend").innerHTML = HV.legendHTML();
+document.getElementById("pts").innerHTML = Object.entries(COOL).map(([k, [c, pl, en]]) => `<span><i style="background:${c}"></i>${pl} / ${en}</span>`).join("");
+
+const map = new maplibregl.Map({
+  container: "map",
+  style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  center: [21.012, 52.2305], zoom: HV.isPhone() ? 13.2 : 14, minZoom: 11, maxZoom: 19,
+  attributionControl: { compact: true },
+});
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+const overlay = new deck.MapboxOverlay({ interleaved: false, layers: [] });
+map.addControl(overlay);
+
+const S = { step: 18, seg: null, stops: [], cool: [], areas: null, show: { seg: true, cool: true, bench: false, stop: true } };
+const tip = document.getElementById("tip");
+
+async function load() {
+  const [meta, bin, stops, cool, areas] = await Promise.all([
+    fetch("/data/routes_meta.json").then(r => r.json()),
+    fetch("/data/routes.bin").then(r => r.arrayBuffer()),
+    fetch("/data/stops.json").then(r => r.json()),
+    fetch("/data/t12/points/cool_points.geojson").then(r => r.json()),
+    fetch("/data/t12/points/cool_areas.geojson").then(r => r.json()),
+  ]);
+  const L = meta.layout;
+  const verts = new Float32Array(bin, L.vertices.offset, L.vertices.length);
+  const starts = new Uint32Array(bin, L.starts.offset, L.starts.length);
+  const utci = new Uint8Array(bin, L.utci.offset, L.utci.length);
+  const shade = new Uint8Array(bin, L.shade.offset, L.shade.length);
+  const n = meta.n_segments, nv = meta.n_vertices;
+  // vertex -> segment lookup for colouring
+  const vseg = new Uint32Array(nv);
+  for (let i = 0; i < n; i++) { const e = i + 1 < n ? starts[i + 1] : nv; vseg.fill(i, starts[i], e); }
+  // 256-entry colour LUT for UTCI bytes
+  const lut = new Uint8Array(256 * 4);
+  for (let b = 0; b < 255; b++) { const c = HV.utciRGB(10 + b / 4); lut.set([c[0], c[1], c[2], 235], b * 4); }
+  lut.set([150, 150, 150, 120], 255 * 4);
+  S.seg = { meta, verts, starts, utci, shade, n, nv, vseg, lut, colors: new Uint8Array(nv * 4) };
+  S.stops = stops.stops;
+  S.cool = cool.features.map(f => ({ p: f.geometry.type === "Point" ? f.geometry.coordinates : null, ...f.properties })).filter(d => d.p);
+  S.areas = areas;
+  const b = document.getElementById("badge");
+  if (meta.heat_source === "final") { b.className = "badge final"; b.textContent = "Dane: T08 (SOLWEIG, końcowe) · Data: final T08 field"; }
+  else { b.textContent = "Dane wstępne: T08 stub na kaflach SOLWEIG · Preliminary: T08 stand-in on SOLWEIG tiles"; }
+  document.getElementById("loading").remove();
+}
+
+function segData(k) {
+  const g = S.seg, off = k * g.n, col = g.colors;
+  for (let v = 0; v < g.nv; v++) { const b = g.utci[off + g.vseg[v]] * 4; col[v * 4] = g.lut[b]; col[v * 4 + 1] = g.lut[b + 1]; col[v * 4 + 2] = g.lut[b + 2]; col[v * 4 + 3] = g.lut[b + 3]; }
+  return { length: g.n, startIndices: g.starts, attributes: { getPath: { value: g.verts, size: 2 }, getColor: { value: col, size: 4, normalized: true } }, _k: k };
+}
+
+function render() {
+  const k = S.step, layers = [];
+  layers.push(new deck.GeoJsonLayer({
+    id: "areas", data: S.areas, filled: true, stroked: false, visible: S.show.cool,
+    getFillColor: f => f.properties.category === "park" ? [34, 197, 94, 40] : f.properties.category === "cool_indoor" ? [124, 58, 237, 35] : [37, 99, 235, 45],
+  }));
+  if (S.seg) layers.push(new deck.PathLayer({
+    id: "seg", data: segData(k), visible: S.show.seg, _pathType: "open", pickable: true,
+    widthUnits: "meters", getWidth: 5, widthMinPixels: 1.6, widthMaxPixels: 9, capRounded: true,
+  }));
+  const pts = S.cool.filter(d => d.category === "bench" ? (S.show.bench && d.shade_share[k] >= 0.5) : S.show.cool);
+  layers.push(new deck.ScatterplotLayer({
+    id: "cool", data: pts, pickable: true, getPosition: d => d.p,
+    getFillColor: d => HV.hex(COOL[d.category]?.[0] || "#888888"),
+    getRadius: d => d.category === "bench" ? 3 : 6, radiusUnits: "meters", radiusMinPixels: 2.5, radiusMaxPixels: 9,
+    stroked: true, getLineColor: [255, 255, 255], lineWidthMinPixels: 1, updateTriggers: { getFillColor: k },
+  }));
+  layers.push(new deck.ScatterplotLayer({
+    id: "stops", data: S.stops, visible: S.show.stop, pickable: true, getPosition: d => [d.lon, d.lat],
+    getFillColor: d => d.utci[k] == null ? [150, 150, 150] : HV.utciRGB(d.utci[k]),
+    getRadius: 9, radiusUnits: "meters", radiusMinPixels: 3.5, radiusMaxPixels: 11,
+    stroked: true, getLineColor: [20, 20, 30], lineWidthMinPixels: 1.5, updateTriggers: { getFillColor: k },
+  }));
+  overlay.setProps({ layers, onHover: hover, onClick: hover });
+  if (S.seg) {
+    const s = S.seg.meta.summary_by_step[k], sh = s.length_share_by_category;
+    const hot = Math.round((sh[3] + sh[4]) * 100), ok = Math.round((sh[0] + sh[1]) * 100);
+    document.getElementById("stat").innerHTML =
+      `Sieć ${S.seg.meta.network_km} km: <b>${hot}%</b> długości ≥ 38 °C, <b>${ok}%</b> &lt; 32 °C; średnio ${HV.fmt(s.utci_lw_mean)} °C, cień ${Math.round(s.shade_lw_mean * 100)}%.` +
+      `<span class="hide-phone"> · Network: ${hot}% of length ≥ 38 °C, ${ok}% below 32 °C; mean ${HV.fmt(s.utci_lw_mean)} °C, shade ${Math.round(s.shade_lw_mean * 100)}%.</span>`;
+  }
+}
+
+function hover(info) {
+  const k = S.step;
+  if (!info.object && info.index < 0) { tip.style.display = "none"; return; }
+  let h = "";
+  if (info.layer?.id === "seg") {
+    const g = S.seg, i = info.index, b = g.utci[k * g.n + i];
+    const u = b === 255 ? null : 10 + b / 4;
+    h = `<b>Odcinek / segment</b><br>UTCI ${HV.fmt(u)} °C · ${u == null ? "" : HV.CATS[HV.catIndex(u)].pl + " / " + HV.CATS[HV.catIndex(u)].en}<br>cień / shade ${Math.round(g.shade[k * g.n + i] / 2.5)}%`;
+  } else if (info.layer?.id === "stops") {
+    const d = info.object;
+    h = `<b>${d.name || d.id}</b> (${d.mode || "przystanek"})<br>UTCI ${HV.fmt(d.utci[k])} °C${d.shelter ? " · wiata / shelter" : ""}`;
+  } else if (info.layer?.id === "cool") {
+    const d = info.object, c = COOL[d.category] || ["", d.category, d.category];
+    h = `<b>${d.name && d.name !== "None" ? d.name : c[1]}</b><br>${c[1]} / ${c[2]}<br>UTCI ${HV.fmt(d.utci?.[k])} °C · cień / shade ${Math.round((d.shade_share?.[k] || 0) * 100)}%`;
+    if (d.shade_hours_10_18) h += `<br>cień 10–18: ${d.shade_hours_10_18} h`;
+  } else { tip.style.display = "none"; return; }
+  tip.innerHTML = h; tip.style.display = "block";
+  const x = Math.min(info.x + 12, window.innerWidth - 270), y = Math.max(info.y - 10, 10);
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+
+const tc = HV.timeControl(document.getElementById("tc"), k => { S.step = k; render(); }, 18);
+for (const key of ["seg", "cool", "bench", "stop"]) document.getElementById("t-" + key).addEventListener("change", e => { S.show[key] = e.target.checked; render(); });
+map.on("load", async () => {
+  try { await load(); } catch (e) { document.getElementById("loading").textContent = "Błąd danych / data error: " + e; return; }
+  tc.start();
+});
+</script>
+</body>
+</html>

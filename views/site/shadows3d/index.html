@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cienie 3D · 3D shadows</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="/common.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
+<script src="/common.js"></script>
+<style>
+  #sky { position: absolute; inset: 0; z-index: 2; pointer-events: none; transition: background .6s; }
+  #sun { position: absolute; z-index: 5; right: 10px; top: 80px; padding: 8px 10px; width: 170px; font-size: 12px; }
+  #sun svg { display: block; margin: 0 auto 4px; }
+  #sun .k { color: var(--muted); }
+  .okta { letter-spacing: 1px; font-size: 13px; }
+  .shleg { display: flex; gap: 12px; font-size: 11px; color: var(--muted); margin-top: 4px; flex-wrap: wrap; }
+  .shleg i { display: inline-block; width: 12px; height: 10px; margin-right: 4px; vertical-align: -1px; }
+  @media (max-width: 600px) {
+    #sun { top: auto; bottom: 175px; right: 6px; width: 132px; padding: 6px 8px; font-size: 11px; }
+    #sun svg { width: 70px; height: 70px; }
+  }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="sky"></div>
+<div id="head" class="card">
+  <div id="nav"></div>
+  <h1>Cienie w ciągu dnia <span class="en">· Shade through the day</span></h1>
+  <p class="cap pl">Budynki i drzewa z LiDAR; cień SOLWEIG przesuwa się ze słońcem od 06:00 do 22:00, z zachmurzeniem w każdym kroku.</p>
+  <p class="cap en">LiDAR buildings and trees; SOLWEIG shade moves with the sun from 06:00 to 22:00, with cloud cover at each step.</p>
+</div>
+<div id="sun" class="card"></div>
+<div id="ctrl" class="card">
+  <div id="tc"></div>
+  <div class="shleg"><span><i style="background:#1e2a5a"></i>cień budynków / building shade</span><span><i style="background:#2f7a3a"></i>cień drzew / tree shade</span>
+    <span class="hide-phone">UTCI w cieniu jest niższa o kilka °C (legenda) · UTCI in shade is several °C lower (legend)</span></div>
+  <div id="legend"></div>
+  <div class="extra" id="stat"></div>
+  <div class="toggles">
+    <label><input type="checkbox" id="t-b" checked> budynki / buildings</label>
+    <label><input type="checkbox" id="t-t" checked> drzewa / trees</label>
+    <label><input type="checkbox" id="t-s" checked> cień / shade</label>
+    <label><input type="checkbox" id="t-u"> UTCI na ziemi / on ground</label>
+  </div>
+</div>
+<div id="tip"></div>
+<div id="loading">Ładowanie sceny 3D… · Loading 3D scene…</div>
+<script>
+document.getElementById("nav").innerHTML = HV.navHTML("shadows3d");
+document.getElementById("legend").innerHTML = HV.legendHTML();
+const phone = HV.isPhone();
+const map = new maplibregl.Map({
+  container: "map",
+  style: "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json",
+  center: [21.0055, 52.2335], zoom: phone ? 15.2 : 15.9, pitch: 58, bearing: -28, maxPitch: 75, minZoom: 12.5,
+  attributionControl: { compact: true }, antialias: true,
+});
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+const overlay = new deck.MapboxOverlay({ interleaved: false, layers: [] });
+map.addControl(overlay);
+
+const S = { step: 18, sc: null, man: null, b: null, t: null, show: { b: true, t: true, s: true, u: false }, ready: false };
+let shadowFrames, utciFrames;
+
+const ambient = new deck.AmbientLight({ color: [255, 255, 255], intensity: 1.0 });
+const sun = new deck._SunLight({ timestamp: HV.TS_UTC[18], color: [255, 246, 228], intensity: 2.0 });
+const lighting = new deck.LightingEffect({ ambient, sun });
+
+function sunSVG(st) {
+  // compass: azimuth clockwise from north, radius shrinks with elevation
+  const R = 40, c = 45, el = Math.max(0, st.sun_elevation_deg), r = R * (1 - el / 90);
+  const a = (st.sun_azimuth_deg - 90) * Math.PI / 180, x = c + r * Math.cos(a), y = c + r * Math.sin(a);
+  return `<svg width="90" height="90" viewBox="0 0 90 90" aria-hidden="true">
+    <circle cx="${c}" cy="${c}" r="${R}" fill="#eef2f7" stroke="#cbd5e1"/><circle cx="${c}" cy="${c}" r="${R * 2 / 3}" fill="none" stroke="#e2e8f0"/>
+    <circle cx="${c}" cy="${c}" r="${R / 3}" fill="none" stroke="#e2e8f0"/>
+    <text x="${c}" y="9" font-size="8" text-anchor="middle" fill="#64748b">N</text><text x="${c}" y="89" font-size="8" text-anchor="middle" fill="#64748b">S</text>
+    <text x="2" y="${c + 3}" font-size="8" fill="#64748b">W</text><text x="82" y="${c + 3}" font-size="8" fill="#64748b">E</text>
+    ${st.sun_up ? `<line x1="${c}" y1="${c}" x2="${x}" y2="${y}" stroke="#f59e0b" stroke-width="1.5"/><circle cx="${x}" cy="${y}" r="6" fill="#fbbf24" stroke="#b45309"/>` : `<text x="${c}" y="${c + 4}" font-size="10" text-anchor="middle" fill="#334155">noc / night</text>`}
+  </svg>`;
+}
+
+function render() {
+  if (!S.ready) return;
+  const k = S.step, st = S.sc.steps[k];
+  sun.timestamp = HV.TS_UTC[k];
+  const okta = st.cloud_okta ?? 0, night = !st.sun_up;
+  sun.intensity = night ? 0 : 2.2 * (1 - 0.55 * okta / 8) * Math.min(1, st.sun_elevation_deg / 12 + 0.2);
+  ambient.intensity = night ? 0.55 : 0.85 + 0.25 * okta / 8;
+  const fr = S.man.views.shadows_3d.layers[phone ? "shadow_solweig_4m" : "shadow_solweig"].frame;
+  const ufr = S.man.views.temperature_albedo.layers.utci.frame;
+  const layers = [];
+  if (S.show.u && utciFrames.ready(k)) layers.push(new deck.BitmapLayer({ id: "utci", bounds: ufr.deckgl_bitmap_bounds, image: utciFrames.ready(k), opacity: 0.85 }));
+  if (S.show.s && st.sun_up && shadowFrames.ready(k)) layers.push(new deck.BitmapLayer({ id: "shadow", bounds: fr.deckgl_bitmap_bounds, image: shadowFrames.ready(k), opacity: 0.85 }));
+  if (S.show.t) layers.push(new deck.ColumnLayer({
+    id: "trunks", data: S.t, diskResolution: 6, extruded: true, radius: 0.35, radiusUnits: "meters",
+    getPosition: d => d.p, getElevation: d => d.base, getFillColor: [110, 84, 60, 255],
+  }));
+  if (S.show.t) layers.push(new deck.PolygonLayer({
+    id: "crowns", data: S.t, extruded: true, getPolygon: d => d.crown, getElevation: d => Math.max(0.5, d.h - d.base),
+    getFillColor: [70, 150, 78, 230], material: { ambient: 0.45, diffuse: 0.7, shininess: 4 },
+  }));
+  if (S.show.b) layers.push(new deck.PolygonLayer({
+    id: "bldg", data: S.b, extruded: true, wireframe: false, getPolygon: d => d.g, getElevation: d => d.h,
+    getFillColor: d => d.h > 60 ? [214, 211, 205] : [236, 233, 226], material: { ambient: 0.35, diffuse: 0.75, shininess: 16, specularColor: [60, 60, 60] },
+    pickable: true,
+  }));
+  overlay.setProps({ layers, effects: [lighting], onHover: hover });
+  shadowFrames.get(k); shadowFrames.around(k, 2); if (S.show.u) utciFrames.get(k);
+  // HUD
+  const dir = st.sun_up ? Math.round(st.sun_azimuth_deg) + "°" : "–";
+  const sl = st.sun_up && st.shadow_length_per_m_height ? st.shadow_length_per_m_height.toFixed(1) : "–";
+  const okt = "●".repeat(Math.round(okta)) + "○".repeat(8 - Math.round(okta));
+  document.getElementById("sun").innerHTML = sunSVG(st) +
+    `<div><span class="k">słońce / sun</span> ${night ? "pod horyzontem" : "wys. " + st.sun_elevation_deg.toFixed(0) + "°, az. " + dir}</div>` +
+    `<div><span class="k">cień / shadow</span> ${sl} m na 1 m wys.</div>` +
+    `<div><span class="k">chmury / cloud</span> <span class="okta">${okt}</span> ${okta}/8</div>` +
+    `<div><span class="k">GHI</span> ${Math.round(st.ghi_wm2 || 0)} W/m² · <span class="k">T</span> ${HV.fmt(st.ta_c)} °C</div>`;
+  const g = S.series?.by_surface;
+  if (g) {
+    const p = g.paved.sun_share[k], z = S.series.by_zone;
+    document.getElementById("stat").innerHTML =
+      `Nasłonecznione chodniki i place: <b>${Math.round(p * 100)}%</b>; UTCI w słońcu ${HV.fmt(z.sun.utci_mean[k])} °C, w cieniu ${HV.fmt(z.shade.utci_mean[k])} °C.` +
+      `<span class="hide-phone"> · Sunlit paved ground: ${Math.round(p * 100)}%; UTCI ${HV.fmt(z.sun.utci_mean[k])} °C in sun vs ${HV.fmt(z.shade.utci_mean[k])} °C in shade.</span>`;
+  }
+  const dim = night ? 0.35 : Math.max(0, 0.18 * (okta / 8) + (st.sun_elevation_deg < 8 ? 0.12 : 0));
+  document.getElementById("sky").style.background = night ? `rgba(15,23,42,${dim})` : `rgba(120,130,145,${dim})`;
+}
+
+const tip = document.getElementById("tip");
+function hover(info) {
+  if (!info.object) { tip.style.display = "none"; return; }
+  tip.innerHTML = `budynek / building: ${info.object.h} m`;
+  tip.style.display = "block"; tip.style.left = info.x + 12 + "px"; tip.style.top = info.y + "px";
+}
+
+async function load() {
+  const [man, sc, series, b, t] = await Promise.all([
+    fetch("/data/t12/manifest.json").then(r => r.json()),
+    fetch("/data/t12/scene/sun_cloud.json").then(r => r.json()),
+    fetch("/data/t12/series/district_series.json").then(r => r.json()),
+    fetch("/data/t12/scene/buildings.geojson").then(r => r.json()),
+    fetch("/data/t12/scene/trees.geojson").then(r => r.json()),
+  ]);
+  S.man = man; S.sc = sc; S.series = series;
+  S.b = b.features.map(f => ({ g: f.geometry.coordinates, h: f.properties.h }));
+  const kx = 1 / (111320 * Math.cos(52.23 * Math.PI / 180)), ky = 1 / 110574;
+  const oct = Array.from({ length: 8 }, (_, i) => [Math.cos(i * Math.PI / 4), Math.sin(i * Math.PI / 4)]);
+  S.t = t.features.map(f => {
+    const [x, y] = f.geometry.coordinates, q = f.properties, r = Math.max(0.8, q.r || 1), base = Math.max(0, Math.min(q.base ?? q.h * 0.4, q.h - 0.5));
+    return { p: [x, y], h: q.h, base, crown: oct.map(([c, s]) => [x + c * r * kx, y + s * r * ky, base]) };
+  });
+  const sdir = phone ? "shadow_solweig_4m" : "shadow_solweig";
+  shadowFrames = HV.framePreloader(k => `/data/t12/frames/${sdir}/${String(k).padStart(2, "0")}.png`, (k) => { if (k === S.step) render(); });
+  utciFrames = HV.framePreloader(k => `/data/t12/frames/utci/${String(k).padStart(2, "0")}.png`, (k) => { if (k === S.step) render(); });
+  S.ready = true;
+  document.getElementById("loading").remove();
+}
+
+const tc = HV.timeControl(document.getElementById("tc"), k => { S.step = k; render(); }, 18);
+for (const key of ["b", "t", "s", "u"]) document.getElementById("t-" + key).addEventListener("change", e => { S.show[key] = e.target.checked; render(); });
+map.on("load", async () => {
+  try { await load(); } catch (e) { document.getElementById("loading").textContent = "Błąd danych / data error: " + e; return; }
+  tc.start();
+});
+</script>
+</body>
+</html>
