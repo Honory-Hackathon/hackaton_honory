@@ -1,0 +1,26 @@
+trip,weights,best,kendall_tau_vs_spec,walk_order,replanned_walk_m,replanned_walk_changed
+noon_zbawiciela_uniwersytet,spec,ours_coolest,1.0,walk_coolest > walk_bldg_only > walk_fastest > ors_plain > ors_shaded,,
+noon_zbawiciela_uniwersytet,linear26,ours_coolest,0.78,walk_fastest > ors_plain > walk_coolest > ors_shaded > walk_bldg_only,2517.0,True
+noon_zbawiciela_uniwersytet,strong_only,ours_coolest,0.96,walk_coolest > walk_bldg_only > walk_fastest > ors_plain > ors_shaded,2721.0,False
+noon_zbawiciela_uniwersytet,steep,ours_coolest,0.96,walk_coolest > walk_bldg_only > walk_fastest > ors_plain > ors_shaded,2721.0,False
+noon_zbawiciela_uniwersytet,very_strong_only,ours_coolest,0.89,walk_coolest > walk_bldg_only > walk_fastest > ors_plain > ors_shaded,3478.0,True
+trees_centralny_lazienki,spec,ours_coolest,1.0,walk_coolest > walk_bldg_only > ors_shaded > walk_fastest > ors_plain,,
+trees_centralny_lazienki,linear26,ours_coolest,0.96,walk_bldg_only > walk_coolest > ors_shaded > walk_fastest > ors_plain,2947.0,True
+trees_centralny_lazienki,strong_only,ours_coolest,1.0,walk_coolest > walk_bldg_only > ors_shaded > walk_fastest > ors_plain,3050.0,False
+trees_centralny_lazienki,steep,ours_coolest,1.0,walk_coolest > walk_bldg_only > ors_shaded > walk_fastest > ors_plain,3051.0,False
+trees_centralny_lazienki,very_strong_only,ours_coolest,1.0,walk_coolest > walk_bldg_only > ors_shaded > walk_fastest > ors_plain,6845.0,True
+evening_dmowskiego_trzech_krzyzy,spec,ours_coolest,1.0,walk_coolest > walk_bldg_only > walk_fastest > ors_shaded > ors_plain,,
+evening_dmowskiego_trzech_krzyzy,linear26,ours_coolest,1.0,walk_coolest > walk_bldg_only > walk_fastest > ors_shaded > ors_plain,1097.0,False
+evening_dmowskiego_trzech_krzyzy,strong_only,ours_coolest,0.93,walk_coolest > walk_bldg_only > walk_fastest > ors_shaded > ors_plain,4870.0,True
+evening_dmowskiego_trzech_krzyzy,steep,ours_coolest,1.0,walk_coolest > walk_bldg_only > walk_fastest > ors_shaded > ors_plain,1097.0,False
+evening_dmowskiego_trzech_krzyzy,very_strong_only,ours_coolest,0.85,walk_coolest > walk_bldg_only > walk_fastest > ors_shaded > ors_plain,1089.0,True
+transit_kopernik_mirowska,spec,ours_coolest,1.0,walk_coolest > walk_bldg_only > walk_fastest > ors_shaded > ors_plain,,
+transit_kopernik_mirowska,linear26,bldg_only,0.75,walk_fastest > walk_coolest > ors_shaded > ors_plain > walk_bldg_only,2682.0,True
+transit_kopernik_mirowska,strong_only,ours_coolest,0.89,walk_coolest > walk_fastest > ors_shaded > walk_bldg_only > ors_plain,2918.0,True
+transit_kopernik_mirowska,steep,ours_coolest,0.96,walk_coolest > walk_bldg_only > ors_shaded > walk_fastest > ors_plain,3030.0,True
+transit_kopernik_mirowska,very_strong_only,ours_coolest,0.93,walk_coolest > walk_bldg_only > ors_shaded > walk_fastest > ors_plain,5515.0,True
+when_zamkowy_zbawiciela,spec,ours_coolest,1.0,walk_coolest > walk_bldg_only > ors_shaded > walk_fastest > ors_plain,,
+when_zamkowy_zbawiciela,linear26,ours_coolest,0.89,walk_bldg_only > walk_coolest > ors_shaded > walk_fastest > ors_plain,4320.0,True
+when_zamkowy_zbawiciela,strong_only,ours_coolest,0.75,ors_shaded > walk_coolest > walk_bldg_only > walk_fastest > ors_plain,4670.0,True
+when_zamkowy_zbawiciela,steep,ours_coolest,0.96,walk_coolest > walk_bldg_only > ors_shaded > walk_fastest > ors_plain,4291.0,False
+when_zamkowy_zbawiciela,very_strong_only,ours_coolest,0.6,walk_coolest > walk_bldg_only > walk_fastest > ors_shaded > ors_plain,3380.0,True

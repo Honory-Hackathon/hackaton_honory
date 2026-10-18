@@ -1,6 +1,6 @@
 # T11 report: demo trips, baselines (ORS Shaded, building-only shade) and dose weights
 
-**Status (2026-10-18 02:25 UTC):** everything runs end to end on the **T08 stub field** (`warsaw_heat.t08_*_stub`, SOLWEIG district tiles that were ready) with the **T09 router as it stood in its worktree** at that time. The final field (T08 on T07) did not exist yet. **The numbers below are a preview.** The rerun on the final field is one command: `bash demo/run_final.sh` (see [Rerun](#rerun)).
+**Status (2026-10-18 03:15 UTC):** final. Everything below is on the **final field**, T08 `warsaw_heat.t08_*` on the T07 SOLWEIG district run (T08 `_SUCCESS` 03:10 UTC), with the T09 router from `main`. It was produced by the one-command rerun `bash demo/run_final.sh` (see [Rerun](#rerun)). An earlier preview on the T08 stub field (`*_stub.*`) gave identical numbers on four trips and differed only on Kopernik → Mirowska (the stub was built from 21 of the 27 SOLWEIG tiles).
 
 ## What was produced and where
 
@@ -12,10 +12,10 @@
 | T02-zone stand-in field (only for testing before T08 existed) | `T11/segment_heat_standin.parquet`, `stop_heat_standin.parquet` |
 | ORS Shaded answers (25 cached) | `T11/ors_cache/<trip>__<doy>_<hour>__f<factor>.json` |
 | Comparison table per trip, weight sensitivity, headline | `reports/T11/comparison_<field>.csv`, `weights_<field>.csv`, `weights_summary_<field>.csv`, `headline_<field>.md/json`; full legs in `T11/results/<field>/results_<field>.json` |
-| Maps of the compared routes | `reports/T11/map_<trip>_stub.png` |
+| Maps of the compared routes, summary chart | `reports/T11/map_<trip>_final.png`, `summary_final.png` |
 | Code | [`demo/`](../../demo/README.md) |
 
-`<field>` is `stub` (router + T08 stub), `standin` (router + T11 stand-in), or `…_walkonly` (no router, walk-only fallback).
+`<field>` is `final` (router + T08 final), `stub` (router + T08 stub), `standin` (router + T11 stand-in), or `…_walkonly` (no router, walk-only fallback).
 
 ## Demo trips
 
@@ -52,7 +52,7 @@ The zone UTCIs come from one of two sources:
 - `pilot`: the SOLWEIG pilot's mean Tmrt per T02 zone and step (T06 `by_zone_time.csv`), with T05 forcing, through `pythermalcomfort`.
 - `t08`: a per-step least-squares fit of T08 `utci_mean` on the segment's three shares, so the baseline lives on the same field it is priced on.
 
-The two calibrations agree within about 1 K. At 13:00, pilot vs stub fit:
+The two calibrations agree within about 1 K. At 13:00 (`zone_utci_pilot.csv` vs `zone_utci_t08_stub.csv`; the final-field fit `zone_utci_t08.csv` is within 0.5 K of the stub fit at 13:00):
 
 | Zone | Pilot | Stub fit |
 |---|---|---|
@@ -62,7 +62,7 @@ The two calibrations agree within about 1 K. At 13:00, pilot vs stub fit:
 
 Stops use the best spot: the stop-area pixel with the most building shade.
 
-## Headline (T08 stub field, preview)
+## Headline (final field)
 
 Dose saved = 1 − ours / baseline; minutes = ours − baseline.
 
@@ -71,15 +71,15 @@ Dose saved = 1 − ours / baseline; minutes = ours − baseline.
 | Zbawiciela → Uniwersytet, noon | **−86 %** (−14 min) | −49 % (+9 min) | −8 % (+4 min) | −10 % (+4 min) | −4 % (−7 min) |
 | Centralny → Łazienki | **−81 %** (−20 min) | −5 % (+3 min) | −17 % (+5 min) | −10 % (+5 min) | −2 % (+1 min) |
 | Dmowskiego → Trzech Krzyży, evening | **−87 %** (−11 min) | 0 % | −1 % (0 min) | −6 % (0 min) | −1 % (0 min) |
-| Kopernik → Mirowska | **−81 %** (−9 min) | −13 % (+9 min) | −15 % (+6 min) | −11 % (+4 min) | **−9 %** (−6 min) |
+| Kopernik → Mirowska | **−79 %** (−9 min) | −32 % (+10 min) | −8 % (+5 min) | −8 % (+3 min) | **−7 %** (−7 min) |
 | Zamkowy → Zbawiciela, all day | **−94 %** (−38 min) | −90 % (+4 min) | −52 % (+16 min) | −6 % (+8 min) | 0 % |
 
-![](summary_stub.png)
+![](summary_final.png)
 
-- **Pitch line (preview):** planning in space *and* time with AC trams and buses cuts the heat dose by **81–94 %** against walking at the requested time, and it is also **9–38 min faster**. Most of the gain is from the AC ride and from the departure time. Shade routing alone gives **1–17 %** at a fixed departure (52 % on the all-day trip, where the shaded early-morning route is 16 min longer).
-- **ORS Shaded on our field:** our coolest walk has **6–11 % less dose** than ORS Shaded's route, at +0–8 min. On the noon trip the ORS Shaded route has *more* dose than ORS's own unweighted route on our field (61.7 vs 61.1 k K·s). Its shade layer (synthetic nDSM, 4 fixed slots on 21 June) disagrees with SOLWEIG at that hour.
+- **Pitch line:** planning in space *and* time with AC trams and buses cuts the heat dose by **79–94 %** against walking at the requested time, and it is also **9–38 min faster**. Most of the gain is from the AC ride and from the departure time. Shade routing alone saves **1–17 %** at a fixed departure (52 % on the all-day trip, where the shaded early-morning route is 16 min longer).
+- **ORS Shaded on our field:** our coolest walk has **6–10 % less dose** than ORS Shaded's route, at +0–8 min. On the noon trip the ORS Shaded route has *more* dose than ORS's own unweighted route on our field (61.7 vs 61.1 k K·s). Its shade layer (synthetic nDSM, 4 fixed slots on 21 June) disagrees with SOLWEIG at that hour.
 - **Trees (building-only):**
-  - For walking, routing on building-only shade costs **0–4 %** more dose on four trips and **9 %** on Kopernik → Mirowska, where the building-only route is 360 m longer *and* hotter.
+  - For walking, routing on building-only shade costs **0–4 %** more dose on four trips and **7 %** on Kopernik → Mirowska, where the building-only route is 400 m longer *and* hotter.
   - For the multimodal trip, building-only routing gives the same answer as ours: the walk legs are 270–680 m and the ride dominates.
   - The tree effect is real but small where SOLWEIG's tree shade is close to building shade (U_tree ≈ U_bldg in the calibration).
 - **Router behaviour worth a look (T09):** on the noon trip, `ours_coolest` rides tram 4 north past Uniwersytet, transfers, and rides bus 111 back (see map). Riding is dose-free, so this is optimal for the metric, but it looks odd in a demo. A small per-transfer or ride-time penalty would avoid it.
@@ -88,7 +88,7 @@ Dose saved = 1 − ours / baseline; minutes = ours − baseline.
   - The worst case, −23 %, is the 991 K·s early-morning transit option of the Zamkowy trip, where small absolute differences in the wait and stop rules weigh a lot.
   - For ORS lines, `router.price_path` and our pricer agree within 3 %.
 
-### Per-trip tables (stub field)
+### Per-trip tables (final field)
 
 Dose in K·s.
 
@@ -109,13 +109,13 @@ Dose in K·s.
 | fastest_now | 12:30 → 13:14 | 45 | 2,494 | 0 | 55,730 | 42.1 |
 </details>
 
-The T08 stub was still being updated during the night, so a rerun moves these numbers by a few per cent. Full tables with shade shares and minutes per UTCI category: [`comparison_stub.csv`](comparison_stub.csv) (and `comparison_standin.csv`).
+Full tables with shade shares and minutes per UTCI category: [`comparison_final.csv`](comparison_final.csv) (preview runs: `comparison_stub.csv`, `comparison_standin.csv`).
 
-![](map_trees_centralny_lazienki_stub.png)
-![](map_transit_kopernik_mirowska_stub.png)
-![](map_noon_zbawiciela_uniwersytet_stub.png)
-![](map_evening_dmowskiego_trzech_krzyzy_stub.png)
-![](map_when_zamkowy_zbawiciela_stub.png)
+![](map_trees_centralny_lazienki_final.png)
+![](map_transit_kopernik_mirowska_final.png)
+![](map_noon_zbawiciela_uniwersytet_final.png)
+![](map_evening_dmowskiego_trzech_krzyzy_final.png)
+![](map_when_zamkowy_zbawiciela_final.png)
 
 ## Dose weights (spec §7)
 
@@ -131,21 +131,21 @@ Five weight sets, all g(U) = Σ wₖ·max(0, U − tₖ):
 
 Two questions were asked of each set:
 - **Does the ranking change?** All candidates of a trip were re-scored under the set, and the ranking compared with Kendall τ.
-- **Does the coolest walk change?** The coolest walk was re-planned under the set (`weights_summary_stub.csv`).
+- **Does the coolest walk change?** The coolest walk was re-planned under the set (`weights_summary_final.csv`).
 
 | Weights | Mean τ vs spec | Trips where the best option changes | Trips where the coolest walk changes |
 |---|---|---|---|
-| `linear26` | 0.89 | 1 / 5 (Kopernik: `bldg_only` edges `ours_coolest`) | 4 / 5 |
-| `strong_only` | 0.93 | 0 | 3 / 5 |
+| `linear26` | 0.88 | 1 / 5 (Kopernik: `bldg_only` edges `ours_coolest`) | 4 / 5 |
+| `strong_only` | 0.91 | 0 | 3 / 5 |
 | `steep` | 0.98 | 0 | 1 / 5 |
-| `very_strong_only` | 0.84 | 1 / 5 (Kopernik: `ours_balanced`) | 5 / 5 |
+| `very_strong_only` | 0.85 | 0 | 5 / 5 |
 
 **What this says:**
-- **The best option is robust.** Under every weight set the AC + timing option stays best on 4–5 of 5 trips; only the order of near-equal options changes.
+- **The best option is robust.** Under every weight set our coolest option stays best on 4–5 of 5 trips; only the order of near-equal options changes.
 - **Walking route choice is sensitive to the weights:**
-  - Under `linear26`, on the noon trip the fastest walk wins (shorter exposure beats shade).
-  - Threshold-only weights (`very_strong_only`, `strong_only`) make the walk router detour hard to stay below the threshold, up to +3.6 km (Centralny → Łazienki 6.6 km instead of 3.1 km; Kopernik 6.9 km instead of 3.0 km), because time spent below the threshold is free.
-  - The `spec` and `steep` weights keep a baseline term from 26 °C. That term charges every minute in heat and keeps the coolest walk within +0.2–0.9 km of the fastest.
+  - Under `linear26`, on the noon and Kopernik trips the fastest walk wins (shorter exposure beats shade).
+  - Threshold-only weights (`very_strong_only`, `strong_only`) make the walk router detour hard to stay below the threshold, up to +3.8 km (Centralny → Łazienki 6.8 km instead of 3.1 km; Kopernik 5.5 km instead of 2.9 km), because time spent below the threshold is free.
+  - The `spec` and `steep` weights keep a baseline term from 26 °C. That term charges every minute in heat and keeps the coolest walk within +0–0.9 km of the fastest.
 - **Recommendation:** keep the spec weights (or `steep`: τ = 0.98, the coolest walk changes on 1 trip of 5). Do not use threshold-only weights for an elderly persona: they reward long walks.
 
 ## Rerun
@@ -173,7 +173,7 @@ The building-only shares only need recomputing if T02 changes: Cloud Run Job `t1
 
 ## Open issues
 
-- **Final field:** all numbers are on the T08 *stub* (21 of 27 SOLWEIG tiles), with the router still in development. Rerun `bash demo/run_final.sh` once T08 writes `_SUCCESS` and T09 is merged.
+- **Reruns:** if T07/T08 or the router change, rerun `bash demo/run_final.sh`; the outputs are deterministic (two runs gave byte-identical CSVs and maps).
 - **Building-only baseline is a zone model:** it changes shade *classification* only; within-zone variation (sky view, surfaces) is not modelled. A cleaner baseline is a SOLWEIG run without CDSM; out of scope tonight.
 - **ORS lines are snapped** to the nearest T03 segment within 30 m every 5 m (all samples snapped). A sample can land on the other sidewalk of a narrow street.
 - **Night steps** (21:00–22:00) carry SOLWEIG's missing evening heat release (spec §6); none of the demo trips runs after 20:30.
