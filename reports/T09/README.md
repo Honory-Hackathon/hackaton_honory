@@ -197,5 +197,7 @@ for the next run over walking; balanced (one 106, 25 min) is the sensible choice
   before and after; the cached ORS Shaded lines of T11 price identically). Deployed to `t09-router` and `heat-app`.
 - 240 options from 60 random node pairs × windows checked for consistency (legs contiguous, leg doses sum to the total,
   category minutes sum to the duration, inside the window, coolest ≤ fastest in dose): all pass.
-- With custom `weights`, g is recomputed from the segment's mean UTCI, not from its pixel distribution (T08's g
-  for default weights may be the pixel mean of g).
+- Fixed at integration: with custom `weights` whose thresholds are among 26/32/38/46, g is now Σ w·exc from T08's
+  pixel exceedance columns (`exc26…exc46`), i.e. the pixel mean of g as T08 computes it; other thresholds still
+  recompute g from the segment's mean UTCI (noted in the answer). The spec weights passed explicitly now give the
+  default answer (coolest 8,282.8 vs 8,282.9 K·s; before: 8,254.4); `[[32,1],[38,3]]` gives 3,767 K·s (before 3,724).

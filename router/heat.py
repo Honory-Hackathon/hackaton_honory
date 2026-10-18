@@ -56,7 +56,8 @@ def dose_rate(u: np.ndarray, weights=DEFAULT_WEIGHTS) -> np.ndarray:
 class HeatField:
     """Arrays [33, n] for segments (edge order of the bundle) and stops (stop order of the bundle)."""
 
-    def __init__(self, seg_utci, seg_p90, seg_g, seg_shade, stop_utci, stop_g, source: str, notes=None):
+    def __init__(self, seg_utci, seg_p90, seg_g, seg_shade, stop_utci, stop_g, source: str, notes=None,
+                 seg_exc=None, stop_exc=None):
         self.seg_utci = seg_utci
         self.seg_p90 = seg_p90
         self.seg_g = seg_g
@@ -65,9 +66,21 @@ class HeatField:
         self.stop_g = stop_g
         self.source = source
         self.notes = list(notes or [])
+        # T08 pixel means of max(0, U - t) per threshold t: {t: [33, n]} (empty when the source has none)
+        self.seg_exc = seg_exc or {}
+        self.stop_exc = stop_exc or {}
 
     def reweighted(self, weights) -> "HeatField":
-        """Recompute g from UTCI with custom weights (T08's g, if any, is replaced)."""
+        """g for custom weights. When every threshold has a T08 exceedance column, g = sum w_t * exc_t, i.e. the
+        pixel mean of g exactly as T08 computes it; otherwise g is recomputed from the mean UTCI."""
+        ths = {th for th, _ in weights}
+        if ths and self.seg_exc and self.stop_exc and ths <= set(self.seg_exc) and ths <= set(self.stop_exc):
+            sg = sum(w * self.seg_exc[th] for th, w in weights)
+            tg = sum(w * self.stop_exc[th] for th, w in weights)
+            return HeatField(self.seg_utci, self.seg_p90, sg, self.seg_shade, self.stop_utci, tg,
+                             self.source + "+weights",
+                             self.notes + ["custom dose weights: g from T08 pixel exceedances (exc26/32/38/46)"],
+                             self.seg_exc, self.stop_exc)
         return HeatField(self.seg_utci, self.seg_p90, dose_rate(self.seg_utci, weights), self.seg_shade,
                          self.stop_utci, dose_rate(self.stop_utci, weights), self.source + "+weights",
                          self.notes + ["custom dose weights: g recomputed from mean UTCI per segment/stop"])
@@ -149,6 +162,9 @@ def _load_table(name: str, cols: str, env_path: str | None) -> pd.DataFrame:
     raise RuntimeError(f"heat table {name} not found; tried " + " | ".join(tried))
 
 
+EXC_THRESHOLDS = (26, 32, 38, 46)
+
+
 def from_frames(edges: pd.DataFrame, stops: pd.DataFrame, seg: pd.DataFrame, stp: pd.DataFrame,
                 source: str) -> HeatField:
     """Turn T08-shaped frames into arrays. Missing segments: indoor -> comfortable, others -> step median."""
@@ -186,6 +202,14 @@ def from_frames(edges: pd.DataFrame, stops: pd.DataFrame, seg: pd.DataFrame, stp
     shade[:, indoor] = 1.0
     if np.isnan(g).any():  # g column absent
         g = dose_rate(utci)
+    seg_exc = {}
+    for th in EXC_THRESHOLDS:
+        col = f"exc{th}"
+        if col in seg:
+            a = fill(col)
+            bad = np.isnan(a)
+            a[bad] = np.maximum(0.0, utci - th)[bad]  # filled segments: from their (filled) mean UTCI
+            seg_exc[float(th)] = a
 
     sidx = pd.Series(np.arange(len(stops)), index=stops.stop_id.astype(str).values)
     stp = stp.copy()
@@ -206,7 +230,16 @@ def from_frames(edges: pd.DataFrame, stops: pd.DataFrame, seg: pd.DataFrame, stp
     su[bad] = np.broadcast_to(mu[:, None], su.shape)[bad]
     bad = np.isnan(sg)
     sg[bad] = dose_rate(su)[bad]
-    return HeatField(utci, p90, g, shade, su, sg, source, notes)
+    stop_exc = {}
+    for th in EXC_THRESHOLDS:
+        col = f"exc{th}"
+        if col in stp:
+            a = np.full(su.shape, np.nan)
+            a[sst, si] = stp[col].to_numpy(float)
+            bad = np.isnan(a)
+            a[bad] = np.maximum(0.0, su - th)[bad]
+            stop_exc[float(th)] = a
+    return HeatField(utci, p90, g, shade, su, sg, source, notes, seg_exc, stop_exc)
 
 
 def load(source: str, edges: pd.DataFrame, stops: pd.DataFrame, forcing: pd.DataFrame | None) -> HeatField:
