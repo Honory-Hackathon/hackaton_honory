@@ -150,9 +150,9 @@ def config(utci: str | None = None, shade: str | None = None):
         "shade": {"source": s, "meta": meta(s)},
         "router": ROUTER["name"], "router_error": ROUTER["error"],
         "heat_views_url": HEAT_VIEWS_URL,
-        "views": [{"path": "/routes", "pl": "Mapa tras", "en": "Route heat map"},
-                  {"path": "/shadows3d", "pl": "Cienie 3D", "en": "3D shadows"},
-                  {"path": "/temperature", "pl": "Temperatura i albedo", "en": "Temperature & albedo"}],
+        "views": [{"path": "/routes/", "pl": "Mapa tras", "en": "Route heat map"},
+                  {"path": "/shadows3d/", "pl": "Cienie 3D", "en": "3D shadows"},
+                  {"path": "/temperature/", "pl": "Temperatura i albedo", "en": "Temperature & albedo"}],
     }
 
 

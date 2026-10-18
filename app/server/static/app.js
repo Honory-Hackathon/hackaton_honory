@@ -29,11 +29,12 @@ const CAT_COL = ["#78bec8","#fad664","#f07832","#d73027","#6e0a5a"];
 const CAT_KEYS = ["<26","26-32","32-38","38-46",">46"];
 const KCOL = {coolest:"#1f6fb2", balanced:"#16a085", fastest:"#333", walk_only:"#8e44ad", external:"#7f8c8d"};
 const PRESETS = [
-  // Placeholder demo trips; replace with the T11 demo set at integration.
-  {pl:"pl. Zbawiciela → pl. Bankowy, 13–15", en:"Pl. Zbawiciela → Pl. Bankowy, 13–15", o:[21.0187,52.2196], d:[21.0006,52.2441], e:"13:00", l:"15:00"},
-  {pl:"Dw. Centralny → pl. Zbawiciela, 12–14", en:"Central Station → Pl. Zbawiciela, 12–14", o:[21.0031,52.2287], d:[21.0187,52.2196], e:"12:00", l:"14:00"},
-  {pl:"Hala Mirowska → Park Ujazdowski, 15–17", en:"Hala Mirowska → Ujazdowski Park, 15–17", o:[20.9953,52.2389], d:[21.0270,52.2206], e:"15:00", l:"17:00"},
-  {pl:"pl. Konstytucji → Nowy Świat, 18:30–20", en:"Pl. Konstytucji → Nowy Świat, 18:30–20", o:[21.0156,52.2223], d:[21.0196,52.2327], e:"18:30", l:"20:00"},
+  // T11 demo set (demo/demo_trips.json).
+  {pl:"pl. Zbawiciela → Uniwersytet, 12:30–14:30", en:"Pl. Zbawiciela → University, 12:30–14:30", o:[21.01864,52.21971], d:[21.01661,52.24007], e:"12:30", l:"14:30"},
+  {pl:"Dw. Centralny → Łazienki, 14–15:30", en:"Central Station → Łazienki, 14–15:30", o:[21.00404,52.22887], d:[21.02645,52.21636], e:"14:00", l:"15:30"},
+  {pl:"rondo Dmowskiego → pl. Trzech Krzyży, 18:30–20", en:"Dmowskiego roundabout → Pl. Trzech Krzyży, 18:30–20", o:[21.01173,52.22983], d:[21.0234,52.2283], e:"18:30", l:"20:00"},
+  {pl:"Kopernik → Hala Mirowska, 15–16:30", en:"Copernicus Centre → Hala Mirowska, 15–16:30", o:[21.0287,52.2419], d:[20.9986,52.2388], e:"15:00", l:"16:30"},
+  {pl:"pl. Zamkowy → pl. Zbawiciela, 8–18 (kiedy wyjść?)", en:"Castle Sq. → Pl. Zbawiciela, 8–18 (when to leave?)", o:[21.0138,52.2476], d:[21.01864,52.21971], e:"08:00", l:"18:00"},
 ];
 const q = new URLSearchParams(location.search);
 let lang = q.get("lang") || ((navigator.language || "pl").toLowerCase().startsWith("pl") ? "pl" : "en");

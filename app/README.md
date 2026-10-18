@@ -79,7 +79,7 @@ Env vars (all optional):
 | `UTCI_COG` / `SHADOW_COG` | T06 pilot COGs | 33-band rasters for the click time series; may contain `{e}_{n}` for 1 km tiles, e.g. `gs://hackaton-honory-heat/T06/district/tiles/{e}_{n}/utci.tif` |
 | `HEAT_SOURCE` | — | passed through to router/ (`placeholder` / `stub` / `final`) |
 | `ROUTER` | `auto` | `auto` = import `router` (T09) if it imports, else the stub; `stub` = force stub |
-| `HEAT_VIEWS_URL` | empty | base URL of the T13 `heat-views` service; nav links go to `<url>/routes`, `/shadows3d`, `/temperature`. Empty = greyed "soon" chips |
+| `HEAT_VIEWS_URL` | empty | base URL of the T13 `heat-views` service; nav links go to `<url>/routes/`, `/shadows3d/`, `/temperature/` (trailing slash: the heat-views redirect drops the query and points at :8080). Empty = greyed "soon" chips |
 | `FRAMES_PREFIX` | `gs://hackaton-honory-heat/T10/frames` | |
 
 The router is imported in a background thread at startup (calls `router.warmup()` if it exists), so the port opens at
