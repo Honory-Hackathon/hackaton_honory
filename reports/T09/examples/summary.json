@@ -1,0 +1,7 @@
+{
+ "load_s": 0.37,
+ "queries": 32,
+ "runtime_median_s": 0.2565,
+ "runtime_max_s": 1.535,
+ "heat_source": "placeholder"
+}
