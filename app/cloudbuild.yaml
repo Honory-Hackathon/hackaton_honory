@@ -1,0 +1,5 @@
+# Run from the repo root:  gcloud builds submit --config app/cloudbuild.yaml --ignore-file=app/.gcloudignore --region europe-central2 .
+steps:
+- name: gcr.io/cloud-builders/docker
+  args: ["build", "-f", "app/Dockerfile", "-t", "europe-central2-docker.pkg.dev/hackaton-honory/hackathon/heat-app:latest", "."]
+images: ["europe-central2-docker.pkg.dev/hackaton-honory/hackathon/heat-app:latest"]

@@ -1,0 +1,11 @@
+# used with: gcloud builds submit --ignore-file=app/.gcloudignore (from repo root)
+*
+!app/
+!app/**
+!router/
+!router/**
+app/render/
+**/__pycache__/
+**/*.pyc
+**/*.tif
+**/*.parquet

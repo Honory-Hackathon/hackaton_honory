@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Upał w Śródmieściu · Heat planner</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header id="top">
+  <div class="brand"><span class="dot"></span><span data-i18n="title">Upał w Śródmieściu</span><small data-i18n="subtitle">28.06.2026 · UTCI · SOLWEIG</small></div>
+  <nav id="views"></nav>
+  <button id="lang" class="chip" aria-label="language">EN</button>
+</header>
+<div id="map"></div>
+
+<section id="timebar">
+  <button id="play" class="iconbtn" aria-label="play">▶</button>
+  <input id="slider" type="range" min="0" max="32" step="1" value="14" aria-label="time">
+  <span id="tlabel">13:00</span>
+  <div class="toggles">
+    <label><input type="checkbox" id="tg-utci" checked> <span data-i18n="utci">UTCI</span></label>
+    <label><input type="checkbox" id="tg-shade"> <span data-i18n="shade">Cień</span></label>
+  </div>
+</section>
+
+<aside id="legend">
+  <div class="lg-title" data-i18n="legend">Odczuwalna temperatura UTCI</div>
+  <div id="lg-rows"></div>
+  <div class="lg-shade"><span class="sw shade"></span><span data-i18n="shadeLegend">cień (SOLWEIG)</span></div>
+</aside>
+
+<aside id="panel" class="open">
+  <button id="panel-toggle" aria-label="toggle"><span data-i18n="planner">Zaplanuj trasę</span> <span class="caret">▾</span></button>
+  <div class="pbody">
+    <div class="row">
+      <button class="pick" id="pick-o"><span class="pin o">A</span> <span id="o-txt" data-i18n="pickOrigin">Wskaż start</span></button>
+      <button class="pick" id="pick-d"><span class="pin d">B</span> <span id="d-txt" data-i18n="pickDest">Wskaż cel</span></button>
+    </div>
+    <div class="row presets"><span data-i18n="examples">Przykłady:</span> <span id="presets"></span></div>
+    <div class="row times">
+      <label><span data-i18n="earliest">Wyjście najwcześniej</span><input type="time" id="t-e" value="13:00" min="06:00" max="22:00" step="300"></label>
+      <label><span data-i18n="latest">Dotarcie najpóźniej</span><input type="time" id="t-l" value="15:00" min="06:00" max="22:00" step="300"></label>
+    </div>
+    <button id="go" class="primary" data-i18n="plan">Planuj</button>
+    <div id="status"></div>
+    <div id="cards"></div>
+    <div id="notes"></div>
+    <div id="point"></div>
+    <p class="caveat" data-i18n="caveat">Model SOLWEIG nie uwzględnia wieczornego oddawania ciepła przez nawierzchnie: wartości po 21:00 są dolnym oszacowaniem.</p>
+  </div>
+</aside>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
