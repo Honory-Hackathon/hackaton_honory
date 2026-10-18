@@ -181,6 +181,8 @@ def _sample(uri_t: str, x: float, y: float):
             if not (0 <= r < d.height and 0 <= c < d.width):
                 return None
             v = d.read(window=((r, r + 1), (c, c + 1)))[:, 0, 0]
+            if d.dtypes[0] == "uint8":  # T07 sun_solweig.tif: share x 250, 255 = nodata
+                return [None if int(v_) == 255 else round(int(v_) / 250, 3) for v_ in v]
     return [None if v_ != v_ else round(float(v_), 2) for v_ in v]
 
 

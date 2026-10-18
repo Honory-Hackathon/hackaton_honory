@@ -122,6 +122,7 @@ function applyLang() {
 }
 $("#lang").addEventListener("click", () => { lang = lang === "pl" ? "en" : "pl"; applyLang(); });
 $("#panel-toggle").addEventListener("click", () => $("#panel").classList.toggle("open"));
+$("#legend").addEventListener("click", () => $("#legend").classList.toggle("mini"));
 
 // ---------------------------------------------------------------- picking
 const pts = {o: null, d: null}, marks = {o: null, d: null};
@@ -244,7 +245,7 @@ function drawOption(o, sel) {
 
 // ---------------------------------------------------------------- boot
 (async () => {
-  applyLang(); if (innerWidth < 640) $("#panel").classList.remove("open");
+  applyLang(); if (innerWidth < 640) { $("#panel").classList.remove("open"); $("#legend").classList.add("mini"); }
   try {
     const p = new URLSearchParams(); if (q.get("utci")) p.set("utci", q.get("utci")); if (q.get("shade")) p.set("shade", q.get("shade"));
     CFG = await (await fetch(`/api/config?${p}`)).json();
@@ -253,6 +254,7 @@ function drawOption(o, sel) {
       L.rectangle([[b[1], b[0]], [b[3], b[2]]], {color: "#555", weight: 1, dashArray: "4 4", fill: false, interactive: false}).addTo(map);
       if (!q.get("z")) map.fitBounds([[b[1], b[0]], [b[3], b[2]]], {paddingTopLeft: [0, 60], paddingBottomRight: innerWidth > 640 ? [380, 0] : [0, innerHeight * 0.3]});
     }
+    $("#lg-src").textContent = CFG.utci?.meta ? `${CFG.utci.source}: ${CFG.utci.meta.note || ""}` : "no frames";
     if (q.get("shadeOn") === "1") $("#tg-shade").checked = true;
   } catch (e) { console.error(e); }
   renderNav(); showStep(step);

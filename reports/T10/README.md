@@ -15,9 +15,9 @@ Frame sources rendered:
 | source | input | what it is |
 |---|---|---|
 | `pilot_utci`, `pilot_shadow` | `T06/cog/{utci,shadow}_solweig.tif` | T06 pilot, 1.2 × 0.8 km |
-| `t06_district_utci`, `t06_district_shadow` | `T06/district/tiles/*/{utci,shadow}.tif` | T06 district SOLWEIG tiles, _TILES_ of 27 at render time; not masked to walkable space |
+| `t06_district_utci`, `t06_district_shadow` | `T06/district/tiles/*/{utci,shadow}.tif` | T06 district SOLWEIG tiles, all 27 (re-rendered 02:31 UTC once T06 finished); not masked to walkable space. 1,165 tiles per step, 38,445 in all |
 
-The app currently shows **`_SOURCE_`**. When T07 lands, integration renders `t07_utci` (and the shade from T07's
+The app currently shows **`t06_district_utci` + `t06_district_shadow`** (point queries read `T06/district/tiles/{e}_{n}/`). When T07 lands, integration renders `t07_utci` (and the shade from T07's
 `sun_solweig.tif`, which the renderer reads too: uint8 × 250, 255 = nodata) and redeploys with `UTCI_FRAMES=t07_utci`;
 the commands are in `app/README.md`.
 
@@ -51,7 +51,11 @@ the commands are in `app/README.md`.
 - The SOLWEIG limit (no evening heat release from pavement; values after 21:00 are a lower bound) is stated under the
   planner in both languages, and the slider label at 21:00–22:00 has a "night" tooltip.
 
-![phone](phone_plan.png) ![map](desktop_map_1200.png)
+![phone](phone_plan.png)
+
+Evening (19:30, shade on): long shadows, coolest option rides two trams to stay out of the low sun.
+
+![evening](desktop_evening_shade.png)
 
 ## Decisions
 
@@ -77,6 +81,14 @@ the commands are in `app/README.md`.
   `/api/health`.
 
 ## Learned
+
+- **District median UTCI (T06 field, all ground pixels) peaks at 43.5 °C at 15:30**; it crosses 26 °C at 08:00, 32 °C
+  at 09:00 (the jump 29.2 → 35.2 °C between 09:00 and 09:30 is the sun clearing the street canyons) and 38 °C at
+  11:00, and stays above 32 °C until 20:30. At 22:00 it is still 28 °C (and a lower bound).
+- **Region quota is shared between jobs and services.** With two render jobs holding 40 GiB in europe-central2, a
+  heat-app revision failed to start ("Quota exceeded for total allowable memory per project per region"); the old
+  revision kept serving. heat-app now runs at 2 GiB × max 3 instances. During the demo, keep heavy jobs out of
+  europe-central2.
 
 - At 13:00 almost every sunlit pixel of the district is in *very strong* stress (38–46 °C) and almost every shaded
   pixel in *strong* (32–38 °C): the map is a two-colour picture whose pattern is the shade. The lightness ramp inside

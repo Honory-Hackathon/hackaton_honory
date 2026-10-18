@@ -40,7 +40,7 @@ Sources rendered so far:
 | source | input |
 |---|---|
 | `pilot_utci`, `pilot_shadow` | `T06/cog/{utci,shadow}_solweig.tif` (pilot 1.2 × 0.8 km) |
-| `t06_district_utci`, `t06_district_shadow` | `T06/district/tiles/*/{utci,shadow}.tif` (tiles present at render time, see `meta.json` note) |
+| `t06_district_utci`, `t06_district_shadow` | `T06/district/tiles/*/{utci,shadow}.tif`, all 27 tiles (live now) |
 
 ### Rerun on T07 (integration)
 
@@ -51,13 +51,16 @@ IMG=europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t10-render:latest
 #   (cd app/render && gcloud builds submit --tag $IMG --region europe-central2 .)
 gcloud run jobs deploy t10-render-t07-utci --image $IMG --region europe-central2 \
   --cpu 4 --memory 12Gi --tasks 6 --parallelism 1 --max-retries 2 --task-timeout 3600 \
-  --set-env-vars '^@^RENDER_INPUT=gs://hackaton-honory-heat/T07/<utci 33-band COG>.tif@RENDER_KIND=utci@RENDER_SOURCE=t07_utci@RENDER_NOTE=T07 UTCI walkable' \
+  --set-env-vars '^@^RENDER_INPUT=gs://hackaton-honory-heat/T07/utci.tif@RENDER_KIND=utci@RENDER_SOURCE=t07_utci@RENDER_NOTE=T07 UTCI walkable' \
   --execute-now
-# shade from the T06 district COG / tiles (same source as the UTCI):
-#   RENDER_INPUT=gs://hackaton-honory-heat/T06/district/tiles/*/shadow.tif  RENDER_KIND=shadow  RENDER_SOURCE=t06_district_shadow
+# shade from T07 (uint8 x 250, 255 = nodata; handled by the renderer):
+#   RENDER_INPUT=gs://hackaton-honory-heat/T07/sun_solweig.tif  RENDER_KIND=shadow  RENDER_SOURCE=t07_shade
 ```
 
-Raise `--parallelism` once other jobs free the region (quota 40 GiB per region: parallelism × memory must fit).
+Raise `--parallelism` once other jobs free the region (quota 40 GiB per region: parallelism × memory must fit, **and
+the heat-app service's memory counts against the same regional quota**: a new revision cannot start while jobs hold
+all 40 GiB). Render only from a finished input set: the glob is expanded per task, so tiles arriving mid-run give
+steps with different coverage.
 A district pass takes ~10 s per step per task plus ~30 s of download (6000 × 6000 px tiles input).
 Locally (small inputs only): `python app/render/render_frames.py --input <cog> --kind utci --source test --out /tmp/frames --steps 14`.
 
@@ -85,8 +88,8 @@ From the **repo root** (so router/ is included):
 source ~/warsaw-open-data/.envrc; export CLOUDSDK_CORE_ACCOUNT=teatr.sgh@gmail.com
 gcloud builds submit --config app/cloudbuild.yaml --ignore-file=app/.gcloudignore --region europe-central2 .
 gcloud run deploy heat-app --image europe-central2-docker.pkg.dev/hackaton-honory/hackathon/heat-app:latest \
-  --region europe-central2 --allow-unauthenticated --cpu 2 --memory 4Gi --min-instances 1 --max-instances 4 \
-  --update-env-vars 'HEAT_SOURCE=final,UTCI_FRAMES=t07_utci,SHADE_FRAMES=t06_district_shadow,HEAT_VIEWS_URL=https://heat-views-<...>.run.app'
+  --region europe-central2 --allow-unauthenticated --cpu 2 --memory 2Gi --min-instances 1 --max-instances 3 \
+  --update-env-vars 'HEAT_SOURCE=final,UTCI_FRAMES=t07_utci,SHADE_FRAMES=t07_shade,UTCI_COG=gs://hackaton-honory-heat/T07/utci.tif,SHADOW_COG=gs://hackaton-honory-heat/T07/sun_solweig.tif,HEAT_VIEWS_URL=https://heat-views-<...>.run.app'
 ```
 
 If router/ needs more memory for its data, raise `--memory` (up to 32 GiB) and `--cpu`. router/requirements.txt, if
