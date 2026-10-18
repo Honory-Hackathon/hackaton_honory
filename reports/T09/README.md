@@ -1,11 +1,41 @@
 # T09: heat-aware router
 
-**Status (2026-10-18, overnight):** router works end to end on T03 (walk network, stops) + T04 (recorded AC stop events),
-on three heat sources: `placeholder` (made-up field), `stub` (T08 stand-in: SOLWEIG UTCI on the finished T06
-district tiles, `gs://hackaton-honory-heat/T08/stub/`) and `final` (T08 on the T07 field; not yet available when
-this was written). The main tables below are on the **placeholder** field, the section
-[On the T08 stand-in](#on-the-t08-stand-in-solweig-tiles) repeats them on the **stub**. Switching is one env var
-(`HEAT_SOURCE`); rerun `python -m router.examples --out reports/T09/final` once `gs://hackaton-honory-heat/T08/_SUCCESS` exists.
+**Status (2026-10-18, 03:15 UTC):** router works end to end on T03 (walk network, stops) + T04 (recorded AC stop
+events) + **T08 final** (UTCI per segment and stop on the T07 SOLWEIG field, `gs://hackaton-honory-heat/T08/_SUCCESS`).
+Headline results are in [On the final field](#on-the-final-field-t08-on-t07-solweig) right below. The later sections
+show the same runs on the `placeholder` field (built while T08 was not there) and on the T08 `stub` (T06 tiles);
+they were used to build and test the search and are kept for comparison only.
+
+## On the final field (T08 on T07 SOLWEIG)
+
+`HEAT_SOURCE=final`, 4 test pairs × 8 windows: [`final/examples.csv`](final/examples.csv),
+[`final/examples/plan_sample.json`](final/examples/plan_sample.json). Load 2.3 s (T08 parquet from GCS, 1.9 M rows),
+**median 0.23 s per 1-hour query, 1.6 s max (10:00–18:00 window)**.
+
+| Pair, window | coolest | fastest | walk only | Coolest vs fastest |
+|---|---|---|---|---|
+| Plac Zbawiciela → Uniwersytet, 13:00–14:00 | 13:21–13:51, 30.6 min, **8,283 K·s** (tram 4 + bus 111) | 13:32–13:55, 23.7 min, 11,818 K·s (16 + 106) | 43.8 min, 57,118 K·s | **−30 % dose for +6.9 min** |
+| Plac Zbawiciela → Uniwersytet, 17:00–18:00 | 17:12–17:46, 33.6 min, 9,541 K·s (16 + 503) | 17:03–17:24, 20.7 min, 13,735 K·s (18 + 106) | 45,628 K·s | −31 % for +12.9 min |
+| Dworzec Centralny → Łazienki, 13:00–14:00 | 13:11–13:40, 28.4 min, 12,718 K·s (520) | 13:18–13:42, 24.2 min, 17,775 K·s (11 + 523) | 63,223 K·s | −28 % for +4.2 min |
+| Dworzec Centralny → Łazienki, 08:00–09:00 | 08:00–08:23, 23.5 min, 870 K·s (525) | 08:35–08:58, 22.6 min, 2,056 K·s (520) | 7,026 K·s | −58 % for +0.9 min (leave 35 min earlier) |
+| Dworzec Centralny → Łazienki, 10:00–18:00 | 10:05–10:30, 25.1 min, 4,376 K·s (520) | 11:15–11:37, 22.6 min, 8,259 K·s (520) | 23,137 K·s | −47 % for +2.5 min (leave 70 min earlier) |
+| Rondo Dmowskiego → Pl. Trzech Krzyży, 08:00–09:00 | 08:10–08:20, 10.2 min, 181 K·s (517) | 08:40–08:49, 8.8 min, 593 K·s (517) | 3,094 K·s | −69 % for +1.4 min |
+| Centrum Nauki Kopernik → Hala Mirowska, 17:00–18:00 | 17:29–17:59, 30.4 min, 15,585 K·s (106) | 17:18–17:47, 29.2 min, 19,706 K·s (106) | 53,520 K·s | −21 % for +1.2 min (later run) |
+
+- **Coolest vs fastest (Done-when):** on Plac Zbawiciela → Krakowskie Przedmieście at 13:00–14:00 the coolest trip
+  takes **30 % less heat dose than the fastest (8.3 vs 11.8 thousand K·s) and costs 6.9 minutes**: tram 4 and
+  bus 111 with 6 min of walking 77 % in shade, against 16 + 106 with 5 min walking 33 % in shade.
+- **Walking the whole way** at midday costs 5–7 times the dose of any AC option (57–75 thousand K·s for 44–47 min,
+  peak UTCI 42–43 °C, i.e. very strong heat stress).
+- **When to go matters as much as how:** with an open window (10:00–18:00) every pair's coolest trip leaves in the
+  morning (10:05–10:15) and the fastest one is 2–3 min quicker but up to twice the dose.
+- **Balanced** (λ = 10 K) usually equals either coolest or fastest on these pairs; it differs where the coolest
+  needs a long wait for a second run of the same line (Centrum Nauki Kopernik → Hala Mirowska 08:00: coolest
+  `106 + 106` 36.5 min / 2,288 K·s, balanced one 106 25.4 min / 2,851 K·s).
+
+![final options](final/options_1300.png)
+
+![final dose by window](final/dose_by_window.png)
 
 ## What was produced
 
@@ -13,10 +43,10 @@ this was written). The main tables below are on the **placeholder** field, the s
 |---|---|
 | Python package `router/` (`plan`, `price_path`, HTTP wrapper `router.api:app`) | repo [`router/`](../../router/README.md) |
 | Router data bundle (network, stops, AC stop events, line margins, forcing; 6 MB) | `gs://hackaton-honory-heat/T09/bundle/` (built by `python -m router.build_bundle`) |
-| Test-pair answers, 4 pairs × 8 windows × 4 options | [`examples.csv`](examples.csv) |
-| Full sample answer (contract shape, Plac Zbawiciela → Uniwersytet, 13:00–14:00) | [`examples/plan_sample.json`](examples/plan_sample.json) |
+| Test-pair answers, 4 pairs × 8 windows × 4 options, final field | [`final/examples.csv`](final/examples.csv) (also [`stub/`](stub/examples.csv), placeholder [`examples.csv`](examples.csv)) |
+| Full sample answer (contract shape, Plac Zbawiciela → Uniwersytet, 13:00–14:00, final) | [`final/examples/plan_sample.json`](final/examples/plan_sample.json) |
 | Container image (reference deployment; T10 vendors the package) | `europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t09-router:latest` |
-| Reference HTTP service (Cloud Run `t09-router`, europe-central2, public, `HEAT_SOURCE=final`, serving the stub until T08 lands and the service is redeployed) | https://t09-router-269831067246.europe-central2.run.app/api/health |
+| Reference HTTP service (Cloud Run `t09-router`, europe-central2, public, `HEAT_SOURCE=final`, serving T08 final) | https://t09-router-269831067246.europe-central2.run.app/api/health |
 
 Contract (shared with T10/T11):
 
@@ -82,14 +112,14 @@ median of stops; a note in the answer says how many.
 
 ## Runtime
 
-Laptop, bundle on local disk: load 0.3 s (from `gs://` add the 6 MB download), **median 0.24 s per query** for a
+Laptop, bundle on local disk: load 0.3 s (placeholder) / 2.3 s (T08 parquet from GCS) (from `gs://` add the 6 MB download), **median 0.24 s per query** for a
 1-hour window, **1.1–1.5 s for an 8-hour window** (10:00–18:00), 2.6 s for the whole day 06:00–22:00. Time grows
 with the number of 30-min steps in the window (two Dijkstras per step per end). `price_path` on a 2.5 km ORS-like
 line: 0.04 s. Cloud Run (2 vCPU): cold start ~8 s (bundle download), then 0.7 s for a 1-hour window.
 
-## Test pairs (placeholder heat)
+## Development runs: placeholder field (not SOLWEIG)
 
-Window 13:00–14:00 (full table for 8 windows in [`examples.csv`](examples.csv)):
+Made-up field, kept only to document how the router was tested before T08. Window 13:00–14:00 (full table for 8 windows in [`examples.csv`](examples.csv)):
 
 | Pair | Option | Depart–arrive | Min | Dose K·s | Lines |
 |---|---|---|---|---|---|
@@ -117,7 +147,7 @@ with the SOLWEIG field the walking share and the gaps will differ.
 
 ![dose by window](dose_by_window.png)
 
-## On the T08 stand-in (SOLWEIG tiles)
+## Development runs: T08 stand-in (SOLWEIG tiles)
 
 `HEAT_SOURCE=stub`, same pairs and windows: [`stub/examples.csv`](stub/examples.csv),
 [`stub/examples/plan_sample.json`](stub/examples/plan_sample.json). Load 2.8 s (parquet from GCS), median
@@ -150,7 +180,7 @@ for the next run over walking; balanced (one 106, 25 min) is the sensible choice
 
 ## Open issues
 
-- **Placeholder heat.** Every number above. Rerun on `HEAT_SOURCE=final` when T08 lands.
+- **Heat field:** results are on T08 final as of 03:11 UTC; rerun `python -m router.examples --out reports/T09/final` if T08 is regenerated, and restart the services (heat is loaded once at startup).
 - **Approximation in the search:** walk legs are chosen on the tree of one 30-min step; only the final options are
   priced with time interpolation. Coolest is the best of the candidates found, not a proven optimum.
 - **Signalised crossings** split into two ≤ 25 m segments count two waits (wide avenues with islands); 20 s is a guess.
@@ -162,5 +192,7 @@ for the next run over walking; balanced (one 106, 25 min) is the sensible choice
   allowed (spec), so some fast trips via border stops are not offered.
 - `price_path` on coarse lines (few vertices across blocks) zig-zags between sidewalks; it is meant for ORS lines
   that follow streets (2.5 km ORS-like line: +0.2 min vs the network path it was drawn from).
+- 240 options from 60 random node pairs × windows checked for consistency (legs contiguous, leg doses sum to the total,
+  category minutes sum to the duration, inside the window, coolest ≤ fastest in dose): all pass.
 - With custom `weights`, g is recomputed from the segment's mean UTCI, not from its pixel distribution (T08's g
   for default weights may be the pixel mean of g).
