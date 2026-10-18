@@ -14,7 +14,7 @@ Brief: [tasks/T07](../../tasks/T07_utci_field.md). Code: [`utci/`](../../utci/).
 - **Far casters: small and only at 20:00–20:30.** Pixels where T02 has building shade and SOLWEIG has sun are 0.13–0.37 %
   of walkable pixels at every step, the same at noon as at sunset: mostly 1–2 px shadow-edge differences. Only at
   20:00 and 20:30 are many of them true far shadows: 31 % (20:00) and 62 % (20:30) of them have T02's caster more than
-  1 km away (towers, median caster height 108–153 m above the pixel). That is ≈ 900 and ≈ 1,700 walkable pixels, worth
+  1 km away (towers, median caster height 109–153 m above the pixel). That is ≈ 900 and ≈ 1,700 walkable pixels, worth
   1.8 K and 0.6 K of UTCI each; averaged over the walkable area it is < 0.01 K. SOLWEIG would not see them even with a
   bigger halo: `solweig` caps shadow reach at `max_shadow_distance_m = 1000` by default, which T06 kept.
 - **Ground-temperature sign: correct (−3.41 K), not a bug.** `solweig` 0.1.0b96 uses the land-cover-path value without
@@ -44,7 +44,8 @@ Brief: [tasks/T07](../../tasks/T07_utci_field.md). Code: [`utci/`](../../utci/).
 All rasters are on the shared grid (EPSG:2180, 1 m, E 634000–642000, N 483000–492000, 8000 × 9000), bands
 = 33 steps 06:00–22:00 CEST with T02's band descriptions (`2026-06-28T06:00:00+02:00 (04:00Z) az=68.0 el=12.58`).
 Values are copied unchanged from the 27 T06 tile cores (`T06/district/tiles/{e0}_{n0}/`); only the T03 walkable
-mask (`walkable.tif > 0`) is applied, so they are the same numbers as the T06 mosaic. UTCI is T06's (pythermalcomfort,
+mask (`walkable.tif > 0`) is applied, so they are the same numbers as the T06 mosaic (spot check of
+`T06/district/tmrt_20260628.tif` at three 200 m windows, 13:00 and 20:00: identical, max |Δ| = 0). UTCI is T06's (pythermalcomfort,
 T05 `ta_c`, `rh_pct`, max(0.5, 10 m wind)); T07 does not recompute it.
 
 **How:** Cloud Run Job `t07-final` (image `t07-utci:3`, europe-west4), 3 tasks × 6 vCPU / 12 GiB: task 0 runs the
