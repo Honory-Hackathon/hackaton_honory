@@ -1,6 +1,6 @@
 # T10: App
 
-**Spec:** §1, §7, §11 · **Depends on:** T07, T09 (build now on the T06 pilot rasters and a stub router) · **Consumed by:** T11 (demo)
+**Spec:** §1, §7, §10 · **Depends on:** T07, T09 (build now on the T06 pilot rasters and a stub router) · **Consumed by:** T11 (demo)
 
 ## Goal
 

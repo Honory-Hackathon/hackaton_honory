@@ -1,6 +1,6 @@
 # Tasks
 
-These tasks implement [specification v1.0](../docs/specification-v1.0.md). Each file is a self-contained brief for one person or agent session. They describe the goal, the data with its known quirks, the constraints and the expected output. They do not prescribe methods: exploring the data and choosing the approach is part of each task.
+These tasks implement the [specification](../docs/specification.md). Each file is a self-contained brief for one person or agent session. They describe the goal, the data with its known quirks, the constraints and the expected output. They do not prescribe methods: exploring the data and choosing the approach is part of each task.
 
 ## First wave (done or finishing, 2026-10-18)
 
@@ -28,6 +28,8 @@ First-wave results are in `reports/T01`–`T06`. Each second-wave task can start
 | [T09](T09_router.md) | Router: walk + AC trams/buses, lowest heat dose, best departure time | T08 (heat costs) |
 | [T10](T10_app.md) | App: time-slider map and route cards on Cloud Run | T07, T09 |
 | [T11](T11_validation_demo.md) | Demo trips, baselines (ORS Shaded, building-only shade), dose-weight comparison | T09 |
+| [T12](T12_visual_layers.md) | Data layers for the visualisations: cool and water points, 3D scene, temperature and albedo through the day | T06 district run |
+| [T13](T13_visualisations.md) | Visualisations: route heat map with cool points, 3D shadows over the day, temperature and albedo | T08, T12 |
 
 ## Shared conventions (the hand-over contract)
 
@@ -40,7 +42,7 @@ First-wave results are in `reports/T01`–`T06`. Each second-wave task can start
 | Grid | 1 m cells. Extent = halo bounding box snapped outward to multiples of 1,000 m. Cell edges on integer metres. Every raster product uses exactly this grid, cropped only by masking. |
 | Time steps | 2026-06-28, 06:00–22:00 CEST, every 30 min: 33 steps. Timestamps stored in UTC (04:00Z–20:00Z), labelled with local time where useful. |
 | Transit day | Saturday 2026-10-17, 06:00–22:00 local, mapped clock time to clock time onto the heat day. |
-| Shade zone shares | `f_sun`, `f_bldg`, `f_tree`, `f_both` in [0, 1], preferably The mrt factors for shade zones are [1, 0.1, 0.2, 0.08]. These are the inputs of `compute_inputs_for_utci` (spec §13). |
+| Shade zone shares | T02: `f_sun`, `f_bldg`, `f_tree`, `f_both` in [0, 1], uint8 / 250, 255 = night. The thermal model is SOLWEIG (spec §6), which computes its own shadow. |
 | Cloud | GCP project `hackaton-honory`, region `europe-central2`. Any infrastructure that fits the goal may be created (free tier, cost is not a concern). Proposed shared names: bucket `gs://hackaton-honory-heat/<task-id>/…`, BigQuery dataset `hackaton-honory.warsaw_heat`. Heavy processing runs in the cloud, not on laptops. |
 | Compute | Cloud Run Jobs: 5 regions per project (in use: europe-central2, -west1, -west3, -west4, -north1), each 20 vCPU / 40 GiB, at most 8 vCPU / 32 GiB per task. Memory is usually the binding limit (one 32 GiB task per region). Compute Engine: 12 vCPU globally, no GPU, no spot. Split big jobs into tiles across regions. |
 | Formats | Rasters: Cloud-Optimised GeoTIFF. Vectors and tables: GeoParquet/Parquet in GCS and/or BigQuery tables. Each output has a short README (source, vintage, units, nodata). |

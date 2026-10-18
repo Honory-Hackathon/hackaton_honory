@@ -1,10 +1,10 @@
 # T07: UTCI field from district SOLWEIG
 
-**Spec:** §6.3, §7, §12 · **Depends on:** T06 district run (finishing 2026-10-18), T03 · **Consumed by:** T08, T10, T11
+**Spec:** §6, §7, §13 · **Depends on:** T06 district run (finishing 2026-10-18), T03 · **Consumed by:** T08, T10, T11
 
 ## Goal
 
-Deliver the production heat field: **Tmrt and UTCI for every walkable pixel at each of the 33 time steps** of 2026-06-28, taken from the district-wide SOLWEIG run. SOLWEIG is the thermal model (decision 2026-10-18); the spec §13 simple model is not used in production.
+Deliver the production heat field: **Tmrt and UTCI for every walkable pixel at each of the 33 time steps** of 2026-06-28, taken from the district-wide SOLWEIG run. SOLWEIG is the thermal model (spec §2, §6).
 
 ## Why it matters
 
@@ -33,7 +33,7 @@ This is the heat field every later product reads: segment and stop doses (T08), 
 - **Tile seams:** neighbouring tiles ran with different halos. Look for jumps in Tmrt and shadow along tile edges.
 - **Far casters at low sun:** a halo of 0.5–1 km misses long evening shadows. At 20:30 a 310 m tower casts ≈5.7 km. Compare SOLWEIG `shadow` with T02's building shade per step, and report where and when T02 has shade that SOLWEIG lacks.
 - **Pilot consistency:** the pilot and the district tiles overlap. They should agree, apart from halo effects.
-- **Sanity (spec §12):**
+- **Sanity (spec §13):**
   - UTCI inputs inside the valid range (Tmrt − Ta between −30 and +70 K, wind 0.5–17 m/s).
   - Plausible sun–shade differences.
   - Evening values close to air temperature.

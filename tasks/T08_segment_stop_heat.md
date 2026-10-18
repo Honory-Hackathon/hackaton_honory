@@ -1,6 +1,6 @@
 # T08: Heat per walk segment and per stop
 
-**Spec:** §7, §8, §9, §11 · **Depends on:** T03, T07 (develop on the T06 pilot UTCI now) · **Consumed by:** T09, T10
+**Spec:** §7, §8, §9, §12 · **Depends on:** T03, T07 (develop on the T06 pilot UTCI now) · **Consumed by:** T09, T10
 
 ## Goal
 
@@ -32,7 +32,7 @@ BigQuery tables in `hackaton-honory.warsaw_heat`, plus Parquet in `gs://hackaton
 
 ## Constraints and things to handle
 
-- **Waiting spot:** spec §8 charges waiting at "the best spot near the stop (shade, shelter)". Decide what "near" means and how shelters count. OSM `shelter=yes` is known, but small bus shelters are probably not in the LiDAR buildings.
+- **Waiting spot:** spec §8 charges waiting at "the best spot of the stop's waiting area (shade, shelter)". Decide what that spot is and how shelters count. OSM `shelter=yes` is known, but small bus shelters are probably not in the LiDAR buildings.
 - **Indoor and underground segments** (`indoor = true`, no pixels) need a rule, e.g. a constant indoor UTCI.
 - **Covered segments** (arcades, passages) are in the DSM as roof, so they are already shaded. Check that they come out shaded.
 - **Night steps** (21:00–22:00) must still have values.

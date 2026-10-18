@@ -1,13 +1,13 @@
 # T11: Validation, baselines and demo
 
-**Spec:** §9, §12 · **Depends on:** T02 engine (baselines can start now), T09 (for the final comparison) · **Consumed by:** demo
+**Spec:** §9, §13 · **Depends on:** T02 engine (baselines can start now), T09 (for the final comparison) · **Consumed by:** demo
 
 ## Goal
 
 Show that heat-aware routing makes a difference, and that the shade behind it is believable:
 - **Demo trips:** a handful of origin–destination pairs and times that tell the story.
 - **Baselines:** compare our routes with the dose they would get from (a) ORS Shaded routes and (b) routing on building-only shade (no trees).
-- **Checks:** the end-to-end validation points of spec §12 not covered by earlier tasks.
+- **Checks:** the end-to-end validation points of spec §13 not covered by earlier tasks.
 
 ## Why it matters
 
