@@ -23,6 +23,8 @@ import threading
 import time
 from pathlib import Path
 
+import numpy as np
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -156,6 +158,7 @@ def config(utci: str | None = None, shade: str | None = None):
 
 # ------------------------------------------------------------------ point time series
 _tok = {"value": None, "exp": 0}
+SNAP_M = 15
 
 
 def _token() -> str:
@@ -179,11 +182,21 @@ def _sample(uri_t: str, x: float, y: float):
         with rasterio.open(url) as d:
             r, c = d.index(x, y)
             if not (0 <= r < d.height and 0 <= c < d.width):
-                return None
-            v = d.read(window=((r, r + 1), (c, c + 1)))[:, 0, 0]
-            if d.dtypes[0] == "uint8":  # T07 sun_solweig.tif: share x 250, 255 = nodata
-                return [None if int(v_) == 255 else round(int(v_) / 250, 3) for v_ in v]
-    return [None if v_ != v_ else round(float(v_), 2) for v_ in v]
+                return None, None
+            # walkable-only rasters (T07): snap to the nearest pixel with data within SNAP_M
+            r0, c0 = max(0, r - SNAP_M), max(0, c - SNAP_M)
+            win = d.read(window=((r0, min(d.height, r + SNAP_M + 1)), (c0, min(d.width, c + SNAP_M + 1))))
+            u8 = d.dtypes[0] == "uint8"  # T07 sun_solweig.tif: share x 250, 255 = nodata
+            valid = (win != 255).any(axis=0) if u8 else np.isfinite(win).any(axis=0)
+            if not valid.any():
+                return None, None
+            rr, cc = np.nonzero(valid)
+            k = int(np.argmin((rr + r0 - r) ** 2 + (cc + c0 - c) ** 2))
+            dist = float(np.hypot(rr[k] + r0 - r, cc[k] + c0 - c))
+            v = win[:, rr[k], cc[k]]
+    if u8:
+        return [None if int(v_) == 255 else round(int(v_) / 250, 3) for v_ in v], dist
+    return [None if v_ != v_ else round(float(v_), 2) for v_ in v], dist
 
 
 @app.get("/api/point")
@@ -193,7 +206,7 @@ def point(lon: float, lat: float):
     out = {"lon": lon, "lat": lat, "x": round(x, 1), "y": round(y, 1)}
     for k, uri in (("utci", UTCI_COG), ("shadow", SHADOW_COG)):
         try:
-            out[k] = _sample(uri, x, y)
+            out[k], out[f"{k}_snap_m"] = _sample(uri, x, y)
         except Exception as e:  # noqa: BLE001
             out[k] = None; out[f"{k}_error"] = type(e).__name__
     return out
@@ -202,8 +215,8 @@ def point(lon: float, lat: float):
 # ------------------------------------------------------------------ planner
 @app.post("/api/plan")
 async def api_plan(req: Request):
-    b = await req.json()
     try:
+        b = await req.json()
         o = [float(v) for v in b["origin"]]; d = [float(v) for v in b["destination"]]
         e = str(b.get("earliest", "08:00")); l = str(b.get("latest", "09:00"))
     except Exception:  # noqa: BLE001
@@ -217,7 +230,10 @@ async def api_plan(req: Request):
 
 @app.post("/api/price")
 async def api_price(req: Request):
-    b = await req.json()
+    try:
+        b = await req.json()
+    except Exception:  # noqa: BLE001
+        raise HTTPException(400, "body must be JSON {coords, depart}")
     if not hasattr(router(), "price_path"):
         raise HTTPException(501, "router has no price_path")
     res = router().price_path([tuple(c) for c in b["coords"]], str(b.get("depart", "08:00")), weights=b.get("weights"))

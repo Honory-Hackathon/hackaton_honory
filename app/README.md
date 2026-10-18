@@ -17,6 +17,10 @@ app/
 ```
 
 Live: **https://heat-app-269831067246.europe-central2.run.app** (Cloud Run service `heat-app`, europe-central2, public).
+Current env: `UTCI_FRAMES=t07_utci SHADE_FRAMES=t07_shade UTCI_COG=…/T07/utci.tif SHADOW_COG=…/T07/sun_solweig.tif HEAT_SOURCE=placeholder`.
+**Once T08 writes `_SUCCESS`, the only change needed is:**
+`gcloud run services update heat-app --region europe-central2 --update-env-vars HEAT_SOURCE=final`
+(plus `HEAT_VIEWS_URL=<heat-views url>` once T13 is up).
 
 ## Frames (map layers)
 
@@ -40,7 +44,8 @@ Sources rendered so far:
 | source | input |
 |---|---|
 | `pilot_utci`, `pilot_shadow` | `T06/cog/{utci,shadow}_solweig.tif` (pilot 1.2 × 0.8 km) |
-| `t06_district_utci`, `t06_district_shadow` | `T06/district/tiles/*/{utci,shadow}.tif`, all 27 tiles (live now) |
+| `t06_district_utci`, `t06_district_shadow` | `T06/district/tiles/*/{utci,shadow}.tif`, all 27 tiles, not masked |
+| **`t07_utci`, `t07_shade`** (live) | `T07/utci.tif`, `T07/sun_solweig.tif` (jobs `t10-render-t07-utci`, `t10-render-t07-shade`) |
 
 ### Rerun on T07 (integration)
 

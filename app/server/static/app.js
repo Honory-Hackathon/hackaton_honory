@@ -10,7 +10,7 @@ const I18N = {
     fastest:"Najszybsza", walk_only:"Tylko pieszo", external:"Zewnętrzna", walk:"pieszo", wait:"czekanie", ride:"przejazd",
     cats:["< 26 °C brak stresu / słaby","26–32 umiarkowany","32–38 silny","38–46 bardzo silny","> 46 ekstremalny"],
     caveat:"Model SOLWEIG nie uwzględnia wieczornego oddawania ciepła przez nawierzchnie: wartości po 21:00 są dolnym oszacowaniem.",
-    soon:"wkrótce", pointT:"UTCI w tym miejscu w ciągu dnia", noData:"brak danych w tym miejscu (budynek lub poza zasięgiem)",
+    soon:"wkrótce", pointT:"UTCI w tym miejscu w ciągu dnia", noData:"brak danych w promieniu 15 m (budynek, woda lub poza zasięgiem)",
     night:"noc (słońce pod horyzontem)", router:"planer", coverage:"Zasięg mapy",
     min:"min"},
   en: {title:"Heat in Śródmieście", subtitle:"28 Jun 2026 · UTCI · SOLWEIG", utci:"UTCI", shade:"Shade",
@@ -22,7 +22,7 @@ const I18N = {
     balanced:"Balanced", fastest:"Fastest", walk_only:"Walk only", external:"External", walk:"walk", wait:"wait",
     ride:"ride", cats:["< 26 °C no / weak stress","26–32 moderate","32–38 strong","38–46 very strong","> 46 extreme"],
     caveat:"SOLWEIG has no evening heat release from pavement: values after 21:00 are a lower bound.",
-    soon:"soon", pointT:"UTCI at this spot through the day", noData:"no data here (building or outside coverage)",
+    soon:"soon", pointT:"UTCI at this spot through the day", noData:"no walkable data within 15 m (building, water or outside coverage)",
     night:"night (sun below horizon)", router:"router", coverage:"Map coverage", min:"min"},
 };
 const CAT_COL = ["#78bec8","#fad664","#f07832","#d73027","#6e0a5a"];
@@ -169,7 +169,8 @@ async function pointSeries(ll) {
     const d = u.map((v, i) => v == null ? "" : `${i && u[i-1] != null ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
     const sh = (j.shadow || []).map((v, i) => v != null && v < 0.5 && i < 30 ? `<rect x="${x(i)-4}" y="${H-4}" width="8" height="4" fill="#142046"/>` : "").join("");
     const cur = u[step];
-    $("#point").innerHTML = `<b>${t("pointT")}</b> · ${stepLabel(step)}: <b>${cur == null ? "–" : cur.toFixed(1) + " °C"}</b>
+    const snap = j.utci_snap_m > 1.5 ? ` <span style="color:#5d6575">(${Math.round(j.utci_snap_m)} m)</span>` : "";
+    $("#point").innerHTML = `<b>${t("pointT")}</b>${snap} · ${stepLabel(step)}: <b>${cur == null ? "–" : cur.toFixed(1) + " °C"}</b>
       <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${bands}<path d="${d}" fill="none" stroke="#c0392b" stroke-width="2"/>
       <line x1="${x(step)}" x2="${x(step)}" y1="0" y2="${H}" stroke="#000" stroke-width="1"/>${sh}</svg>
       <div style="display:flex;justify-content:space-between;color:#5d6575"><span>06:00</span><span>14:00</span><span>22:00</span></div>`;
