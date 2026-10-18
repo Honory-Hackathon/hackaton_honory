@@ -1,0 +1,15 @@
+solweig==0.1.0b96
+pythermalcomfort==4.6.2
+numpy==2.1.3
+pandas==2.2.3
+pyarrow==18.1.0
+pvlib==0.16.1
+rasterio==1.4.3
+pyproj==3.8.0
+shapely==2.0.6
+scipy==1.15.2
+matplotlib==3.10.1
+google-cloud-storage==2.18.2
+requests==2.32.3
+tqdm==4.67.1
+pillow==11.0.0
