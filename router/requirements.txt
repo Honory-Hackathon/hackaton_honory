@@ -1,0 +1,9 @@
+numpy
+pandas
+pyarrow
+scipy
+google-cloud-storage
+google-cloud-bigquery
+db-dtypes
+fastapi
+uvicorn
