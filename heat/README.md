@@ -49,7 +49,7 @@ Traversal dose of a segment = `g × length_m / speed` (K·s), with `length_m` fr
 ## Run
 
 ```bash
-IMG=europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t08-heat:2
+IMG=europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t08-heat:5
 gcloud builds submit --region europe-central2 --tag $IMG .
 gcloud run jobs create t08-heat --region europe-central2 --image $IMG --cpu 4 --memory 16Gi --tasks 1 \
   --max-retries 0 --task-timeout 3600s --set-env-vars SOURCE=tiles,OUT=stub
@@ -58,3 +58,7 @@ gcloud run jobs execute t08-heat --region europe-central2 --update-env-vars SOUR
 
 Local test on the pilot (small): `LOCAL=<dir with the T03 parquet + walkable.tif> SOURCE=pilot DRYRUN=<out dir> python aggregate.py`.
 Report: `python report.py <dir with segments.parquet, t08_*.parquet, streets.json> ../reports/T08`.
+
+Runtime: ~2 min on the 27 T06 tiles; the final run on `T07/utci.tif` (one 72 Mpx, 33-band pixel-interleaved COG)
+took 17 min in image `:4`, almost all in the block reads. Image `:5` reads 512-row blocks aligned to the COG tiles,
+with `GDAL_NUM_THREADS=ALL_CPUS` and no mask (NaN nodata), which is ~1.3 s per block locally.

@@ -30,6 +30,9 @@ import numpy as np
 import pandas as pd
 import rasterio
 import rasterio.windows
+
+os.environ.setdefault("GDAL_NUM_THREADS", "ALL_CPUS")
+os.environ.setdefault("GDAL_CACHEMAX", "2048")
 from rasterio import features
 from rasterio.transform import from_origin
 from shapely import wkb
@@ -108,7 +111,10 @@ def download(names):
     for n in names:
         p = TMP / n.replace("/", "__")
         if not p.exists():
-            b.blob(n).download_to_filename(str(p))
+            t = time.time()
+            b.blob(n).download_to_filename(str(p), timeout=600)
+            if p.stat().st_size > 2e8:
+                log(f"  downloaded {n} {p.stat().st_size / 1e6:.0f} MB in {time.time() - t:.0f} s")
         out.append(p)
     return out
 
@@ -126,7 +132,7 @@ class Field:
             self.srcs.append((s, r0, c0, scale))
             assert s.count == NSTEP, (p, s.count)
 
-    def sample(self, needed, block=500):
+    def sample(self, needed, block=512):
         """values (NSTEP, len(needed)) at sorted flat grid indices `needed`; all bands read per row block."""
         out = np.full((NSTEP, len(needed)), np.nan, np.float32)
         rows, cols = needed // NCOLS, needed % NCOLS
@@ -142,7 +148,11 @@ class Field:
                 if not inside.any():
                     continue
                 win = rasterio.windows.Window(0, br, w, min(block, h - br))
-                d = s.read(window=win, masked=True).astype(np.float32).filled(np.nan)
+                log(f"  read rows {gr0}-{gr1} of {s.name.split('/')[-1]}") if h > 2000 else None
+                if s.nodata is None or np.isnan(s.nodata):
+                    d = s.read(window=win, out_dtype=np.float32)
+                else:
+                    d = s.read(window=win, masked=True).astype(np.float32).filled(np.nan)
                 if s.dtypes[0].startswith("int"):
                     d *= (scale if scale != 1.0 else 0.01)  # T07 hand-over: int16 in 0.01 °C
                 elif scale != 1.0:

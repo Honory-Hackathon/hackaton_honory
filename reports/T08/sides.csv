@@ -1,0 +1,133 @@
+step,label_local,side,utci,g,shade,length_m,street
+0,06:00,east,19.285,0.000,0.956,3433.720,Marszałkowska
+0,06:00,west,19.170,0.000,0.930,5194.670,Marszałkowska
+1,06:30,east,21.201,0.000,0.964,3433.720,Marszałkowska
+1,06:30,west,21.252,0.000,0.910,5194.670,Marszałkowska
+2,07:00,east,22.872,0.059,0.960,3433.720,Marszałkowska
+2,07:00,west,23.256,0.231,0.852,5194.670,Marszałkowska
+3,07:30,east,24.259,0.162,0.950,3433.720,Marszałkowska
+3,07:30,west,25.316,0.880,0.737,5194.670,Marszałkowska
+4,08:00,east,25.682,0.298,0.940,3433.720,Marszałkowska
+4,08:00,west,27.410,1.840,0.640,5194.670,Marszałkowska
+5,08:30,east,27.599,1.693,0.890,3433.720,Marszałkowska
+5,08:30,west,29.754,4.187,0.530,5194.670,Marszałkowska
+6,09:00,east,29.413,3.752,0.865,3433.720,Marszałkowska
+6,09:00,west,32.331,7.921,0.383,5194.670,Marszałkowska
+7,09:30,east,30.687,5.298,0.827,3433.720,Marszałkowska
+7,09:30,west,33.826,10.333,0.311,5194.670,Marszałkowska
+8,10:00,east,31.820,6.729,0.791,3433.720,Marszałkowska
+8,10:00,west,34.916,12.151,0.271,5194.670,Marszałkowska
+9,10:30,east,33.191,8.555,0.755,3433.720,Marszałkowska
+9,10:30,west,36.154,14.328,0.256,5194.670,Marszałkowska
+10,11:00,east,35.293,13.202,0.609,3433.720,Marszałkowska
+10,11:00,west,37.425,18.085,0.244,5194.670,Marszałkowska
+11,11:30,east,37.012,17.617,0.434,3433.720,Marszałkowska
+11,11:30,west,38.069,20.225,0.239,5194.670,Marszałkowska
+12,12:00,east,38.619,22.226,0.293,3433.720,Marszałkowska
+12,12:00,west,38.685,22.390,0.266,5194.670,Marszałkowska
+13,12:30,east,39.472,25.224,0.317,3433.720,Marszałkowska
+13,12:30,west,38.772,22.974,0.414,5194.670,Marszałkowska
+14,13:00,east,40.009,27.005,0.352,3433.720,Marszałkowska
+14,13:00,west,39.220,24.318,0.475,5194.670,Marszałkowska
+15,13:30,east,40.344,28.064,0.368,3433.720,Marszałkowska
+15,13:30,west,39.349,24.545,0.524,5194.670,Marszałkowska
+16,14:00,east,40.645,28.989,0.385,3433.720,Marszałkowska
+16,14:00,west,39.518,24.902,0.560,5194.670,Marszałkowska
+17,14:30,east,41.126,30.639,0.404,3433.720,Marszałkowska
+17,14:30,west,39.899,26.045,0.582,5194.670,Marszałkowska
+18,15:00,east,41.464,31.872,0.436,3433.720,Marszałkowska
+18,15:00,west,40.192,26.964,0.602,5194.670,Marszałkowska
+19,15:30,east,41.106,30.503,0.485,3433.720,Marszałkowska
+19,15:30,west,40.073,26.648,0.609,5194.670,Marszałkowska
+20,16:00,east,40.778,29.297,0.518,3433.720,Marszałkowska
+20,16:00,west,39.905,26.161,0.616,5194.670,Marszałkowska
+21,16:30,east,40.483,28.203,0.556,3433.720,Marszałkowska
+21,16:30,west,39.646,25.190,0.653,5194.670,Marszałkowska
+22,17:00,east,40.143,26.917,0.592,3433.720,Marszałkowska
+22,17:00,west,39.397,24.296,0.679,5194.670,Marszałkowska
+23,17:30,east,39.191,23.937,0.613,3433.720,Marszałkowska
+23,17:30,west,38.400,21.334,0.712,5194.670,Marszałkowska
+24,18:00,east,37.968,20.104,0.677,3433.720,Marszałkowska
+24,18:00,west,37.271,18.004,0.770,5194.670,Marszałkowska
+25,18:30,east,36.973,17.315,0.738,3433.720,Marszałkowska
+25,18:30,west,36.289,15.399,0.830,5194.670,Marszałkowska
+26,19:00,east,35.897,14.365,0.829,3433.720,Marszałkowska
+26,19:00,west,35.327,12.932,0.901,5194.670,Marszałkowska
+27,19:30,east,34.540,11.085,0.887,3433.720,Marszałkowska
+27,19:30,west,34.090,10.181,0.949,5194.670,Marszałkowska
+28,20:00,east,33.221,8.442,0.941,3433.720,Marszałkowska
+28,20:00,west,32.895,7.790,0.986,5194.670,Marszałkowska
+29,20:30,east,31.826,5.915,0.998,3433.720,Marszałkowska
+29,20:30,west,31.571,5.624,1.000,5194.670,Marszałkowska
+30,21:00,east,30.332,4.332,1.000,3433.720,Marszałkowska
+30,21:00,west,30.115,4.115,1.000,5194.670,Marszałkowska
+31,21:30,east,29.164,3.164,1.000,3433.720,Marszałkowska
+31,21:30,west,28.984,2.984,1.000,5194.670,Marszałkowska
+32,22:00,east,28.222,2.222,1.000,3433.720,Marszałkowska
+32,22:00,west,28.041,2.041,1.000,5194.670,Marszałkowska
+0,06:00,east,19.673,0.000,0.959,2232.420,Aleje Ujazdowskie
+0,06:00,west,19.532,0.000,0.950,1474.720,Aleje Ujazdowskie
+1,06:30,east,21.665,0.000,0.942,2232.420,Aleje Ujazdowskie
+1,06:30,west,21.727,0.000,0.891,1474.720,Aleje Ujazdowskie
+2,07:00,east,23.473,0.109,0.909,2232.420,Aleje Ujazdowskie
+2,07:00,west,23.736,0.270,0.829,1474.720,Aleje Ujazdowskie
+3,07:30,east,24.836,0.262,0.901,2232.420,Aleje Ujazdowskie
+3,07:30,west,25.521,0.821,0.756,1474.720,Aleje Ujazdowskie
+4,08:00,east,26.281,0.476,0.889,2232.420,Aleje Ujazdowskie
+4,08:00,west,27.672,1.876,0.641,1474.720,Aleje Ujazdowskie
+5,08:30,east,27.916,2.006,0.878,2232.420,Aleje Ujazdowskie
+5,08:30,west,29.349,3.750,0.632,1474.720,Aleje Ujazdowskie
+6,09:00,east,29.605,3.891,0.867,2232.420,Aleje Ujazdowskie
+6,09:00,west,31.451,6.629,0.560,1474.720,Aleje Ujazdowskie
+7,09:30,east,30.690,5.143,0.853,2232.420,Aleje Ujazdowskie
+7,09:30,west,32.725,8.504,0.520,1474.720,Aleje Ujazdowskie
+8,10:00,east,31.679,6.312,0.836,2232.420,Aleje Ujazdowskie
+8,10:00,west,33.631,9.820,0.512,1474.720,Aleje Ujazdowskie
+9,10:30,east,32.910,7.887,0.819,2232.420,Aleje Ujazdowskie
+9,10:30,west,34.955,11.934,0.481,1474.720,Aleje Ujazdowskie
+10,11:00,east,34.188,10.639,0.805,2232.420,Aleje Ujazdowskie
+10,11:00,west,36.273,15.572,0.462,1474.720,Aleje Ujazdowskie
+11,11:30,east,35.182,12.953,0.761,2232.420,Aleje Ujazdowskie
+11,11:30,west,36.965,17.547,0.456,1474.720,Aleje Ujazdowskie
+12,12:00,east,36.455,16.124,0.678,2232.420,Aleje Ujazdowskie
+12,12:00,west,37.732,19.794,0.461,1474.720,Aleje Ujazdowskie
+13,12:30,east,38.221,21.279,0.523,2232.420,Aleje Ujazdowskie
+13,12:30,west,38.352,21.721,0.511,1474.720,Aleje Ujazdowskie
+14,13:00,east,39.075,23.872,0.501,2232.420,Aleje Ujazdowskie
+14,13:00,west,38.576,22.124,0.609,1474.720,Aleje Ujazdowskie
+15,13:30,east,39.536,25.211,0.497,2232.420,Aleje Ujazdowskie
+15,13:30,west,38.725,22.284,0.653,1474.720,Aleje Ujazdowskie
+16,14:00,east,39.810,25.917,0.522,2232.420,Aleje Ujazdowskie
+16,14:00,west,38.837,22.305,0.700,1474.720,Aleje Ujazdowskie
+17,14:30,east,40.126,26.810,0.559,2232.420,Aleje Ujazdowskie
+17,14:30,west,38.960,22.332,0.758,1474.720,Aleje Ujazdowskie
+18,15:00,east,40.521,28.148,0.572,2232.420,Aleje Ujazdowskie
+18,15:00,west,38.979,22.081,0.817,1474.720,Aleje Ujazdowskie
+19,15:30,east,40.363,27.566,0.589,2232.420,Aleje Ujazdowskie
+19,15:30,west,38.588,20.695,0.858,1474.720,Aleje Ujazdowskie
+20,16:00,east,40.149,26.831,0.605,2232.420,Aleje Ujazdowskie
+20,16:00,west,38.279,19.728,0.885,1474.720,Aleje Ujazdowskie
+21,16:30,east,40.103,26.643,0.609,2232.420,Aleje Ujazdowskie
+21,16:30,west,38.067,19.018,0.912,1474.720,Aleje Ujazdowskie
+22,17:00,east,39.843,25.608,0.643,2232.420,Aleje Ujazdowskie
+22,17:00,west,37.929,18.549,0.928,1474.720,Aleje Ujazdowskie
+23,17:30,east,38.642,21.769,0.713,2232.420,Aleje Ujazdowskie
+23,17:30,west,37.110,16.610,0.948,1474.720,Aleje Ujazdowskie
+24,18:00,east,37.366,17.888,0.807,2232.420,Aleje Ujazdowskie
+24,18:00,west,36.332,14.878,0.959,1474.720,Aleje Ujazdowskie
+25,18:30,east,36.382,15.328,0.874,2232.420,Aleje Ujazdowskie
+25,18:30,west,35.726,13.602,0.963,1474.720,Aleje Ujazdowskie
+26,19:00,east,35.631,13.486,0.914,2232.420,Aleje Ujazdowskie
+26,19:00,west,35.167,12.414,0.967,1474.720,Aleje Ujazdowskie
+27,19:30,east,34.422,10.845,0.967,2232.420,Aleje Ujazdowskie
+27,19:30,west,34.185,10.371,0.979,1474.720,Aleje Ujazdowskie
+28,20:00,east,33.320,8.640,0.996,2232.420,Aleje Ujazdowskie
+28,20:00,west,33.157,8.313,0.998,1474.720,Aleje Ujazdowskie
+29,20:30,east,32.054,6.250,1.000,2232.420,Aleje Ujazdowskie
+29,20:30,west,31.884,5.996,1.000,1474.720,Aleje Ujazdowskie
+30,21:00,east,30.644,4.644,1.000,2232.420,Aleje Ujazdowskie
+30,21:00,west,30.488,4.488,1.000,1474.720,Aleje Ujazdowskie
+31,21:30,east,29.528,3.528,1.000,2232.420,Aleje Ujazdowskie
+31,21:30,west,29.399,3.399,1.000,1474.720,Aleje Ujazdowskie
+32,22:00,east,28.592,2.592,1.000,2232.420,Aleje Ujazdowskie
+32,22:00,west,28.461,2.461,1.000,1474.720,Aleje Ujazdowskie

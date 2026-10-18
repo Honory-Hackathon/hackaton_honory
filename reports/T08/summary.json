@@ -1,0 +1,130 @@
+{
+ "Marszałkowska": {
+  "segments": {
+   "east": 228,
+   "west": 369
+  },
+  "length_m": {
+   "east": 3434.0,
+   "west": 5195.0
+  }
+ },
+ "Aleje Ujazdowskie": {
+  "segments": {
+   "east": 137,
+   "west": 87
+  },
+  "length_m": {
+   "east": 2232.0,
+   "west": 1475.0
+  }
+ },
+ "segment_rules": {
+  "indoor": 51018,
+  "neighbour_fill": 4327,
+  "pixels": 1747858,
+  "step_median": 43,
+  "under_roof": 134349
+ },
+ "stop_rules": {
+  "best_spot": 7834,
+  "shelter": 4046
+ },
+ "covered_vs_all": {
+  "covered_shade_mean": {
+   "09:00": 0.995,
+   "13:00": 1.0,
+   "18:00": 1.0
+  },
+  "covered_utci_mean": {
+   "09:00": 28.74,
+   "13:00": 36.46,
+   "18:00": 36.24
+  },
+  "all_outdoor_shade_mean": {
+   "09:00": 0.631,
+   "13:00": 0.506,
+   "18:00": 0.785
+  },
+  "all_outdoor_utci_mean": {
+   "09:00": 30.92,
+   "13:00": 39.04,
+   "18:00": 37.32
+  }
+ },
+ "stops": {
+  "utci_mean_by_step": {
+   "09:00": 29.2,
+   "13:00": 36.99,
+   "18:00": 36.32
+  },
+  "area_mean_by_step": {
+   "09:00": 32.26,
+   "13:00": 40.31,
+   "18:00": 38.4
+  },
+  "shelter_rule_share_by_step": {
+   "09:00": 0.406,
+   "13:00": 0.472,
+   "18:00": 0.347
+  }
+ },
+ "night": {
+  "null_utci": 0,
+  "utci_mean_by_step": {
+   "21:00": 30.24,
+   "21:30": 29.14,
+   "22:00": 28.22
+  }
+ },
+ "sides_key_steps": {
+  "Aleje Ujazdowskie 09:00": {
+   "g_east": 3.891,
+   "g_west": 6.629,
+   "shade_east": 0.867,
+   "shade_west": 0.56,
+   "utci_east": 29.605,
+   "utci_west": 31.451
+  },
+  "Aleje Ujazdowskie 13:00": {
+   "g_east": 23.872,
+   "g_west": 22.124,
+   "shade_east": 0.501,
+   "shade_west": 0.609,
+   "utci_east": 39.075,
+   "utci_west": 38.576
+  },
+  "Aleje Ujazdowskie 18:00": {
+   "g_east": 17.888,
+   "g_west": 14.878,
+   "shade_east": 0.807,
+   "shade_west": 0.959,
+   "utci_east": 37.366,
+   "utci_west": 36.332
+  },
+  "Marszałkowska 09:00": {
+   "g_east": 3.752,
+   "g_west": 7.921,
+   "shade_east": 0.865,
+   "shade_west": 0.383,
+   "utci_east": 29.413,
+   "utci_west": 32.331
+  },
+  "Marszałkowska 13:00": {
+   "g_east": 27.005,
+   "g_west": 24.318,
+   "shade_east": 0.352,
+   "shade_west": 0.475,
+   "utci_east": 40.009,
+   "utci_west": 39.22
+  },
+  "Marszałkowska 18:00": {
+   "g_east": 20.104,
+   "g_west": 18.004,
+   "shade_east": 0.677,
+   "shade_west": 0.77,
+   "utci_east": 37.968,
+   "utci_west": 37.271
+  }
+ }
+}
