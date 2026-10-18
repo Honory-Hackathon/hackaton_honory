@@ -1,6 +1,6 @@
 # One-step rebuild of heat-views: fetch T12 layers, build route heat from BigQuery (final T08 if
 # gs://hackaton-honory-heat/T08/_SUCCESS exists, else the stub), build the image, deploy.
-#   gcloud builds submit --config views/cloudbuild.yaml --region europe-central2 --ignore-file views/.gcloudignore views
+#   gcloud builds submit --config views/cloudbuild.yaml --region europe-central2 views   (views/.gcloudignore keeps local site/data out of the upload)
 # Force a heat source with --substitutions _HEAT=final (or stub).
 substitutions:
   _HEAT: auto
