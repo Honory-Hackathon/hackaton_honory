@@ -19,7 +19,7 @@ HTTP: `uvicorn router.api:app --port 8080` → `POST /api/plan {origin, destinat
 | `ROUTER_CACHE` | `/tmp/router_bundle` | where a gs:// bundle is downloaded |
 | `HEAT_SEGMENT_PATH`, `HEAT_STOP_PATH` | | optional parquet (local/gs://) with the T08 columns, tried before the defaults |
 
-T08 tables are read from `gs://hackaton-honory-heat/T08/<table>.parquet` first, then BigQuery `warsaw_heat.<table>`.
+T08 tables are read from `gs://hackaton-honory-heat/T08/t08_*.parquet` (final) or `T08/stub/t08_*.parquet` (stub) first, then BigQuery `warsaw_heat.t08_*[_stub]`.
 
 Rebuild the bundle (light, seconds): `python -m router.build_bundle --out DIR --upload gs://hackaton-honory-heat/T09/bundle/`
 (needs geopandas; the router itself needs only `requirements.txt`).

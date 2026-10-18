@@ -74,6 +74,7 @@ def main():
     pv = df.pivot_table(index=["from", "earliest", "latest"], columns="kind", values=["dose_Ks", "duration_min"])
     print(pv.round(0).to_string())
     preview(samples, out)
+    by_window(df, out)
 
 
 def preview(samples, out: Path):
@@ -106,6 +107,26 @@ def preview(samples, out: Path):
     fig.suptitle("T09 options, window 13:00-14:00 (solid = walk, dashed = AC ride, dot = wait)", fontsize=10)
     fig.tight_layout()
     fig.savefig(out / "options_1300.png", dpi=80)
+
+
+def by_window(df: pd.DataFrame, out: Path):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    colors = {"coolest": "#1f77b4", "balanced": "#2ca02c", "fastest": "#d62728", "walk_only": "#7f7f7f"}
+    d = df[df.latest != "18:00"]
+    fig, axes = plt.subplots(1, 4, figsize=(14, 3.4), sharey=True)
+    for ax, ((o, t), g) in zip(axes, d.groupby(["from", "to"], sort=False)):
+        for k, c in colors.items():
+            gg = g[g.kind == k]
+            ax.plot(gg.earliest, gg.dose_Ks / 1000, "o-", color=c, label=k, ms=4)
+        ax.set_title(f"{o} →\n{t}", fontsize=8)
+        ax.tick_params(labelsize=7)
+        ax.set_xlabel("window start (1 h window)", fontsize=7)
+    axes[0].set_ylabel("dose, thousand K·s", fontsize=8)
+    axes[0].legend(fontsize=7)
+    fig.tight_layout()
+    fig.savefig(out / "dose_by_window.png", dpi=80)
 
 
 if __name__ == "__main__":

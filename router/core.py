@@ -2,7 +2,7 @@
 
 Method (see reports/T09/README.md):
 * Every option minimises one scalar cost  C = dose [K s] + lam * duration [s]  over trips inside the
-  time window; lam picks the option (coolest ~0, balanced 10 K, fastest 1000 K). Waiting at home is free.
+  time window; lam picks the option (coolest 0.3 K, balanced 10 K, fastest 100 K). Waiting at home is free.
 * Walking: time-dependent costs are handled by one Dijkstra per 30-min step (edge weight
   t_e * (g_e(step) + lam)) from the origin and from the destination (network is undirected),
   values interpolated between steps. ~4 ms per Dijkstra.
@@ -41,7 +41,7 @@ MAX_TRANSFER_WALK_S = 400.0
 MAX_TRANSFER_WAIT_S = 20 * 60
 NEXT_DEPS_PER_TRANSFER = 12
 WALK_DEPART_GRID_S = 300
-LAMBDA = {"coolest": 0.3, "balanced": 10.0, "fastest": 1000.0}
+LAMBDA = {"coolest": 0.3, "balanced": 10.0, "fastest": 100.0}
 CATS = ["<26", "26-32", "32-38", "38-46", ">46"]
 CAT_EDGES = [26.0, 32.0, 38.0, 46.0]
 DAY_START, DAY_END = 6 * 3600, 22 * 3600

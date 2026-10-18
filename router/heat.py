@@ -2,8 +2,8 @@
 
 HEAT_SOURCE = placeholder | stub | final
   placeholder  computed here from the T05 air temperature and the segment flags (no T08 needed)
-  stub         warsaw_heat.t08_segment_heat_stub / t08_stop_heat_stub (or their parquet copies)
-  final        warsaw_heat.t08_segment_heat / t08_stop_heat (or gs://hackaton-honory-heat/T08/*.parquet)
+  stub         gs://.../T08/stub/t08_*.parquet, else warsaw_heat.t08_segment_heat_stub / t08_stop_heat_stub
+  final        gs://hackaton-honory-heat/T08/t08_*.parquet, else warsaw_heat.t08_segment_heat / t08_stop_heat
 
 Overrides: HEAT_SEGMENT_PATH / HEAT_STOP_PATH (local or gs:// parquet with the T08 columns).
 """
@@ -133,9 +133,11 @@ def _read_bq(table: str, cols: str) -> pd.DataFrame:
 
 
 def _load_table(name: str, cols: str, env_path: str | None) -> pd.DataFrame:
+    """T08 writes final tables to T08/t08_<x>.parquet and stand-ins to T08/stub/t08_<x>.parquet."""
     tried = []
+    gcs = (f"{GCS_T08}/stub/{name[:-5]}.parquet" if name.endswith("_stub") else f"{GCS_T08}/{name}.parquet")
     for loader, arg in ([(_read_parquet, env_path)] if env_path else []) + [
-        (_read_parquet, f"{GCS_T08}/{name}.parquet"),
+        (_read_parquet, gcs),
         (_read_bq, name),
     ]:
         try:

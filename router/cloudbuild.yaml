@@ -1,0 +1,4 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "router/Dockerfile", "-t", "europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t09-router:latest", "."]
+images: ["europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t09-router:latest"]
