@@ -80,7 +80,7 @@ What the data turned out to be (water is LiDAR class 9, not 8; bridges are in cl
     - The only memory is a smoothing filter with a ~43 min time constant.
     - After sunset, Tmrt is therefore about 1 K *below* air temperature (pilot: 30.5 °C at 21:00 vs Ta 31.3 °C).
     - The night steps (21:00–22:00) are a lower bound.
-    - SOLWEIG's storage scheme (force-restore, "2026a") is experimental, needs a land-cover grid and refuses tiled runs, so it is not used.
+    - **Accepted:** we accept that this part of the radiation load is missing. It affects mainly the last 3 of 33 steps, by roughly 1–2 °C of UTCI (estimate), and is stated in the app and demo. SOLWEIG's storage scheme (force-restore, "2026a") is experimental, needs a land-cover grid and refuses tiled runs, so it is not used, and no custom correction is added.
   - Landsat `pmwc` is not a model input.
 
 ## 7. Metric: heat dose
@@ -157,11 +157,10 @@ Done:
 - SOLWEIG pilot runtimes and UTCI validity (T06).
 
 Remaining:
-- **SOLWEIG field (T07):** tile seams, far shadows at low sun, sun–shade differences, evening values close to air temperature.
+- **SOLWEIG field (T07):** tile seams, far shadows at low sun, the ground-temperature sign without land cover, sun–shade differences, evening values close to air temperature.
 - **Router (T11):** dose saved against extra travel time on demo trips, against the baselines.
 
 Open questions:
 - the dose weights;
 - the departure safety margin;
-- the rule for waiting spots and shelters;
-- evening heat release from pavement.
+- the rule for waiting spots and shelters.

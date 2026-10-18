@@ -32,6 +32,12 @@ This is the heat field every later product reads: segment and stop doses (T08), 
 - **Coverage:** every walkable pixel must fall inside a SOLWEIG tile. Report any that don't, e.g. the mask's 50 m fringe outside the AOI.
 - **Tile seams:** neighbouring tiles ran with different halos. Look for jumps in Tmrt and shadow along tile edges.
 - **Far casters at low sun:** a halo of 0.5–1 km misses long evening shadows. At 20:30 a 310 m tower casts ≈5.7 km. Compare SOLWEIG `shadow` with T02's building shade per step, and report where and when T02 has shade that SOLWEIG lacks.
+- **Ground-temperature sign (no land-cover run):**
+  - UMEP's `Solweig_run.py` sets `Tstart = Knight - param["Tstart"]["Value"]["Cobble_stone_2014a"]` when no land-cover grid is given, i.e. +3.41 K.
+  - The land-cover path (`Tgmaps_v1.py`) uses the table value −3.41 K.
+  - Check which sign `solweig` 0.1.0b96 applies in our runs: read where it builds the default ground grids, or compare a sunlit ground pixel's Tmrt with a run that passes `tstart = -3.41` explicitly.
+  - Report the size of the effect on midday Tmrt/UTCI. A wrong sign is about 7 K of ground-temperature excess at every sunlit step.
+  - If it is a bug, say so in the report and leave the decision to rerun to the user.
 - **Pilot consistency:** the pilot and the district tiles overlap. They should agree, apart from halo effects.
 - **Sanity (spec §13):**
   - UTCI inputs inside the valid range (Tmrt − Ta between −30 and +70 K, wind 0.5–17 m/s).
