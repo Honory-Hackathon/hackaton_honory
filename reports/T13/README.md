@@ -58,7 +58,7 @@ The pages work on a laptop and at 390 px phone width. On phones they use 4 m sha
   - 85 % of network length is ≥ 38 °C UTCI (very strong heat stress), and only 2 % is below 32 °C.
   - The length-weighted mean is 40.0 °C, and 60 % of the length is shaded.
   - At 06:00, 98 % is below 26 °C. By 09:00, 31 % is already above 32 °C.
-  - Source: T08 stub field, see below.
+  - Source: final T08 field.
 - **Shade is worth about 6 K of UTCI at 15:00:** 43.8 °C in sun vs 38.0 °C in shade, with air at 37.2 °C. Tree cover keeps ground pixels at 8 % sunlit all day, against 70–78 % for paved ground at midday.
 - **Evening:** after 20:00 almost the whole network is in shade (97 %), but UTCI stays at 30–33 °C. The values for 21:00–22:00 are a lower bound, because SOLWEIG has no heat release from pavement after sunset (spec §6). The pages say this for steps 30–32.
 
@@ -70,7 +70,11 @@ The routes page uses the final `warsaw_heat.t08_segment_heat` / `t08_stop_heat` 
 gcloud builds submit --config views/cloudbuild.yaml --region europe-central2 views
 ```
 
-The build picks the source on its own (`_HEAT=auto`; `final` or `stub` can be forced). The page shows the source as a badge. At the time of this report it is **stub**, a stand-in computed by T08 from the 27 SOLWEIG district tiles. Integration should rerun the command once T08 writes `_SUCCESS`; see the status line at the end.
+The build picks the source on its own (`_HEAT=auto`; `final` or `stub` can be forced). The page shows the source as a badge.
+
+- **Status:** T08 wrote `_SUCCESS` at about 03:10 UTC. The service was rebuilt at 03:14 UTC and now serves the **final** tables (green badge "Dane: T08 (SOLWEIG, końcowe)").
+- **Final vs stub:** the length-weighted summaries of the final field match the earlier stub build (the T08 stand-in on the same 27 SOLWEIG tiles) to 0.01 °C at every step.
+- **Rerun:** run the command again if T08 or T12 change.
 
 ## Decisions
 
@@ -84,6 +88,6 @@ The build picks the source on its own (`_HEAT=auto`; `final` or `stub` can be fo
 
 - **heat-app does not link here yet:** its `HEAT_VIEWS_URL` is empty. T10 or integration should run `gcloud run services update heat-app --region europe-central2 --update-env-vars HEAT_VIEWS_URL=https://heat-views-269831067246.europe-central2.run.app`. T13 did not change T10's service.
 - **Water pixels have the highest mean UTCI in the per-surface chart** (43.3 °C at 15:00). Water is open and sunlit, and SOLWEIG runs without land cover, so it treats water like any other ground. The chart shows this as it is.
-- **2 % of network length stays below 32 °C all day.** These are mostly indoor and covered segments, which get a constant value under T08's rules.
+- **2 % of network length stays below 32 °C all day.** These are the 1,546 indoor segments, which T08's `indoor` rule sets to a constant 26 °C.
 - **The 2 m shadow frames are about 1.1 MB each**, so playing the desktop 3D view on a slow connection loads frames late. The 4 m frames are used on phones.
 - **Screenshots** come from headless Chrome with SwiftShader WebGL. Real GPUs render faster and show the same content.
