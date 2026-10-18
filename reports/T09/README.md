@@ -1,6 +1,6 @@
 # T09: heat-aware router
 
-**Status (2026-10-18, 03:15 UTC):** router works end to end on T03 (walk network, stops) + T04 (recorded AC stop
+**Status (2026-10-18, 03:15 UTC; integration 03:35 UTC: heat-app serves this router on `HEAT_SOURCE=final`, `price_path` fix below):** router works end to end on T03 (walk network, stops) + T04 (recorded AC stop
 events) + **T08 final** (UTCI per segment and stop on the T07 SOLWEIG field, `gs://hackaton-honory-heat/T08/_SUCCESS`).
 Headline results are in [On the final field](#on-the-final-field-t08-on-t07-solweig) right below. The later sections
 show the same runs on the `placeholder` field (built while T08 was not there) and on the T08 `stub` (T06 tiles);
@@ -190,8 +190,11 @@ for the next run over walking; balanced (one 106, 25 min) is the sensible choice
 - **Feed gap 21:53–22:07:** runs missing from the record; answers touching it carry a note.
 - **One transfer max**, transfer walk ≤ 400 s, transfer wait ≤ 20 min; boarding/alighting outside Śródmieście not
   allowed (spec), so some fast trips via border stops are not offered.
-- `price_path` on coarse lines (few vertices across blocks) zig-zags between sidewalks; it is meant for ORS lines
-  that follow streets (2.5 km ORS-like line: +0.2 min vs the network path it was drawn from).
+- Fixed at integration (03:25 UTC): `price_path` on coarse lines (few vertices across blocks) zig-zagged between
+  sidewalks. A chord longer than 150 m whose snapped samples take more than 1.3× the shortest walk between its ends is
+  now replaced by that shortest walk. Plac Zbawiciela → Uniwersytet at 13:00 as a 2-point line: 62.3 → 43.8 min
+  (= the walk-only plan); as a 3-point line: 62.5 → 48.0 min. Dense lines are unchanged (walk-only geometry 53.1 min
+  before and after; the cached ORS Shaded lines of T11 price identically). Deployed to `t09-router` and `heat-app`.
 - 240 options from 60 random node pairs × windows checked for consistency (legs contiguous, leg doses sum to the total,
   category minutes sum to the duration, inside the window, coolest ≤ fastest in dose): all pass.
 - With custom `weights`, g is recomputed from the segment's mean UTCI, not from its pixel distribution (T08's g

@@ -17,10 +17,8 @@ app/
 ```
 
 Live: **https://heat-app-269831067246.europe-central2.run.app** (Cloud Run service `heat-app`, europe-central2, public).
-Current env: `UTCI_FRAMES=t07_utci SHADE_FRAMES=t07_shade UTCI_COG=…/T07/utci.tif SHADOW_COG=…/T07/sun_solweig.tif HEAT_SOURCE=placeholder`.
-**Once T08 writes `_SUCCESS`, the only change needed is:**
-`gcloud run services update heat-app --region europe-central2 --update-env-vars HEAT_SOURCE=final`
-(plus `HEAT_VIEWS_URL=<heat-views url>` once T13 is up).
+Current env (integration, 2026-10-18 03:25 UTC): `UTCI_FRAMES=t07_utci SHADE_FRAMES=t07_shade UTCI_COG=…/T07/utci.tif SHADOW_COG=…/T07/sun_solweig.tif HEAT_SOURCE=final HEAT_VIEWS_URL=https://heat-views-269831067246.europe-central2.run.app`, 2 vCPU / 4 GiB, min 1 instance.
+Heat is loaded once at startup: if T08 is regenerated, redeploy or restart the service.
 
 ## Frames (map layers)
 
@@ -93,7 +91,7 @@ From the **repo root** (so router/ is included):
 source ~/warsaw-open-data/.envrc; export CLOUDSDK_CORE_ACCOUNT=teatr.sgh@gmail.com
 gcloud builds submit --config app/cloudbuild.yaml --ignore-file=app/.gcloudignore --region europe-central2 .
 gcloud run deploy heat-app --image europe-central2-docker.pkg.dev/hackaton-honory/hackathon/heat-app:latest \
-  --region europe-central2 --allow-unauthenticated --cpu 2 --memory 2Gi --min-instances 1 --max-instances 3 \
+  --region europe-central2 --allow-unauthenticated --cpu 2 --memory 4Gi --min-instances 1 --max-instances 3 \
   --update-env-vars 'HEAT_SOURCE=final,UTCI_FRAMES=t07_utci,SHADE_FRAMES=t07_shade,UTCI_COG=gs://hackaton-honory-heat/T07/utci.tif,SHADOW_COG=gs://hackaton-honory-heat/T07/sun_solweig.tif,HEAT_VIEWS_URL=https://heat-views-<...>.run.app'
 ```
 
