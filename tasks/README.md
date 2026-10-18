@@ -1,8 +1,8 @@
-# Tasks: first wave
+# Tasks
 
 These tasks implement [specification v1.0](../docs/specification-v1.0.md). Each file is a self-contained brief for one person or agent session. They describe the goal, the data with its known quirks, the constraints and the expected output. They do not prescribe methods: exploring the data and choosing the approach is part of each task.
 
-## First wave: start now, in parallel
+## First wave (done or finishing, 2026-10-18)
 
 The six tasks below were chosen because together they cover every input the UTCI field and the router need, and **none depends on another's output**. Where one later consumes another's result, the hand-over format is fixed in the shared conventions below, so each task can be built and tested on its own.
 
@@ -15,13 +15,17 @@ The six tasks below were chosen because together they cover every input the UTCI
 | [T05](T05_meteo_landsat.md) | Weather forcing for 2026-06-28 + Landsat surface-heat anomaly (`pmwc`) | Inputs of the thermal model; small and quick |
 | [T06](T06_solweig_reference.md) | SOLWEIG (simplest setup) on a pilot area vs the proposed simple model | De-risks the physics early; tunes the proposal's coefficients |
 
-## Later waves (depend on the first wave; do not start yet)
+## Second wave: start now, in parallel
 
-- **T07 UTCI field:** shade shares (T02 on T01) × forcing and `pmwc` (T05) × thermal model (spec §13, tuned in T06) → Tmrt and UTCI per walkable pixel and time step.
-- **T08 Aggregation:** UTCI and dose per walk segment and per stop and time step (T07 + T03).
-- **T09 Router:** time-dependent walk + transit search minimising heat dose, with best departure time (T08 + T04).
-- **T10 App:** map with time slider and route cards.
-- **T11 Validation and demo:** demo origin–destination pairs, baselines (ORS Shaded, building-only shade), heat-dose definition workshop.
+First-wave results are in `reports/T01`–`T06`. Each second-wave task can start now: where an upstream output is not final yet, the brief names a stand-in with the same format (the T06 pilot rasters, placeholder heat costs, a stub router).
+
+| Task | Aspect | Final run needs |
+|---|---|---|
+| [T07](T07_utci_field.md) | UTCI field: tuned §13 model on T02 shares → Tmrt and UTCI per walkable pixel and time step | T02 district shares |
+| [T08](T08_segment_stop_heat.md) | UTCI and dose rate per walk segment and per stop and time step | T07 |
+| [T09](T09_router.md) | Router: walk + AC trams/buses, lowest heat dose, best departure time | T08 (heat costs) |
+| [T10](T10_app.md) | App: time-slider map and route cards on Cloud Run | T07, T09 |
+| [T11](T11_validation_demo.md) | Demo trips, baselines (ORS Shaded, building-only shade), dose-weight comparison | T09 |
 
 ## Shared conventions (the hand-over contract)
 
@@ -36,6 +40,7 @@ The six tasks below were chosen because together they cover every input the UTCI
 | Transit day | Saturday 2026-10-17, 06:00–22:00 local, mapped clock time to clock time onto the heat day. |
 | Shade zone shares | `f_sun`, `f_bldg`, `f_tree`, `f_both` in [0, 1], preferably The mrt factors for shade zones are [1, 0.1, 0.2, 0.08]. These are the inputs of `compute_inputs_for_utci` (spec §13). |
 | Cloud | GCP project `hackaton-honory`, region `europe-central2`. Any infrastructure that fits the goal may be created (free tier, cost is not a concern). Proposed shared names: bucket `gs://hackaton-honory-heat/<task-id>/…`, BigQuery dataset `hackaton-honory.warsaw_heat`. Heavy processing runs in the cloud, not on laptops. |
+| Compute | Cloud Run Jobs: 5 regions per project (in use: europe-central2, -west1, -west3, -west4, -north1), each 20 vCPU / 40 GiB, at most 8 vCPU / 32 GiB per task. Memory is usually the binding limit (one 32 GiB task per region). Compute Engine: 12 vCPU globally, no GPU, no spot. Split big jobs into tiles across regions. |
 | Formats | Rasters: Cloud-Optimised GeoTIFF. Vectors and tables: GeoParquet/Parquet in GCS and/or BigQuery tables. Each output has a short README (source, vintage, units, nodata). |
 | Stack | Python. Prefer pip-installable libraries; anything else needs a one-line justification. |
 
