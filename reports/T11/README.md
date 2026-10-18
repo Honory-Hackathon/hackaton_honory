@@ -77,7 +77,7 @@ Dose saved = 1 − ours / baseline; minutes = ours − baseline.
 ![](summary_final.png)
 
 - **Pitch line:** planning in space *and* time with AC trams and buses cuts the heat dose by **79–94 %** against walking at the requested time, and it is also **9–38 min faster**. Most of the gain is from the AC ride and from the departure time. Shade routing alone saves **1–17 %** at a fixed departure (52 % on the all-day trip, where the shaded early-morning route is 16 min longer).
-- **ORS Shaded on our field:** our coolest walk has **6–10 % less dose** than ORS Shaded's route, at +0–8 min. On the noon trip the ORS Shaded route has *more* dose than ORS's own unweighted route on our field (61.7 vs 61.1 k K·s). Its shade layer (synthetic nDSM, 4 fixed slots on 21 June) disagrees with SOLWEIG at that hour.
+- **ORS Shaded on our field:** our coolest walk has **6–10 % less dose** than ORS Shaded's route, at +0–8 min. On the noon trip the ORS Shaded route has *more* dose than ORS's own unweighted route on our field (61.7 vs 61.1 k K·s). A likely reason is its shade layer (synthetic nDSM, 4 fixed slots on 21 June), which does not match SOLWEIG at that hour.
 - **Trees (building-only):**
   - For walking, routing on building-only shade costs **0–4 %** more dose on four trips and **7 %** on Kopernik → Mirowska, where the building-only route is 400 m longer *and* hotter.
   - For the multimodal trip, building-only routing gives the same answer as ours: the walk legs are 270–680 m and the ride dominates.
