@@ -295,7 +295,7 @@ def run(heat_kind, trips_path, out_dir, weights_name="spec"):
     for p in (f"comparison_{tag}.csv", f"weights_{tag}.csv", f"results_{tag}.json"):
         common.gcs_upload_file(out_dir / p, f"results/{tag}/{p}")
     print(f"done in {time.time() - t0:.0f}s")
-    return comp, wdf
+    return comp, wdf, tag
 
 
 COLORS = {"ours_coolest": "#1a9850", "walk_coolest": "#66bd63", "walk_bldg_only": "#762a83",
@@ -353,10 +353,14 @@ def main():
     ap.add_argument("--trips", default=common.TRIPS_PATH)
     ap.add_argument("--out", default=str(common.OUT_DIR))
     a = ap.parse_args()
-    comp, wdf = run(a.heat, a.trips, Path(a.out))
+    comp, wdf, tag = run(a.heat, a.trips, Path(a.out))
     pd.set_option("display.width", 200)
     print(comp[["trip", "candidate", "depart", "duration_min", "walk_m", "dose_Ks", "peak_utci", "shade_share"]]
           .to_string(index=False))
+    if Path(a.out) == common.OUT_DIR:
+        from demo import headline
+        sys.argv = [sys.argv[0], "--heat", tag]
+        headline.main()
 
 
 if __name__ == "__main__":

@@ -68,6 +68,29 @@ def to_md(rows, heat):
     return "\n".join(lines)
 
 
+def weight_sensitivity(heat):
+    """Per trip and weight set: best candidate, Kendall tau of the full ranking vs spec weights, walk order."""
+    from scipy.stats import kendalltau
+    w = pd.read_csv(common.OUT_DIR / f"weights_{heat}.csv")
+    r = w[w["rank"].notna()]
+    walk_c = ["walk_coolest", "walk_bldg_only", "walk_fastest", "ors_shaded", "ors_plain"]
+    out = []
+    for t, d in r.groupby("trip", sort=False):
+        base = d[d.weights == "spec"].set_index("candidate")["rank"]
+        for wn, dd in d.groupby("weights", sort=False):
+            rr = dd.set_index("candidate")["rank"].reindex(base.index)
+            walk = dd[dd.candidate.isin(walk_c)].sort_values("rank").candidate.tolist()
+            rp = w[(w.trip == t) & (w.weights == wn) & (w.candidate == "walk_coolest_replanned")]
+            out.append({"trip": t, "weights": wn, "best": dd.sort_values("rank").candidate.iloc[0],
+                        "kendall_tau_vs_spec": round(float(kendalltau(base, rr).statistic), 2),
+                        "walk_order": " > ".join(walk),
+                        "replanned_walk_m": None if rp.empty else rp.distance_m.iloc[0],
+                        "replanned_walk_changed": None if rp.empty else (not bool(rp.same_route_as_spec.iloc[0]))})
+    df = pd.DataFrame(out)
+    df.to_csv(common.OUT_DIR / f"weights_summary_{heat}.csv", index=False)
+    return df
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--heat", default="standin")
@@ -79,6 +102,10 @@ def main():
         json.dump(rows, f, indent=1, default=str)
     common.gcs_upload_file(common.OUT_DIR / f"headline_{a.heat}.json", f"results/{a.heat}/headline_{a.heat}.json")
     print(md)
+    ws = weight_sensitivity(a.heat)
+    print(ws.groupby("weights").agg(tau=("kendall_tau_vs_spec", "mean"),
+                                    best_changes=("best", lambda b: int((b != "ours_coolest").sum())),
+                                    walk_route_changes=("replanned_walk_changed", "sum")).round(2).to_string())
 
 
 if __name__ == "__main__":

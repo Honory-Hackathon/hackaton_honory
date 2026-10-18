@@ -1,0 +1,4 @@
+data/
+results_*.json
+*_walkonly.png
+map_*_standin.png

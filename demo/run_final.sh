@@ -10,6 +10,5 @@ cd "$(dirname "$0")/.."
 if [ "$HEAT" = "final" ]; then
   python3 -m demo.bldg_only --calib t08      # building-only costs calibrated on the final field
 fi
-python3 -m demo.run_demo --heat "$HEAT"
-python3 -m demo.headline --heat "$HEAT"
+python3 -m demo.run_demo --heat "$HEAT"     # also writes headline_<tag>.md and weights_summary_<tag>.csv
 gsutil cp demo/demo_trips.json gs://hackaton-honory-heat/T11/demo_trips.json
