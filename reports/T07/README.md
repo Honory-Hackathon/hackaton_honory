@@ -51,7 +51,8 @@ T05 `ta_c`, `rh_pct`, max(0.5, 10 m wind)); T07 does not recompute it.
 checks and writes `utci.tif`, task 1 `tmrt.tif`, task 2 `sun_solweig.tif`. No task holds a full 33-band raster: each
 reads the 27 tiles, keeps only the walkable pixels as vectors (≈ 2.1 M px × 33 steps), runs the checks on those
 vectors, then writes its output band by band and converts it to COG (the COG conversion with average overviews
-is the slow part, ≈ 11 min per raster). _RUNTIME_
+is the slow part). Wall time 13.2 min (task 0: 793 s incl. 3.4 min of checks; tmrt 666 s; sun 117 s), tiles
+read straight from the bucket; `_SUCCESS` written 02:46 UTC.
 
 ![UTCI at 13:00, 18:00, 20:00](utci_maps.png)
 
@@ -66,8 +67,9 @@ is the slow part, ≈ 11 min per raster). _RUNTIME_
 | walkable outside the tiles (nodata) | 909, of which inside the AOI: 0 |
 | walkable outside the AOI (mask fringe ≤ 50 m) | 98,749, of which 97,840 are still inside a tile |
 
-The 909 uncovered pixels are plaza (465), park path (178), sidewalk (147), shared street (118) and steps (1), in
-1 km cells next to the AOI that T06 did not run. They touch 26 T03 segments; 15 have no pixel left and need a
+The 909 uncovered pixels are plaza (465), park path (178), sidewalk (147), shared street (118) and steps (1), all in
+one strip at E 636940–637000, N 484800–485010 (1 km cell 636000_484000, which T06 did not run), just west of the AOI's
+south-western corner. They touch 26 T03 segments; 15 have no pixel left and need a
 fallback in T08 (nearest covered segment, or the Ta-based night/evening value). Map: [`coverage.png`](coverage.png).
 
 ## Tile seams
@@ -299,7 +301,8 @@ here. T08 prices them with its own rule.
 - Code: [`utci/field.py`](../../utci/field.py) (Cloud Run job), [`utci/figures.py`](../../utci/figures.py),
   [`utci/report_tables.py`](../../utci/report_tables.py), [`utci/tstart_check.py`](../../utci/tstart_check.py),
   `utci/Dockerfile`, bucket README source `utci/BUCKET_README.md`.
-- Image `europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t07-utci:3`. Jobs: `t07-final` (europe-west4: the
-  production run; also defined in europe-west1, unused), `t07-field` (europe-north1, test run on 22 tiles to `T07/test/`).
+- Image `europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t07-utci:3`. Jobs: `t07-final` (europe-west4, the
+  production run, execution `t07-final-js8zd`), `t07-field` (europe-north1, test run on 22 tiles; its `T07/test/`
+  output was deleted).
 - Rerun: `gcloud run jobs execute t07-final --region europe-west4` (env `OUT_PREFIX=T07`, `REQUIRE_TILES=27`, 3 tasks).
 
