@@ -412,14 +412,29 @@ class Router:
                 best_dose, best_wo = pw["dose"], dep
         wo = Itin("walk_only", best_dose, walk_only=True, depart=best_wo, path_nodes=fast_path)
 
+        # render every candidate exactly, then pick per family on the exact cost dose + lam * duration
+        rendered, seen = [], set()
+        for fam in ("coolest", "balanced", "fastest"):
+            for it in best[fam]:
+                op = self._render(it, H, trees, o_node, d_node, o_extra, d_extra, origin, destination)
+                sig = tuple((lg["mode"], lg.get("run_id"), lg["start"], lg["end"]) for lg in op["legs"])
+                if sig in seen or op["arrive_s"] > s_to_hhmm(t1, True) or op["depart_s"] < s_to_hhmm(t0, True):
+                    continue
+                seen.add(sig)
+                rendered.append(op)
         options = []
         for fam in ("coolest", "balanced", "fastest"):
-            it = best[fam]
-            if it is None:
+            if not rendered:
                 notes.append(f"no {fam} option fits the window")
                 continue
-            options.append(self._render(it, H, trees, o_node, d_node, o_extra, d_extra, origin, destination))
+            costs = [op["dose_Ks"] + lam[fam] * op["duration_min"] * 60 for op in rendered]
+            op = dict(rendered[int(np.argmin(costs))])
+            op["kind"] = fam
+            op["search_cost"] = round(float(min(costs)), 1)
+            options.append(op)
         options.append(self._render(wo, H, trees, o_node, d_node, o_extra, d_extra, origin, destination))
+        options[-1]["search_cost"] = None
+        n_cand = len(rendered)
         if t1 - t0 < walk_t:
             notes.append("walking the whole way does not fit the window; walk_only shown departing at earliest")
         sigs = {}
@@ -434,7 +449,8 @@ class Router:
                       "heat_source": H.source, "weights": [list(x) for x in heatmod.parse_weights(weights)],
                       "lambda_K": lam, "snap_m": [round(o_snap, 1), round(d_snap, 1)],
                       "runtime_s": round(time.time() - tq, 3),
-                      "runtime_detail_s": {"trees": round(t_trees, 3), "search": round(t_search, 3)}},
+                      "runtime_detail_s": {"trees": round(t_trees, 3), "search": round(t_search, 3)},
+                      "candidates": n_cand},
             "options": options,
             "notes": notes,
         }
@@ -643,9 +659,14 @@ class Router:
                                                               tree_o=(fam, acc_step[e1b]),
                                                               tree_d=(fam, int(s2[k])))))
         if not cand:
-            return None
-        cand.sort(key=lambda x: x[0])
-        return cand[0][1]
+            return []
+        # best candidate of each type (walk / direct / one transfer); exact re-ranking happens in plan()
+        out = {}
+        for c, it in cand:
+            typ = "walk" if it.walk_only else ("transfer" if it.e3 >= 0 else "direct")
+            if typ not in out or c < out[typ][0]:
+                out[typ] = (c, it)
+        return [it for _, it in out.values()]
 
     def _run_cummin(self, head):
         """For each event i: min of head[j] over earlier events j of the same run (strictly before)."""
@@ -816,11 +837,14 @@ class Router:
         pts = [xy[0]]
         for a, b in zip(xy[:-1], xy[1:]):
             L = float(np.hypot(*(b - a)))
-            n = max(1, int(L // 10))
+            n = max(1, int(L // 20))
             for k in range(1, n + 1):
                 pts.append(a + (b - a) * k / n)
         pts = np.array(pts)
         dd, nn = self.kd.query(pts)
+        keep = dd <= 60
+        keep[0] = keep[-1] = True
+        dd, nn = dd[keep], nn[keep]
         seq = [int(nn[0])]
         for x in nn[1:]:
             if int(x) != seq[-1]:
@@ -835,14 +859,15 @@ class Router:
                 continue
             p = self._path_nodes(pred, b)
             path.extend(p[1:])
-        # drop immediate back-and-forth (u -> v -> u) created by snapping
-        clean = []
+        # loop erasure: snapping noise creates spurs and small loops; keep a simple path
+        clean, pos = [], {}
         for n in path:
-            if len(clean) >= 2 and clean[-2] == n:
-                clean.pop()
+            if n in pos:
+                for x in clean[pos[n] + 1:]:
+                    pos.pop(x, None)
+                del clean[pos[n] + 1:]
                 continue
-            if clean and clean[-1] == n:
-                continue
+            pos[n] = len(clean)
             clean.append(n)
         t0 = hhmm_to_s(depart)
         o_extra = float(dd[0]) / WALK_SPEED
