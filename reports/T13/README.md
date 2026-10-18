@@ -86,7 +86,7 @@ The build picks the source on its own (`_HEAT=auto`; `final` or `stub` can be fo
 
 ## Open issues
 
-- **heat-app links here:** `HEAT_VIEWS_URL` on heat-app was set by the T10 verify step (commit 7fd4c2f..7f0de63); `/api/config` returns `heat_views_url` and the three view paths. (Verified 03:20 UTC.)
+- **heat-app links here:** `HEAT_VIEWS_URL` on heat-app was set by the T10 verify step (commit 7f0de63); `/api/config` returns `heat_views_url` and the three view paths. (Verified 03:20 UTC.)
 - **Water pixels have the highest mean UTCI in the per-surface chart** (43.3 °C at 15:00). Water is open and sunlit, and SOLWEIG runs without land cover, so it treats water like any other ground. The chart shows this as it is.
 - **2 % of network length stays below 32 °C all day.** These are the 1,546 indoor segments, which T08's `indoor` rule sets to a constant 26 °C.
 - **The 2 m shadow frames are about 1.1 MB each**, so playing the desktop 3D view on a slow connection loads frames late. The 4 m frames are used on phones.
