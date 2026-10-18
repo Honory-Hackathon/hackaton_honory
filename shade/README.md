@@ -54,5 +54,6 @@ Outputs, all COG on the input grid:
 ## Development tools
 
 - `tests/`: synthetic box, tower (100 m at 3–12.5° sun, shadows up to 1.9 km), cylinder tree (analytic Beer–Lambert crossing, light under the crown), mixed building + tree, a far caster outside the grid, infinite canyon SVF, sun positions. Run with `python -m pytest shade/tests`.
+- `far_dsm.py`: the far-caster surface over the caster extent from 2025 LAZ sheets, with the same rule as T01's `dsm` (max of class 6, else mean of class 2), left empty inside the shared grid.
 - `dev_geometry.py`: crude LAZ → 1 m layers, a stand-in for T01 used only for development.
 - `validate_ortho.py`: compares engine shade with dark pixels of the 2023-09-05 orthophoto.

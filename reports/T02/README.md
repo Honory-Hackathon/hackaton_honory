@@ -1,6 +1,6 @@
 # T02 report: shade engine
 
-Status 2026-10-18: **engine built and validated; production run waiting for T01.**
+Status 2026-10-18: **engine built and validated; production run done on T01's layers** (`gs://hackaton-honory-heat/T02/`).
 
 ## What was produced
 
@@ -17,6 +17,38 @@ Status 2026-10-18: **engine built and validated; production run waiting for T01.
   | ![](preview_0700.png) | ![](preview_1300.png) | ![](preview_1900.png) |
 
   Mean shares over the dev area (sun / bldg / tree / both): 07:00 0.41 / 0.42 / 0.08 / 0.08; 13:00 0.74 / 0.16 / 0.09 / 0.01; 19:00 0.28 / 0.53 / 0.06 / 0.13.
+
+## Production run
+
+- **Inputs:**
+  - T01's layers from `gs://hackaton-honory-heat/T01/output/`; T01's `crown_gap_fraction` is used as vertical crown transmission.
+  - A far-caster surface, built here because T01 had finished before the caster extent was added: `far_casters/dsm_far.tif`, 13 × 11 km, 305 sheets of the 2025 flight (28 GB, 210 of them reused from T01's bucket). Same rule as T01's `dsm`.
+- **Far-caster surface:** data on 92 % of the cells outside the grid (the rest is mostly Vistula water with no returns). The tallest objects outside the grid are real:
+  - a 199 m chimney at 52.2947 N 20.9933 E (most likely the Żerań CHP plant), north of the district, so it never shades it;
+  - ~100 m towers in western Wola and Gocław.
+- **Outputs** in `gs://hackaton-honory-heat/T02/`, each described in `README.md` there:
+  - `f_sun.tif`, `f_bldg.tif`, `f_tree.tif`, `f_both.tif`: 33 bands each.
+  - `svf.tif`.
+  - `far_casters/dsm_far.tif`.
+- **Shares sum check:** the four sum to 1 in 100 % of pixels at full resolution. Overviews are per-band averages, so there they are only within ±1/250.
+- **Mean shares over the whole grid** (sun / bldg / tree / both). The grid includes Łazienki, Pole Mokotowskie and the Vistula banks:
+
+  | Time | sun | bldg | tree | both |
+  |---|---|---|---|---|
+  | 07:00 | 0.43 | 0.21 | 0.28 | 0.08 |
+  | 13:00 | 0.68 | 0.07 | 0.25 | 0.01 |
+  | 19:00 | 0.32 | 0.26 | 0.28 | 0.15 |
+  | 20:30 | 0.05 | 0.19 | 0.13 | 0.63 |
+
+- **Runtime** on c2d-highmem-8, 8.1 GB peak (`timings_production.json`). The real canopy is larger than in the benchmark, so this was about 2.5× slower:
+  - **33 steps:** 9.5 min including writes (7.3 min of compute, 4.9–77 s per sunlit step).
+  - **SVF:** 65 min.
+  - **Whole run:** 77 min.
+- **SVF values:** buildings + terrain median 0.91 (p1 0.29). With crowns median 0.59.
+
+  | 07:00 | 13:00 | 19:00 |
+  |---|---|---|
+  | ![](prod_preview_0700.png) | ![](prod_preview_1300.png) | ![](prod_preview_1900.png) |
 
 ## Checks
 
@@ -83,7 +115,7 @@ Measured on c2d-highmem-8 (8 vCPU, AMD Milan) in `hackaton-honory`, europe-centr
 
 ## Open issues
 
-1. **Production run:** blocked on T01, which now also delivers the far-caster surface. When it lands: `python -m shade.run <T01 dir> <out> --far-dsm <far.tif>` on the VM, then copy to `gs://hackaton-honory-heat/T02/`.
+1. **Crown transmission source:** T01's `crown_gap_fraction` is a LiDAR gap fraction (median 0.016 in Ogród Saski, 0.16 on Aleje Ujazdowskie), not shortwave transmissivity. It is used as τ as is. If T06 finds another mapping, only the shares need re-running (~11 min).
 2. **Light through crowns may be counted twice:** the shares carry measured crown transmission (the τ fraction counts as sun), and the thermal model's tree-zone factor may represent the same light again. Now recorded in spec §13 (points to settle), to be decided when tuning against SOLWEIG (T06).
 3. **Receiver height:** shares are for the surface (0 m). For UTCI at body height, rerun with `--receiver-height 1.1`. The change is small except right next to walls.
 4. **Terrain self-shade counts as `f_bldg`:** curbs and walls in the DTM shade 1–2 % of cells at low sun. T01's DTM smoothing decides how much remains.
@@ -96,9 +128,11 @@ Measured on c2d-highmem-8 (8 vCPU, AMD Milan) in `hackaton-honory`, europe-centr
 ## Where things are
 
 - **Code:** `shade/` in this repo.
-- **Figures:** this folder: `preview_*.png`, `ortho_*.png`, `ortho_validation.json`, `timings_dev_3.4Mpx.json`, `timings_full_72Mpx.json`.
+- **Figures:** this folder: `preview_*.png`, `ortho_*.png`, `ortho_validation.json`, `timings_dev_3.4Mpx.json`, `timings_full_72Mpx.json`, `timings_production.json`, `prod_preview_*.png`.
 - **VM `t02-shade`** (c2d-highmem-8, europe-central2-a, 100 GB disk, stopped after this work):
   - `~/laz/`: 12 LiDAR sheets
   - `~/ortho/`: orthophoto sheet
   - `~/dev_in/`, `~/dev_out/`: dev layers and outputs
   - `~/bench72_in/`, `~/bench72_far.tif`: full-size benchmark inputs (tiled dev area)
+  - `~/laz_far/`: 305 far-caster LAZ sheets of the 2025 flight
+  - `~/t01/`, `~/far/`, `~/prod_out/`: production inputs and outputs (copies of the bucket files)

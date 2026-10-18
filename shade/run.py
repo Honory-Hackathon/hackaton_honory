@@ -2,7 +2,8 @@
 
 usage: python -m shade.run IN_DIR OUT_DIR [--far-dsm FAR.tif] [--steps 07:00,13:00] [--receiver-height 0] [--no-svf]
 IN_DIR holds dtm.tif, dsm.tif, canopy_height.tif, crown_base.tif, transmission.tif on one grid
-(heights in m; NaN or nodata = absent). FAR.tif is the ground + buildings surface over the wider caster
+(heights in m; NaN or nodata = absent). T01's names crown_base_height.tif and crown_gap_fraction.tif are
+accepted for the last two; the LiDAR gap fraction is then used as vertical crown transmission. FAR.tif is the ground + buildings surface over the wider caster
 extent, same cell size and cell edges; it only casts shadows into the grid.
 
 Outputs in OUT_DIR:
@@ -31,7 +32,13 @@ from .sun import sun_positions
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-LAYERS = ("dtm", "dsm", "canopy_height", "crown_base", "transmission")
+LAYERS = {  # layer -> accepted file names
+    "dtm": ("dtm",),
+    "dsm": ("dsm",),
+    "canopy_height": ("canopy_height",),
+    "crown_base": ("crown_base", "crown_base_height"),
+    "transmission": ("transmission", "crown_gap_fraction"),
+}
 SCALE = 250
 NIGHT = 255
 COLOURS = {  # preview RGB per share
@@ -54,8 +61,9 @@ def read_far(path, profile):
 
 def read_layers(in_dir, far_dsm=None):
     arrays, profile = {}, None
-    for name in LAYERS:
-        with rasterio.open(Path(in_dir) / f"{name}.tif") as src:
+    for name, files in LAYERS.items():
+        path = next(p for f in files if (p := Path(in_dir) / f"{f}.tif").exists())
+        with rasterio.open(path) as src:
             a = src.read(1, masked=True).astype(np.float32).filled(np.nan)
             if profile is None:
                 profile = src.profile
