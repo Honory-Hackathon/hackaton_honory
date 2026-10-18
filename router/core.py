@@ -834,12 +834,24 @@ class Router:
         H = self.heat_for(weights, segment_heat, stop_heat)
         c = np.asarray(coords_lonlat, float)
         xy = np.c_[c[:, 0] * self.kx, c[:, 1] * self.ky]
+        # Lines are sampled every 20 m and each sample is snapped. A long chord (> 150 m) that cuts
+        # across blocks (a coarse line) would zig-zag between sidewalks: if walking through its
+        # snapped samples takes > 1.3x the shortest walk between its ends, only the ends are kept.
+        Gs = self._graph(self.edge_time)
         pts = [xy[0]]
         for a, b in zip(xy[:-1], xy[1:]):
             L = float(np.hypot(*(b - a)))
             n = max(1, int(L // 20))
-            for k in range(1, n + 1):
-                pts.append(a + (b - a) * k / n)
+            seg = [a + (b - a) * k / n for k in range(0, n + 1)]
+            if L > 150:
+                sn = [int(x) for x in self.kd.query(np.array(seg))[1]]
+                sn = [x for i, x in enumerate(sn) if i == 0 or x != sn[i - 1]]
+                lim = max(600.0, 3.0 * L / WALK_SPEED)
+                via = sum(dijkstra(Gs, indices=u, limit=600.0)[v] for u, v in zip(sn[:-1], sn[1:]))
+                direct = dijkstra(Gs, indices=sn[0], limit=lim)[sn[-1]]
+                if np.isfinite(direct) and via > 1.3 * direct:
+                    seg = seg[-1:]
+            pts.extend(seg[1:] if len(seg) > 1 else seg)
         pts = np.array(pts)
         dd, nn = self.kd.query(pts)
         keep = dd <= 60
@@ -849,11 +861,12 @@ class Router:
         for x in nn[1:]:
             if int(x) != seq[-1]:
                 seq.append(int(x))
-        Gs = self._graph(self.edge_time)
         path = [seq[0]]
         gaps = 0
         for a, b in zip(seq[:-1], seq[1:]):
-            dist, pred = dijkstra(Gs, indices=a, return_predecessors=True, limit=600)
+            gap_m = float(np.hypot(*(self.kd.data[a] - self.kd.data[b])))
+            dist, pred = dijkstra(Gs, indices=a, return_predecessors=True,
+                                  limit=max(600.0, 3.0 * gap_m / WALK_SPEED))
             if not np.isfinite(dist[b]):
                 gaps += 1
                 continue
