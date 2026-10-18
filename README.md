@@ -1,6 +1,10 @@
-# Śródmieście heat planner
+# Heat App · Team 4 · Honory
 
-A route planner for a heat-vulnerable pedestrian in central Warsaw that answers two questions: **which way** and
+> **Heat App** by **Team 4 — Honory** (Tadeusz Furykiewicz, Stanisław Sender, Adam Zienkowicz)
+>
+> 🌡️ **Try it:** https://heat-app-269831067246.europe-central2.run.app · 📊 **Pitch:** [`pitch-presentation.pptx`](pitch-presentation.pptx)
+
+**Heat App** is a route planner for a heat-vulnerable pedestrian in central Warsaw that answers two questions: **which way** and
 **when to leave**. It minimises the felt heat (UTCI) over the whole trip, walking, waiting at stops and riding
 air-conditioned trams and buses. The heat day is **Sunday 2026-06-28** (air temperature up to 37.2 °C, clear sky);
 the transit is the **recorded** operation of Saturday 2026-10-17.
