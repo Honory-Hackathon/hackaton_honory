@@ -5,9 +5,6 @@ A route planner for a heat-vulnerable pedestrian in central Warsaw that answers 
 air-conditioned trams and buses. The heat day is **Sunday 2026-06-28** (air temperature up to 37.2 °C, clear sky);
 the transit is the **recorded** operation of Saturday 2026-10-17.
 
-> In 2076, as a heat-vulnerable pensioner, I want to go from X to Y without getting sick. We recreate 2026-06-28,
-> a day that will be ordinary fifty years from now, and plan the trip in space and time.
-
 | Live | URL |
 |---|---|
 | Planner + time-slider UTCI map | https://heat-app-269831067246.europe-central2.run.app |
@@ -49,7 +46,7 @@ BigQuery vehicle positions ─► transit/ AC stop events     heat/   UTCI + dos
 | [`views/`](views/README.md) | The three visualisation pages | Cloud Run `heat-views` |
 
 Storage: bucket `gs://hackaton-honory-heat/<prefix>/` and BigQuery dataset `hackaton-honory.warsaw_heat` (GCP project
-`hackaton-honory`). The `T01`…`T12` bucket prefixes name the stages above. Every raster is a Cloud-Optimised GeoTIFF;
+`hackaton-honory`). Stage outputs live under the numbered prefixes listed in the table above. Every raster is a Cloud-Optimised GeoTIFF;
 tables are Parquet and BigQuery. Each bucket prefix has its own README (source, units, nodata, band order).
 
 ## 1. Scope, grid and time
@@ -116,7 +113,7 @@ engine is used to:
 - Sun positions with pvlib SPA for the 33 steps.
 - Building and terrain shade: a sweep along the sun direction over the ground + buildings surface, with far casters
   from a 13 × 11 km surface (`far_dsm.py`, 305 sheets of the 2025 flight). Shadow length is not capped.
-- Tree shade: a ray march through the crowns, with T01's crown gap fraction as vertical transmission. The sun can
+- Tree shade: a ray march through the crowns, with the LiDAR crown gap fraction (§2) as vertical transmission. The sun can
   pass under a crown, between the trunk zone and the crown base.
 - Outputs: per pixel and step, the shares `f_sun`, `f_bldg`, `f_tree`, `f_both` (uint8 / 250, summing to exactly 250;
   255 = night). SVF over 32 azimuths × 8 elevation bands, with and without crown transmission.
@@ -174,16 +171,16 @@ caster halo:
 The tiles ran as Cloud Run Jobs over five regions in about 2 h 15 min of wall time (~55 vCPU-h). A mosaic job writes
 the 33-band district COGs `T06/district/{tmrt,shadow,utci}_20260628.tif`.
 
-**Why SOLWEIG and not a simpler model:** a 0.96 km² pilot compared SOLWEIG with a zone-based parametric model
+**Comparison with a zone-based model:** on a 0.96 km² pilot, SOLWEIG was compared with a parametric model
 (Tmrt = Ta + shortwave × zone transmissivity + surface offset):
 
 | Model | Daytime Tmrt RMSE vs SOLWEIG | UTCI RMSE |
 |---|---|---|
-| Parametric model as first written | 4.2 K (+16 K in sun at low sun, +17 K at night) | 1.1 K |
+| Parametric model, default coefficients | 4.2 K (+16 K in sun at low sun, +17 K at night) | 1.1 K |
 | Same structure, 12 coefficients fitted (spatial hold-out) | 2.0 K | 0.5 K |
 | SOLWEIG itself, default vs land-cover surfaces | 1.6 K | 0.4 K |
 
-Even fitted, a zone model ranks pixels poorly at low sun (Spearman of UTCI vs SOLWEIG 0.04 at 20:00 as written), and
+Even fitted, a zone model ranks pixels poorly at low sun (Spearman of UTCI vs SOLWEIG 0.04 at 20:00 with default coefficients), and
 ranking is what a router uses. In shade, Tmrt is driven by hot sunlit walls and pavement nearby, which a zone model
 cannot see.
 
@@ -330,7 +327,7 @@ another router) on the same field.
 
 ## 11. Results
 
-**Demo trips** (live app, spec weights; "vs fastest" = coolest compared with fastest):
+**Example trips** (live app, default weights; "vs fastest" = coolest compared with fastest):
 
 | Trip, window (CEST) | Coolest | Fastest | Dose vs fastest | Extra time |
 |---|---|---|---|---|
@@ -351,10 +348,10 @@ fixed departure.
 - **Building-only shade** (what tools without LiDAR trees see; routing on the shade engine's `f_bldg + f_both`):
   walking routes get 0–7 % more dose. For multimodal trips the answer is unchanged, because the ride dominates.
 
-**Dose weights:** five weight sets were compared (linear from 26 °C, from 32 °C only, from 38 °C only, the spec
-weights, and a steeper set). The best option stays the same under every set (Kendall τ 0.85–0.98 against the spec
+**Dose weights:** five weight sets were compared (linear from 26 °C, from 32 °C only, from 38 °C only, the default
+weights, and a steeper set). The best option stays the same under every set (Kendall τ 0.85–0.98 against the default
 ranking). Threshold-only weights make the walk router detour by up to +3.8 km, because time spent below the threshold
-is free. The spec weights, with their baseline term from 26 °C, keep the coolest walk within 0.9 km of the fastest,
+is free. The default weights, with their baseline term from 26 °C, keep the coolest walk within 0.9 km of the fastest,
 which suits an elderly persona.
 
 **District picture at 15:00** (the worst step): 85 % of the 777 km walk network is at UTCI ≥ 38 °C (very strong heat
