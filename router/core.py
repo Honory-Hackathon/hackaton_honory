@@ -818,7 +818,7 @@ class Router:
             "duration_min": round(float(arrive - depart) / 60, 1), "dose_Ks": round(float(dose), 1),
             "peak_utci": round(peak, 1) if peak > -99 else None,
             "minutes_per_category": mins,
-            "shade_share": round(walk["sh"] / walk["t"], 3) if walk["t"] > 0 else None,
+            "shade_share": round(float(walk["sh"] / walk["t"]), 3) if walk["t"] > 0 else None,
             "walk_min": round(walk["t"] / 60, 1),
             "walk_m": round(sum(lg.get("length_m", 0) for lg in legs), 0),
             "n_rides": n_rides, "n_transfers": max(0, n_rides - 1),

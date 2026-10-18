@@ -1,0 +1,7 @@
+{
+ "load_s": 2.76,
+ "queries": 32,
+ "runtime_median_s": 0.2275,
+ "runtime_max_s": 1.294,
+ "heat_source": "stub"
+}

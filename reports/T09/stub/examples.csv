@@ -1,0 +1,129 @@
+from,to,earliest,latest,kind,depart,arrive,duration_min,dose_Ks,peak_utci,shade_share,walk_min,walk_m,n_rides,lines,wait_min,same_as,min_<26,min_26-32,min_32-38,min_38-46,min_>46,runtime_s,heat_source
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),08:00,09:00,coolest,08:04,08:42,37.9,721.4,33.8,0.818,3.3,179.0,2,16 + 180,8.7,,28.2,9.5,0.2,0.0,0.0,0.243,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),08:00,09:00,balanced,08:13,08:34,21.4,1229.7,33.3,0.74,7.4,436.0,2,16 + 175,4.3,,12.0,8.2,1.3,0.0,0.0,0.243,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),08:00,09:00,fastest,08:13,08:34,21.4,1229.7,33.3,0.74,7.4,436.0,2,16 + 175,4.3,balanced,12.0,8.2,1.3,0.0,0.0,0.243,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),08:00,09:00,walk_only,08:00,08:43,43.8,12020.2,33.8,0.444,43.8,2509.0,0,,0.0,,7.2,20.6,16.0,0.0,0.0,0.243,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),11:00,12:00,coolest,11:06,11:36,30.6,7306.6,39.7,0.722,6.2,370.0,2,4 + 111,5.3,,19.1,2.9,5.6,3.1,0.0,0.214,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),11:00,12:00,balanced,11:08,11:29,21.0,8210.2,39.6,0.498,5.3,279.0,2,16 + 106,4.2,,11.5,0.0,6.4,3.1,0.0,0.214,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),11:00,12:00,fastest,11:08,11:29,21.0,8210.2,39.6,0.498,5.3,279.0,2,16 + 106,4.2,balanced,11.5,0.0,6.4,3.1,0.0,0.214,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),11:00,12:00,walk_only,11:00,11:43,43.8,49989.5,39.8,0.309,43.8,2509.0,0,,0.0,,0.0,0.0,17.0,26.8,0.0,0.214,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),13:00,14:00,coolest,13:21,13:51,30.6,8447.5,42.2,0.75,6.2,370.0,2,4 + 111,3.3,,21.1,2.9,3.6,3.1,0.0,0.229,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),13:00,14:00,balanced,13:32,13:55,23.7,11886.3,42.5,0.319,5.3,279.0,2,16 + 106,2.8,,15.6,0.0,4.2,3.9,0.0,0.229,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),13:00,14:00,fastest,13:32,13:55,23.7,11886.3,42.5,0.319,5.3,279.0,2,16 + 106,2.8,balanced,15.6,0.0,4.2,3.9,0.0,0.229,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),13:00,14:00,walk_only,13:00,13:43,43.8,60050.8,42.5,0.598,43.8,2509.0,0,,0.0,,0.0,0.0,20.1,23.7,0.0,0.229,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),15:00,16:00,coolest,15:07,15:38,30.8,11645.9,43.7,0.79,6.2,370.0,2,4 + 111,5.9,,18.7,2.9,7.6,1.7,0.0,0.213,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),15:00,16:00,balanced,15:07,15:38,30.8,11645.9,43.7,0.79,6.2,370.0,2,4 + 111,5.9,coolest,18.7,2.9,7.6,1.7,0.0,0.213,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),15:00,16:00,fastest,15:30,15:53,22.8,17063.9,44.0,0.398,7.4,436.0,2,16 + 128,3.6,,11.8,0.8,5.2,5.0,0.0,0.213,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),15:00,16:00,walk_only,15:16,16:00,43.8,75172.6,44.4,0.547,43.8,2509.0,0,,0.0,,0.0,0.0,12.9,30.9,0.0,0.213,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),17:00,18:00,coolest,17:12,17:46,33.6,9612.7,43.3,0.791,4.9,293.0,2,16 + 503,4.0,,24.7,0.0,7.2,1.7,0.0,0.233,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),17:00,18:00,balanced,17:03,17:24,20.7,13732.3,43.6,0.33,5.3,279.0,2,18 + 106,3.9,,11.4,0.0,4.7,4.5,0.0,0.233,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),17:00,18:00,fastest,17:03,17:24,20.7,13732.3,43.6,0.33,5.3,279.0,2,18 + 106,3.9,balanced,11.4,0.0,4.7,4.5,0.0,0.233,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),17:00,18:00,walk_only,17:16,18:00,43.8,53721.5,43.3,0.748,43.8,2509.0,0,,0.0,,0.0,0.0,28.6,15.2,0.0,0.233,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),19:30,20:30,coolest,19:47,20:21,33.8,2917.7,34.4,0.979,3.3,179.0,2,16 + 111,3.0,,27.5,0.2,6.1,0.0,0.0,0.218,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),19:30,20:30,balanced,19:50,20:10,19.7,4458.7,35.3,0.679,5.3,279.0,2,16 + 106,3.6,,10.8,0.0,8.9,0.0,0.0,0.218,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),19:30,20:30,fastest,19:50,20:10,19.7,4458.7,35.3,0.679,5.3,279.0,2,16 + 106,3.6,balanced,10.8,0.0,8.9,0.0,0.0,0.218,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),19:30,20:30,walk_only,19:46,20:30,43.8,19740.0,35.3,0.961,43.8,2509.0,0,,0.0,,0.0,10.9,32.9,0.0,0.0,0.218,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),21:00,22:00,coolest,21:11,21:37,25.5,1158.2,30.0,1.0,4.4,252.0,2,16 + 111,3.1,,17.9,7.5,0.0,0.0,0.0,0.21,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),21:00,22:00,balanced,21:16,21:36,19.9,1375.3,29.9,1.0,5.3,279.0,2,18 + 106,2.3,,12.3,7.6,0.0,0.0,0.0,0.21,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),21:00,22:00,fastest,21:16,21:36,19.9,1375.3,29.9,1.0,5.3,279.0,2,18 + 106,2.3,balanced,12.3,7.6,0.0,0.0,0.0,0.21,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),21:00,22:00,walk_only,21:16,22:00,43.8,7455.8,30.3,1.0,43.8,2509.0,0,,0.0,,0.0,43.8,0.0,0.0,0.0,0.21,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),10:00,18:00,coolest,10:13,10:43,30.0,4525.6,38.4,0.699,4.9,293.0,2,16 + 503,3.8,,21.3,1.3,7.1,0.2,0.0,1.264,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),10:00,18:00,balanced,10:48,11:08,19.9,6423.4,39.2,0.547,5.3,279.0,2,16 + 106,2.6,,12.0,0.0,4.8,3.1,0.0,1.264,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),10:00,18:00,fastest,10:48,11:08,19.9,6423.4,39.2,0.547,5.3,279.0,2,16 + 106,2.6,balanced,12.0,0.0,4.8,3.1,0.0,1.264,stub
+Plac Zbawiciela,Krakowskie Przedmieście (Uniwersytet),10:00,18:00,walk_only,10:00,10:43,43.8,35457.7,38.4,0.32,43.8,2509.0,0,,0.0,,0.0,9.7,26.0,8.2,0.0,1.264,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),08:00,09:00,coolest,08:02,08:37,35.4,1534.7,33.0,0.845,12.4,696.0,2,127 + 166,5.5,,20.4,13.6,1.5,0.0,0.0,0.251,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),08:00,09:00,balanced,08:00,08:23,23.6,1914.2,32.5,0.594,10.6,638.0,1,525,2.0,,14.3,5.2,4.0,0.0,0.0,0.251,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),08:00,09:00,fastest,08:35,08:58,22.6,3687.1,34.4,0.524,10.6,614.0,1,520,1.7,,10.4,7.1,5.1,0.0,0.0,0.251,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),08:00,09:00,walk_only,08:00,08:46,46.7,8204.0,33.8,0.697,46.7,2675.0,0,,0.0,,1.8,36.3,8.6,0.0,0.0,0.251,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),11:00,12:00,coolest,11:15,11:37,22.7,9467.1,39.5,0.544,10.6,638.0,1,520,1.7,,10.4,2.6,5.0,4.7,0.0,0.354,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),11:00,12:00,balanced,11:15,11:37,22.7,9467.1,39.5,0.544,10.6,638.0,1,520,1.7,coolest,10.4,2.6,5.0,4.7,0.0,0.354,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),11:00,12:00,fastest,11:15,11:37,22.6,10061.0,39.5,0.503,10.6,614.0,1,520,1.7,,10.4,2.0,5.1,5.1,0.0,0.354,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),11:00,12:00,walk_only,11:00,11:46,46.7,40621.4,39.6,0.583,46.7,2675.0,0,,0.0,,0.0,3.0,26.8,16.8,0.0,0.354,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),13:00,14:00,coolest,13:11,13:40,28.4,15142.8,42.3,0.474,10.6,638.0,1,520,1.7,,16.0,2.6,3.1,6.6,0.0,0.227,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),13:00,14:00,balanced,13:11,13:40,28.4,15142.8,42.3,0.474,10.6,638.0,1,520,1.7,coolest,16.0,2.6,3.1,6.6,0.0,0.227,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),13:00,14:00,fastest,13:18,13:42,24.2,21260.7,42.3,0.458,14.4,796.0,2,11 + 523,3.0,,6.7,4.0,4.5,8.9,0.0,0.227,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),13:00,14:00,walk_only,13:00,13:46,46.7,66893.1,42.5,0.499,46.7,2675.0,0,,0.0,,0.0,3.0,15.3,28.4,0.0,0.227,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),15:00,16:00,coolest,15:16,15:42,26.2,18457.3,43.7,0.451,10.6,638.0,1,520,1.7,,13.8,2.6,3.1,6.6,0.0,0.22,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),15:00,16:00,balanced,15:16,15:42,26.2,18457.3,43.7,0.451,10.6,638.0,1,520,1.7,coolest,13.8,2.6,3.1,6.6,0.0,0.22,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),15:00,16:00,fastest,15:16,15:42,26.2,18457.3,43.7,0.451,10.6,638.0,1,520,1.7,coolest,13.8,2.6,3.1,6.6,0.0,0.22,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),15:00,16:00,walk_only,15:13,16:00,46.7,75653.9,44.3,0.559,46.7,2675.0,0,,0.0,,0.0,3.0,10.5,33.1,0.0,0.22,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),17:00,18:00,coolest,17:15,17:39,24.4,16320.9,42.4,0.483,10.6,638.0,1,520,1.7,,12.0,2.6,2.0,7.7,0.0,0.231,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),17:00,18:00,balanced,17:15,17:39,24.4,16320.9,42.4,0.483,10.6,638.0,1,520,1.7,coolest,12.0,2.6,2.0,7.7,0.0,0.231,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),17:00,18:00,fastest,17:15,17:39,24.3,16733.7,42.1,0.485,10.6,614.0,1,520,1.7,,12.0,2.0,2.6,7.6,0.0,0.231,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),17:00,18:00,walk_only,17:13,18:00,46.7,62007.5,43.0,0.584,46.7,2675.0,0,,0.0,,0.0,3.0,18.6,25.1,0.0,0.231,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),19:30,20:30,coolest,20:00,20:24,24.4,3786.2,32.6,0.997,10.6,638.0,1,525,2.0,,11.8,7.3,5.3,0.0,0.0,0.263,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),19:30,20:30,balanced,20:00,20:24,24.4,3786.2,32.6,0.997,10.6,638.0,1,525,2.0,coolest,11.8,7.3,5.3,0.0,0.0,0.263,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),19:30,20:30,fastest,19:41,20:05,24.0,5063.5,33.4,0.99,12.3,714.0,2,10 + 151,3.4,,8.2,4.4,11.4,0.0,0.0,0.263,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),19:30,20:30,walk_only,19:43,20:30,46.7,20214.9,34.5,0.962,46.7,2675.0,0,,0.0,,0.0,11.3,35.4,0.0,0.0,0.263,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),21:00,22:00,coolest,21:35,21:57,22.2,1171.9,28.5,1.0,10.6,638.0,1,520,1.7,,9.9,12.3,0.0,0.0,0.0,0.232,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),21:00,22:00,balanced,21:35,21:57,22.2,1171.9,28.5,1.0,10.6,638.0,1,520,1.7,coolest,9.9,12.3,0.0,0.0,0.0,0.232,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),21:00,22:00,fastest,21:35,21:57,22.1,1239.1,28.5,1.0,10.6,614.0,1,520,1.7,,9.9,12.2,0.0,0.0,0.0,0.232,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),21:00,22:00,walk_only,21:13,22:00,46.7,7722.6,30.3,1.0,46.7,2675.0,0,,0.0,,0.0,46.7,0.0,0.0,0.0,0.232,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),10:00,18:00,coolest,10:05,10:30,25.0,6385.4,37.5,0.575,11.0,658.0,1,520,1.7,,12.4,8.0,4.7,0.0,0.0,1.282,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),10:00,18:00,balanced,10:05,10:30,25.0,6385.4,37.5,0.575,11.0,658.0,1,520,1.7,coolest,12.4,8.0,4.7,0.0,0.0,1.282,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),10:00,18:00,fastest,11:15,11:37,22.6,10061.0,39.5,0.503,10.6,614.0,1,520,1.7,,10.4,2.0,5.1,5.1,0.0,1.282,stub
+Dworzec Centralny,Łazienki main gate (Al. Ujazdowskie),10:00,18:00,walk_only,10:00,10:46,46.7,25316.7,38.1,0.674,46.7,2675.0,0,,0.0,,0.0,16.9,27.3,2.5,0.0,1.282,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,08:00,09:00,coolest,08:10,08:20,10.2,181.4,27.9,0.954,5.4,313.0,1,517,1.4,,5.9,4.3,0.0,0.0,0.0,0.216,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,08:00,09:00,balanced,08:40,08:49,8.8,593.6,30.2,0.893,4.8,278.0,1,517,1.4,,2.6,6.2,0.0,0.0,0.0,0.216,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,08:00,09:00,fastest,08:40,08:49,8.8,593.6,30.2,0.893,4.8,278.0,1,517,1.4,balanced,2.6,6.2,0.0,0.0,0.0,0.216,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,08:00,09:00,walk_only,08:00,08:20,20.3,4522.0,32.5,0.441,20.3,1131.0,0,,0.0,,1.7,13.9,4.8,0.0,0.0,0.216,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,11:00,12:00,coolest,11:14,11:25,10.4,3028.5,39.2,0.708,4.8,278.0,1,517,1.4,,4.2,2.4,2.9,0.9,0.0,0.222,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,11:00,12:00,balanced,11:14,11:25,10.4,3028.5,39.2,0.708,4.8,278.0,1,517,1.4,coolest,4.2,2.4,2.9,0.9,0.0,0.222,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,11:00,12:00,fastest,11:14,11:25,10.4,3028.5,39.2,0.708,4.8,278.0,1,517,1.4,coolest,4.2,2.4,2.9,0.9,0.0,0.222,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,11:00,12:00,walk_only,11:00,11:20,20.3,18097.1,39.3,0.462,20.3,1131.0,0,,0.0,,0.0,2.4,12.5,5.4,0.0,0.222,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,13:00,14:00,coolest,13:01,13:11,9.8,5521.4,42.0,0.575,4.8,278.0,1,517,1.4,,3.5,2.4,1.6,2.2,0.0,0.222,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,13:00,14:00,balanced,13:01,13:11,9.8,5521.4,42.0,0.575,4.8,278.0,1,517,1.4,coolest,3.5,2.4,1.6,2.2,0.0,0.222,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,13:00,14:00,fastest,13:01,13:11,9.8,5521.4,42.0,0.575,4.8,278.0,1,517,1.4,coolest,3.5,2.4,1.6,2.2,0.0,0.222,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,13:00,14:00,walk_only,13:00,13:20,20.3,29856.9,42.3,0.402,20.3,1131.0,0,,0.0,,0.0,2.4,4.7,13.3,0.0,0.222,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,15:00,16:00,coolest,15:44,15:54,10.2,7234.4,44.0,0.519,4.8,278.0,1,517,1.4,,4.0,2.4,1.4,2.4,0.0,0.242,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,15:00,16:00,balanced,15:44,15:54,10.2,7234.4,44.0,0.519,4.8,278.0,1,517,1.4,coolest,4.0,2.4,1.4,2.4,0.0,0.242,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,15:00,16:00,fastest,15:44,15:54,10.2,7234.4,44.0,0.519,4.8,278.0,1,517,1.4,coolest,4.0,2.4,1.4,2.4,0.0,0.242,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,15:00,16:00,walk_only,15:39,16:00,20.3,31938.6,44.2,0.562,20.3,1131.0,0,,0.0,,0.0,2.4,1.5,16.5,0.0,0.242,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,17:00,18:00,coolest,17:44,17:55,11.3,5792.6,42.0,0.542,4.8,278.0,1,517,1.4,,5.0,2.4,1.4,2.4,0.0,0.251,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,17:00,18:00,balanced,17:28,17:38,10.2,6200.2,42.6,0.542,4.8,278.0,1,517,1.4,,4.0,2.4,1.4,2.4,0.0,0.251,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,17:00,18:00,fastest,17:28,17:38,10.2,6200.2,42.6,0.542,4.8,278.0,1,517,1.4,balanced,4.0,2.4,1.4,2.4,0.0,0.251,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,17:00,18:00,walk_only,17:39,18:00,20.3,19741.9,42.1,0.822,20.3,1131.0,0,,0.0,,0.0,2.4,13.5,4.4,0.0,0.251,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,19:30,20:30,coolest,19:55,20:05,10.5,1910.2,34.7,0.874,4.8,278.0,1,517,1.4,,4.2,2.4,3.8,0.0,0.0,0.214,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,19:30,20:30,balanced,19:42,19:51,8.9,2122.8,34.6,0.921,4.8,278.0,1,517,1.4,,2.6,2.4,3.8,0.0,0.0,0.214,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,19:30,20:30,fastest,19:42,19:51,8.9,2122.8,34.6,0.921,4.8,278.0,1,517,1.4,balanced,2.6,2.4,3.8,0.0,0.0,0.214,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,19:30,20:30,walk_only,20:09,20:30,20.3,6895.1,32.9,0.993,20.3,1131.0,0,,0.0,,0.0,9.8,10.5,0.0,0.0,0.214,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,21:00,22:00,coolest,21:41,21:52,10.6,471.9,28.5,1.0,4.8,278.0,1,517,1.4,,4.3,6.2,0.0,0.0,0.0,0.211,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,21:00,22:00,balanced,21:25,21:34,9.4,594.5,29.1,1.0,4.8,278.0,1,517,1.4,,3.2,6.2,0.0,0.0,0.0,0.211,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,21:00,22:00,fastest,21:25,21:34,9.4,594.5,29.1,1.0,4.8,278.0,1,517,1.4,balanced,3.2,6.2,0.0,0.0,0.0,0.211,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,21:00,22:00,walk_only,21:39,22:00,20.3,2598.5,29.1,1.0,20.3,1131.0,0,,0.0,,0.0,20.3,0.0,0.0,0.0,0.211,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,10:00,18:00,coolest,10:15,10:24,9.2,1848.1,36.7,0.784,4.8,278.0,1,517,1.4,,3.0,4.8,1.4,0.0,0.0,1.169,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,10:00,18:00,balanced,10:15,10:24,9.2,1848.1,36.7,0.784,4.8,278.0,1,517,1.4,coolest,3.0,4.8,1.4,0.0,0.0,1.169,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,10:00,18:00,fastest,10:15,10:24,9.2,1848.1,36.7,0.784,4.8,278.0,1,517,1.4,coolest,3.0,4.8,1.4,0.0,0.0,1.169,stub
+Rondo Dmowskiego,Plac Trzech Krzyży,10:00,18:00,walk_only,10:00,10:20,20.3,13948.8,37.1,0.37,20.3,1131.0,0,,0.0,,0.0,5.2,15.1,0.0,0.0,1.169,stub
+Centrum Nauki Kopernik,Hala Mirowska,08:00,09:00,coolest,08:02,08:39,37.1,2442.2,33.0,0.756,17.6,1057.0,2,106 + 106,5.4,,16.9,19.7,0.5,0.0,0.0,0.221,stub
+Centrum Nauki Kopernik,Hala Mirowska,08:00,09:00,balanced,08:11,08:37,25.4,2708.6,33.4,0.679,15.7,940.0,1,106,1.0,,9.1,13.8,2.6,0.0,0.0,0.221,stub
+Centrum Nauki Kopernik,Hala Mirowska,08:00,09:00,fastest,08:26,08:51,24.6,4066.2,34.2,0.596,15.6,933.0,1,106,1.0,,8.0,11.2,5.4,0.0,0.0,0.221,stub
+Centrum Nauki Kopernik,Hala Mirowska,08:00,09:00,walk_only,08:00,08:45,45.9,10275.7,33.9,0.547,45.9,2650.0,0,,0.0,,2.8,36.9,6.2,0.0,0.0,0.221,stub
+Centrum Nauki Kopernik,Hala Mirowska,11:00,12:00,coolest,11:02,11:29,26.9,15782.2,39.6,0.474,16.0,958.0,1,106,1.0,,9.9,1.3,7.1,8.6,0.0,0.215,stub
+Centrum Nauki Kopernik,Hala Mirowska,11:00,12:00,balanced,11:02,11:28,26.7,15891.0,39.6,0.45,15.8,943.0,1,106,1.0,coolest,9.9,1.3,6.8,8.6,0.0,0.215,stub
+Centrum Nauki Kopernik,Hala Mirowska,11:00,12:00,fastest,11:31,11:57,25.2,18735.1,40.3,0.426,15.6,933.0,1,106,1.0,,8.6,0.0,7.3,9.3,0.0,0.215,stub
+Centrum Nauki Kopernik,Hala Mirowska,11:00,12:00,walk_only,11:00,11:45,45.9,49571.6,40.1,0.375,45.9,2650.0,0,,0.0,,0.0,0.0,20.1,25.8,0.0,0.215,stub
+Centrum Nauki Kopernik,Hala Mirowska,13:00,14:00,coolest,13:08,13:48,40.3,19837.7,42.8,0.734,12.5,694.0,2,118 + 106,6.7,,21.2,1.9,13.6,3.7,0.0,0.228,stub
+Centrum Nauki Kopernik,Hala Mirowska,13:00,14:00,balanced,13:19,13:48,29.9,21379.7,42.8,0.714,16.7,930.0,1,106,1.0,,12.2,1.9,9.5,6.4,0.0,0.228,stub
+Centrum Nauki Kopernik,Hala Mirowska,13:00,14:00,fastest,13:19,13:48,28.8,25022.4,42.8,0.528,15.6,933.0,1,106,1.0,,12.2,0.0,7.5,9.0,0.0,0.228,stub
+Centrum Nauki Kopernik,Hala Mirowska,13:00,14:00,walk_only,13:00,13:45,45.9,74428.6,42.6,0.39,45.9,2650.0,0,,0.0,,0.0,0.0,13.6,32.3,0.0,0.228,stub
+Centrum Nauki Kopernik,Hala Mirowska,15:00,16:00,coolest,15:14,15:48,33.5,20963.6,44.3,0.828,16.8,934.0,1,106,1.0,,15.7,1.9,8.6,7.3,0.0,0.212,stub
+Centrum Nauki Kopernik,Hala Mirowska,15:00,16:00,balanced,15:14,15:48,33.3,20990.0,44.3,0.818,16.6,923.0,1,106,1.0,coolest,15.7,1.9,8.2,7.6,0.0,0.212,stub
+Centrum Nauki Kopernik,Hala Mirowska,15:00,16:00,fastest,15:14,15:48,33.3,20990.0,44.3,0.818,16.6,923.0,1,106,1.0,coolest,15.7,1.9,8.2,7.6,0.0,0.212,stub
+Centrum Nauki Kopernik,Hala Mirowska,15:00,16:00,walk_only,15:14,16:00,45.9,86601.0,44.4,0.43,45.9,2650.0,0,,0.0,,0.0,0.0,8.6,37.3,0.0,0.212,stub
+Centrum Nauki Kopernik,Hala Mirowska,17:00,18:00,coolest,17:17,17:48,30.9,15267.7,40.1,0.96,17.2,961.0,1,106,1.0,,12.7,2.5,14.2,1.5,0.0,0.216,stub
+Centrum Nauki Kopernik,Hala Mirowska,17:00,18:00,balanced,17:29,17:59,30.4,15516.6,41.9,0.92,16.5,916.0,1,106,1.0,,12.9,1.9,12.8,2.8,0.0,0.216,stub
+Centrum Nauki Kopernik,Hala Mirowska,17:00,18:00,fastest,17:18,17:47,29.2,19255.8,42.9,0.818,15.6,933.0,1,106,1.0,,12.7,0.0,12.3,4.2,0.0,0.216,stub
+Centrum Nauki Kopernik,Hala Mirowska,17:00,18:00,walk_only,17:14,18:00,45.9,54410.0,43.0,0.782,45.9,2650.0,0,,0.0,,0.0,0.0,30.9,14.9,0.0,0.216,stub
+Centrum Nauki Kopernik,Hala Mirowska,19:30,20:30,coolest,19:39,20:24,45.5,10323.4,35.1,0.99,18.7,1082.0,2,127 + 33,6.8,,19.9,10.6,14.9,0.0,0.0,0.241,stub
+Centrum Nauki Kopernik,Hala Mirowska,19:30,20:30,balanced,19:39,20:24,45.5,10323.4,35.1,0.99,18.7,1082.0,2,127 + 33,6.8,coolest,19.9,10.6,14.9,0.0,0.0,0.241,stub
+Centrum Nauki Kopernik,Hala Mirowska,19:30,20:30,fastest,19:35,20:17,42.1,18039.1,35.4,0.966,34.8,1964.0,1,111,1.6,,5.7,1.0,35.3,0.0,0.0,0.241,stub
+Centrum Nauki Kopernik,Hala Mirowska,19:30,20:30,walk_only,19:44,20:30,45.9,20914.6,34.7,0.994,45.9,2650.0,0,,0.0,,0.0,4.0,41.9,0.0,0.0,0.241,stub
+Centrum Nauki Kopernik,Hala Mirowska,21:00,22:00,coolest,21:30,21:58,28.4,2437.8,29.2,1.0,16.3,980.0,1,106,1.0,,11.0,17.3,0.0,0.0,0.0,0.216,stub
+Centrum Nauki Kopernik,Hala Mirowska,21:00,22:00,balanced,21:30,21:57,27.6,2497.1,29.2,1.0,15.6,935.0,1,106,1.0,coolest,11.0,16.6,0.0,0.0,0.0,0.216,stub
+Centrum Nauki Kopernik,Hala Mirowska,21:00,22:00,fastest,21:30,21:57,27.6,2497.1,29.2,1.0,15.6,935.0,1,106,1.0,coolest,11.0,16.6,0.0,0.0,0.0,0.216,stub
+Centrum Nauki Kopernik,Hala Mirowska,21:00,22:00,walk_only,21:14,22:00,45.9,8282.9,30.1,1.0,45.9,2650.0,0,,0.0,,0.0,45.9,0.0,0.0,0.0,0.216,stub
+Centrum Nauki Kopernik,Hala Mirowska,10:00,18:00,coolest,10:12,10:39,26.8,10929.4,38.2,0.531,15.9,957.0,1,106,1.0,,9.8,5.0,11.0,0.9,0.0,1.294,stub
+Centrum Nauki Kopernik,Hala Mirowska,10:00,18:00,balanced,10:12,10:39,26.5,11002.4,38.2,0.511,15.7,942.0,1,106,1.0,coolest,9.8,5.0,10.7,0.9,0.0,1.294,stub
+Centrum Nauki Kopernik,Hala Mirowska,10:00,18:00,fastest,10:42,11:07,25.4,14982.0,39.2,0.432,15.6,933.0,1,106,1.0,,8.8,0.0,9.6,6.9,0.0,1.294,stub
+Centrum Nauki Kopernik,Hala Mirowska,10:00,18:00,walk_only,10:00,10:45,45.9,33681.1,38.5,0.413,45.9,2650.0,0,,0.0,,0.0,7.2,37.5,1.2,0.0,1.294,stub

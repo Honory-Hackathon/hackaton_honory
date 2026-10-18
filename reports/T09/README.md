@@ -1,10 +1,11 @@
 # T09: heat-aware router
 
-**Status (2026-10-18, overnight):** router works end to end on T03 (walk network, stops) + T04 (recorded AC stop events).
-The numbers below use **`HEAT_SOURCE=placeholder`**: a made-up heat field (air temperature from T05 plus a fake
-radiant load by segment flags), not SOLWEIG. They show that the search, timing and pricing work; they are not
-results about Warsaw's heat. Switching to T08 is one env var (`HEAT_SOURCE=stub` / `final`); rerun
-`python -m router.examples` to refresh this report once `gs://hackaton-honory-heat/T08/_SUCCESS` exists.
+**Status (2026-10-18, overnight):** router works end to end on T03 (walk network, stops) + T04 (recorded AC stop events),
+on three heat sources: `placeholder` (made-up field), `stub` (T08 stand-in: SOLWEIG UTCI on the finished T06
+district tiles, `gs://hackaton-honory-heat/T08/stub/`) and `final` (T08 on the T07 field; not yet available when
+this was written). The main tables below are on the **placeholder** field, the section
+[On the T08 stand-in](#on-the-t08-stand-in-solweig-tiles) repeats them on the **stub**. Switching is one env var
+(`HEAT_SOURCE`); rerun `python -m router.examples --out reports/T09/final` once `gs://hackaton-honory-heat/T08/_SUCCESS` exists.
 
 ## What was produced
 
@@ -15,7 +16,7 @@ results about Warsaw's heat. Switching to T08 is one env var (`HEAT_SOURCE=stub`
 | Test-pair answers, 4 pairs × 8 windows × 4 options | [`examples.csv`](examples.csv) |
 | Full sample answer (contract shape, Plac Zbawiciela → Uniwersytet, 13:00–14:00) | [`examples/plan_sample.json`](examples/plan_sample.json) |
 | Container image (reference deployment; T10 vendors the package) | `europe-central2-docker.pkg.dev/hackaton-honory/hackathon/t09-router:latest` |
-| Reference HTTP service (Cloud Run `t09-router`, europe-central2, public, `HEAT_SOURCE=placeholder`) | https://t09-router-269831067246.europe-central2.run.app/api/health |
+| Reference HTTP service (Cloud Run `t09-router`, europe-central2, public, `HEAT_SOURCE=stub`) | https://t09-router-269831067246.europe-central2.run.app/api/health |
 
 Contract (shared with T10/T11):
 
@@ -115,6 +116,26 @@ with the SOLWEIG field the walking share and the gaps will differ.
 ![options](options_1300.png)
 
 ![dose by window](dose_by_window.png)
+
+## On the T08 stand-in (SOLWEIG tiles)
+
+`HEAT_SOURCE=stub`, same pairs and windows: [`stub/examples.csv`](stub/examples.csv),
+[`stub/examples/plan_sample.json`](stub/examples/plan_sample.json). Load 2.8 s (parquet from GCS), median
+0.23 s per 1-hour query, 1.3 s for 10:00–18:00. The stand-in covers only the T06 tiles finished at the time,
+so these are closer to the real thing than the placeholder but still not the final field.
+
+| Pair, window | coolest | fastest | Dose saved | Time cost |
+|---|---|---|---|---|
+| Plac Zbawiciela → Uniwersytet, 13:00–14:00 | 13:21–13:51, 8,448 K·s (4 + 111) | 13:32–13:55, 11,886 K·s (16 + 106) | −29 % | +6.9 min |
+| Dworzec Centralny → Łazienki, 13:00–14:00 | 13:11–13:40, 15,143 K·s (520) | 13:18–13:42, 21,261 K·s (11 + 523) | −29 % | +4.2 min |
+| Centrum Nauki Kopernik → Hala Mirowska, 08:00–09:00 | 08:02–08:39, 2,442 K·s (106 + 106) | 08:26–08:51, 4,066 K·s (106) | −40 % | +12.5 min |
+| Dworzec Centralny → Łazienki, 10:00–18:00 | 10:05–10:30, 6,385 K·s (520) | 11:15–11:37, 10,061 K·s (520) | −37 % | +2.4 min (and leaves 70 min earlier) |
+| Rondo Dmowskiego → Pl. Trzech Krzyży, 08:00–09:00 | 08:10–08:20, 181 K·s (517) | 08:40–08:49, 594 K·s (517) | −69 % | +1.4 min (leaves 30 min earlier) |
+
+Walk-only at midday is 4–7 times the dose of the AC options (Plac Zbawiciela → Uniwersytet 13:00: 60,051 K·s,
+43.8 min). The stub's shade share of the coolest walking is 0.73–0.96 against 0.32–0.53 for the fastest.
+`106 + 106` (two runs of the same line) is a legitimate coolest answer: the router prefers waiting at a shaded pole
+for the next run over walking; balanced (one 106, 25 min) is the sensible choice there.
 
 ## What was learned
 
