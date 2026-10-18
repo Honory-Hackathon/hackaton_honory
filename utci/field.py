@@ -103,6 +103,45 @@ def block_mean(a, f):
         return np.nanmean(b, axis=(1, 3)).astype(np.float32) if np.isfinite(b).any() else np.full((h // f, w // f), np.nan, np.float32)
 
 
+def caster_surface():
+    """Ground + buildings over the caster extent: T02 dsm_far, with T01 dsm inside the shared grid."""
+    with rasterio.open(get_file("T02/far_casters/dsm_far.tif")) as src:
+        surf = src.read(1)
+        ext = (src.bounds.left, src.bounds.top)
+    with rasterio.open(get_file("T01/output/dsm.tif")) as src:
+        r0, c0 = int(ext[1] - GRID[3]), int(GRID[0] - ext[0])
+        surf[r0:r0 + H, c0:c0 + W] = src.read(1)
+    return surf, ext
+
+
+def caster_distance(px_rows, px_cols, az, el, surf, ext, dmax=6000):
+    """Distance (m) along the sun ray to the first cell of `surf` above the ray, from grid pixels; NaN = none."""
+    x0 = GRID[0] + px_cols + 0.5
+    y0 = GRID[3] - px_rows - 0.5
+    sr = (ext[1] - y0).astype(np.int64)
+    sc = (x0 - ext[0]).astype(np.int64)
+    z0 = surf[sr, sc] + 0.1
+    d = np.arange(2.0, dmax, 1.0)
+    sa, ca, te = np.sin(np.radians(az)), np.cos(np.radians(az)), np.tan(np.radians(el))
+    out = np.full(px_rows.size, np.nan, np.float32)
+    hmax = np.full(px_rows.size, np.nan, np.float32)
+    for i0 in range(0, px_rows.size, 256):
+        sl = slice(i0, i0 + 256)
+        xs = x0[sl, None] + d[None] * sa
+        ys = y0[sl, None] + d[None] * ca
+        rr = np.floor(ext[1] - ys).astype(np.int64)
+        cc = np.floor(xs - ext[0]).astype(np.int64)
+        ok = (rr >= 0) & (rr < surf.shape[0]) & (cc >= 0) & (cc < surf.shape[1])
+        z = np.where(ok, surf[np.clip(rr, 0, surf.shape[0] - 1), np.clip(cc, 0, surf.shape[1] - 1)], -1e9)
+        z = np.where(np.isfinite(z), z, -1e9)
+        blk = z > (z0[sl, None] + d[None] * te)
+        hit = blk.any(1)
+        first = blk.argmax(1)
+        out[sl] = np.where(hit, d[first], np.nan)
+        hmax[sl] = np.where(hit, z[np.arange(first.size), first] - z0[sl], np.nan)
+    return out, hmax
+
+
 def write_stack(name, vec, idx, dtype, nodata, descs, tags):
     """vec (NB, n) values at flat grid indices idx -> 33-band COG on the shared grid."""
     tmp = TMP / f"{name}.tmp.tif"
@@ -190,6 +229,13 @@ def main():
     with rasterio.open(get_file("T02/f_bldg.tif")) as s2:
         t02_desc = list(s2.descriptions)
         t02_tags = s2.tags()
+    task = int(os.environ.get("CLOUD_RUN_TASK_INDEX", "0"))
+    ntask = int(os.environ.get("CLOUD_RUN_TASK_COUNT", "1"))
+    # 3 tasks: 0 = checks + utci, 1 = tmrt, 2 = sun_solweig; 1 task: everything
+    outputs = [["utci"], ["tmrt"], ["sun"]][task] if ntask == 3 else ["utci", "tmrt", "sun"]
+    do_checks = task == 0
+    read_vars = ("tmrt", "utci", "shadow") if do_checks else {"utci": ("utci",), "tmrt": ("tmrt",), "sun": ("shadow",)}[outputs[0]]
+    log(f"task {task}/{ntask}: outputs {outputs}, checks {do_checks}")
     vec = {v: np.empty((NB, npx), np.float32) for v in ("tmrt", "utci")}
     vec["sun"] = np.empty((NB, npx), np.uint8)
     edges = {}  # (tile, var) -> dict(side -> (NB, 2, 1000))
@@ -198,7 +244,7 @@ def main():
     for n in names:
         e0, n0 = (int(v) for v in n.split("_"))
         sl, rr, cc = tile_slices[n]
-        for var in ("tmrt", "utci", "shadow"):
+        for var in read_vars:
             a, desc = read_tile(n, var)
             if tile_desc is None:
                 tile_desc = list(desc)
@@ -220,169 +266,207 @@ def main():
             del a
         log(f"tile {n} read")
 
-    # ---------- checks ----------
     night = [b for b in range(NB) if "el=-" in t02_desc[b]]
     vec["sun"][night] = 255  # SOLWEIG reports 1 (sun) at night; nodata like T02
-    sunup = [b for b in range(NB) if b not in night]
-    labels = [d[11:16] for d in t02_desc]
-    checks = dict(generated_utc=t_start, out=f"gs://{BUCKET}/{OUT}/", coverage=cov, labels=labels, night_bands=night)
+    # ---------- checks ----------
+    if do_checks:
+        sunup = [b for b in range(NB) if b not in night]
+        labels = [d[11:16] for d in t02_desc]
+        checks = dict(generated_utc=t_start, out=f"gs://{BUCKET}/{OUT}/", coverage=cov, labels=labels, night_bands=night)
 
-    # Sanity: UTCI input range, NaN, sun/shade, evening
-    san = []
-    for b in range(NB):
-        tm, ut, su = vec["tmrt"][b], vec["utci"][b], vec["sun"][b]
-        d = tm - ta[b]
-        lit, bsh, tre = su >= 245, su == 0, (su > 0) & (su < 125)
-        row = dict(step=b, label=labels[b], ta=float(ta[b]), wind_utci=float(forcing["wind_10m_utci_ms"][b]),
-                   tmrt_minus_ta=stats(d), n_out_of_range=int(((d < -30) | (d > 70)).sum()),
-                   utci_nan=int(np.isnan(ut).sum()), tmrt_nan=int(np.isnan(tm).sum()), utci=stats(ut),
-                   share_sunlit=round(float(lit.mean()), 4), share_full_shade=round(float(bsh.mean()), 4),
-                   share_tree_shade=round(float(tre.mean()), 4))
-        if b in sunup:
-            for nm, m in (("sunlit", lit), ("bldg_shade", bsh), ("tree_shade", tre)):
-                row[f"tmrt_{nm}"] = round(float(tm[m].mean()), 2) if m.any() else None
-                row[f"utci_{nm}"] = round(float(ut[m].mean()), 2) if m.any() else None
-        san.append(row)
-    checks["sanity"] = san
-    checks["wind_utci_range"] = [float(forcing["wind_10m_utci_ms"].min()), float(forcing["wind_10m_utci_ms"].max())]
-    log("sanity done")
-
-    # Seams: jump across shared tile edges vs jump one pixel inside
-    seams = []
-    have = set(names)
-    for n in names:
-        e0, n0 = (int(v) for v in n.split("_"))
-        for nb, side, oside in ((f"{e0 + TILE}_{n0}", "E", "W"), (f"{e0}_{n0 - TILE}", "S", "N")):
-            if nb not in have:
-                continue
-            rec = dict(a=n, b=nb, orientation="vertical" if side == "E" else "horizontal",
-                       halo_a=1000 if plan.get(n, 0) > 100 else 500, halo_b=1000 if plan.get(nb, 0) > 100 else 500)
-            for var in ("tmrt", "shadow"):
-                ea, eb = edges[(n, var)][side], edges[(nb, var)][oside]  # (NB, 2, 1000): [:,0]=edge line, [:,1]=one inside
-                across = np.abs(ea[:, 0] - eb[:, 0])
-                inside = 0.5 * (np.abs(ea[:, 0] - ea[:, 1]) + np.abs(eb[:, 0] - eb[:, 1]))
-                if var == "tmrt":
-                    rec["tmrt_mae_across"] = [round(float(x), 3) for x in np.nanmean(across, 1)]
-                    rec["tmrt_mae_inside"] = [round(float(x), 3) for x in np.nanmean(inside, 1)]
-                    rec["tmrt_mean_jump"] = [round(float(x), 3) for x in np.nanmean(eb[:, 0] - ea[:, 0], 1)]
-                else:
-                    sa, sb = ea[:, 0] >= 0.5, eb[:, 0] >= 0.5
-                    rec["shadow_flip_across"] = [round(float(x), 4) for x in (sa != sb).mean(1)]
-                    rec["shadow_flip_inside"] = [round(float(x), 4) for x in
-                                                 (0.5 * ((sa != (ea[:, 1] >= 0.5)).mean(1) + (sb != (eb[:, 1] >= 0.5)).mean(1)))]
-            seams.append(rec)
-    checks["seams"] = seams
-    del edges
-    log(f"seams: {len(seams)} edges")
-
-    # Pilot consistency
-    pil = []
-    try:
-        pt = {}
-        for var, fn in (("tmrt", "tmrt_solweig"), ("shadow", "shadow_solweig")):
-            with MemoryFile(get_bytes(f"T06/cog/{fn}.tif")) as mf, mf.open() as src:
-                assert tuple(round(x) for x in src.bounds) == PILOT
-                pt[var] = src.read()
-        r0, c0 = GRID[3] - PILOT[3], PILOT[0] - GRID[0]
-        pw = wmask[r0:r0 + PILOT[3] - PILOT[1], c0:c0 + PILOT[2] - PILOT[0]]
+        # Sanity: UTCI input range, NaN, sun/shade, evening
+        san = []
         for b in range(NB):
-            d = pilot["tmrt"][b] - pt["tmrt"][b]
-            ok = np.isfinite(d)
-            sa, sb = pilot["shadow"][b] >= 0.5, pt["shadow"][b] >= 0.5
-            pil.append(dict(step=b, label=labels[b], n=int(ok.sum()), tmrt_bias=round(float(np.nanmean(d)), 3),
-                            tmrt_mae=round(float(np.nanmean(np.abs(d))), 3),
-                            tmrt_p99_abs=round(float(np.nanpercentile(np.abs(d), 99)), 3) if ok.any() else None,
-                            tmrt_mae_walk=round(float(np.nanmean(np.abs(d[pw]))), 3),
-                            share_abs_gt_1K=round(float((np.abs(d[ok]) > 1).mean()), 4) if ok.any() else None,
-                            shadow_agree=round(float((sa == sb)[ok].mean()), 4) if ok.any() else None,
-                            shadow_district_sun_pilot_shade=round(float((sa & ~sb)[ok].mean()), 4) if ok.any() else None,
-                            shadow_district_shade_pilot_sun=round(float((~sa & sb)[ok].mean()), 4) if ok.any() else None))
-        b13 = labels.index("13:00")
-        b20 = labels.index("20:00")
-        prev["pilot_tmrt_diff_1300"] = (pilot["tmrt"][b13] - pt["tmrt"][b13]).astype(np.float32)
-        prev["pilot_tmrt_diff_2000"] = (pilot["tmrt"][b20] - pt["tmrt"][b20]).astype(np.float32)
-        del pt
-    except Exception as ex:  # noqa: BLE001
-        pil = dict(error=repr(ex))
-    checks["pilot"] = pil
-    del pilot
-    log("pilot done")
+            tm, ut, su = vec["tmrt"][b], vec["utci"][b], vec["sun"][b]
+            d = tm - ta[b]
+            lit, bsh, tre = su >= 245, su == 0, (su > 0) & (su < 125)
+            row = dict(step=b, label=labels[b], ta=float(ta[b]), wind_utci=float(forcing["wind_10m_utci_ms"][b]),
+                       tmrt_minus_ta=stats(d), n_out_of_range=int(((d < -30) | (d > 70)).sum()),
+                       utci_nan=int(np.isnan(ut).sum()), tmrt_nan=int(np.isnan(tm).sum()), utci=stats(ut),
+                       share_sunlit=round(float(lit.mean()), 4), share_full_shade=round(float(bsh.mean()), 4),
+                       share_tree_shade=round(float(tre.mean()), 4))
+            if b in sunup:
+                for nm, m in (("sunlit", lit), ("bldg_shade", bsh), ("tree_shade", tre)):
+                    row[f"tmrt_{nm}"] = round(float(tm[m].mean()), 2) if m.any() else None
+                    row[f"utci_{nm}"] = round(float(ut[m].mean()), 2) if m.any() else None
+            san.append(row)
+        checks["sanity"] = san
+        checks["wind_utci_range"] = [float(forcing["wind_10m_utci_ms"].min()), float(forcing["wind_10m_utci_ms"].max())]
+        log("sanity done")
 
-    # Far casters: T02 building shade B = f_bldg + f_both vs SOLWEIG sunlit
-    p_bldg = TMP / "T02_f_bldg.tif"
-    p_both = get_file("T02/f_both.tif")
-    far = []
-    tile_of = np.empty(npx, np.int16)
-    for i, n in enumerate(names):
-        tile_of[tile_slices[n][0]] = i
-    far_maps = {}
-    # B = f_bldg + f_both per walkable pixel, read in 512-row strips with all bands (files are pixel-interleaved)
-    order = np.argsort(idx, kind="stable")
-    sidx = idx[order]
-    Bv = np.empty((NB, npx), np.uint8)
-    with rasterio.open(p_bldg) as sb_, rasterio.open(p_both) as sf_:
-        for r0 in range(0, H, 512):
-            r1 = min(H, r0 + 512)
-            lo, hi = np.searchsorted(sidx, [r0 * W, r1 * W])
-            if lo == hi:
+        # Seams: jump across shared tile edges vs jump one pixel inside
+        seams = []
+        have = set(names)
+        for n in names:
+            e0, n0 = (int(v) for v in n.split("_"))
+            for nb, side, oside in ((f"{e0 + TILE}_{n0}", "E", "W"), (f"{e0}_{n0 - TILE}", "S", "N")):
+                if nb not in have:
+                    continue
+                rec = dict(a=n, b=nb, orientation="vertical" if side == "E" else "horizontal",
+                           halo_a=1000 if plan.get(n, 0) > 100 else 500, halo_b=1000 if plan.get(nb, 0) > 100 else 500)
+                for var in ("tmrt", "shadow"):
+                    ea, eb = edges[(n, var)][side], edges[(nb, var)][oside]  # (NB, 2, 1000): [:,0]=edge line, [:,1]=one inside
+                    across = np.abs(ea[:, 0] - eb[:, 0])
+                    inside = 0.5 * (np.abs(ea[:, 0] - ea[:, 1]) + np.abs(eb[:, 0] - eb[:, 1]))
+                    if var == "tmrt":
+                        rec["tmrt_mae_across"] = [round(float(x), 3) for x in np.nanmean(across, 1)]
+                        rec["tmrt_mae_inside"] = [round(float(x), 3) for x in np.nanmean(inside, 1)]
+                        rec["tmrt_mean_jump"] = [round(float(x), 3) for x in np.nanmean(eb[:, 0] - ea[:, 0], 1)]
+                    else:
+                        sa, sb = ea[:, 0] >= 0.5, eb[:, 0] >= 0.5
+                        rec["shadow_flip_across"] = [round(float(x), 4) for x in (sa != sb).mean(1)]
+                        rec["shadow_flip_inside"] = [round(float(x), 4) for x in
+                                                     (0.5 * ((sa != (ea[:, 1] >= 0.5)).mean(1) + (sb != (eb[:, 1] >= 0.5)).mean(1)))]
+                seams.append(rec)
+        checks["seams"] = seams
+        del edges
+        log(f"seams: {len(seams)} edges")
+
+        # Pilot consistency
+        pil = []
+        try:
+            pt = {}
+            for var, fn in (("tmrt", "tmrt_solweig"), ("shadow", "shadow_solweig")):
+                with MemoryFile(get_bytes(f"T06/cog/{fn}.tif")) as mf, mf.open() as src:
+                    assert tuple(round(x) for x in src.bounds) == PILOT
+                    pt[var] = src.read()
+            r0, c0 = GRID[3] - PILOT[3], PILOT[0] - GRID[0]
+            pw = wmask[r0:r0 + PILOT[3] - PILOT[1], c0:c0 + PILOT[2] - PILOT[0]]
+            for b in range(NB):
+                d = pilot["tmrt"][b] - pt["tmrt"][b]
+                ok = np.isfinite(d)
+                sa, sb = pilot["shadow"][b] >= 0.5, pt["shadow"][b] >= 0.5
+                pil.append(dict(step=b, label=labels[b], n=int(ok.sum()), tmrt_bias=round(float(np.nanmean(d)), 3),
+                                tmrt_mae=round(float(np.nanmean(np.abs(d))), 3),
+                                tmrt_p99_abs=round(float(np.nanpercentile(np.abs(d), 99)), 3) if ok.any() else None,
+                                tmrt_mae_walk=round(float(np.nanmean(np.abs(d[pw]))), 3),
+                                share_abs_gt_1K=round(float((np.abs(d[ok]) > 1).mean()), 4) if ok.any() else None,
+                                shadow_agree=round(float((sa == sb)[ok].mean()), 4) if ok.any() else None,
+                                shadow_district_sun_pilot_shade=round(float((sa & ~sb)[ok].mean()), 4) if ok.any() else None,
+                                shadow_district_shade_pilot_sun=round(float((~sa & sb)[ok].mean()), 4) if ok.any() else None))
+            b13 = labels.index("13:00")
+            b20 = labels.index("20:00")
+            prev["pilot_tmrt_diff_1300"] = (pilot["tmrt"][b13] - pt["tmrt"][b13]).astype(np.float32)
+            prev["pilot_tmrt_diff_2000"] = (pilot["tmrt"][b20] - pt["tmrt"][b20]).astype(np.float32)
+            del pt
+        except Exception as ex:  # noqa: BLE001
+            pil = dict(error=repr(ex))
+        checks["pilot"] = pil
+        del pilot
+        log("pilot done")
+
+        # Far casters: T02 building shade B = f_bldg + f_both vs SOLWEIG sunlit
+        p_bldg = TMP / "T02_f_bldg.tif"
+        p_both = get_file("T02/f_both.tif")
+        far = []
+        tile_of = np.empty(npx, np.int16)
+        for i, n in enumerate(names):
+            tile_of[tile_slices[n][0]] = i
+        far_maps = {}
+        # B = f_bldg + f_both per walkable pixel, read in 512-row strips with all bands (files are pixel-interleaved)
+        order = np.argsort(idx, kind="stable")
+        sidx = idx[order]
+        Bv = np.empty((NB, npx), np.uint8)
+        with rasterio.open(p_bldg) as sb_, rasterio.open(p_both) as sf_:
+            for r0 in range(0, H, 512):
+                r1 = min(H, r0 + 512)
+                lo, hi = np.searchsorted(sidx, [r0 * W, r1 * W])
+                if lo == hi:
+                    continue
+                win = rasterio.windows.Window(0, r0, W, r1 - r0)
+                fb = sb_.read(window=win).reshape(NB, -1)
+                fo = sf_.read(window=win).reshape(NB, -1)
+                loc = sidx[lo:hi] - r0 * W
+                v = fb[:, loc].astype(np.int16) + fo[:, loc].astype(np.int16)
+                Bv[:, order[lo:hi]] = np.where(fb[:, loc] == 255, 255, np.clip(v, 0, 250)).astype(np.uint8)
+        del sidx, order
+        log("T02 B read")
+        for b in range(NB):
+            if b in night:
                 continue
-            win = rasterio.windows.Window(0, r0, W, r1 - r0)
-            fb = sb_.read(window=win).reshape(NB, -1)
-            fo = sf_.read(window=win).reshape(NB, -1)
-            loc = sidx[lo:hi] - r0 * W
-            v = fb[:, loc].astype(np.int16) + fo[:, loc].astype(np.int16)
-            Bv[:, order[lo:hi]] = np.where(fb[:, loc] == 255, 255, np.clip(v, 0, 250)).astype(np.uint8)
-    del sidx, order
-    log("T02 B read")
-    for b in range(NB):
-        if b in night:
-            continue
-        B = Bv[b]
-        su = vec["sun"][b]
-        sol_sun = su >= 125            # SOLWEIG: more than half the direct beam (no building, no tree shadow)
-        t02_shade = (B >= 125) & (B != 255)
-        miss = t02_shade & sol_sun      # T02 has building shade, SOLWEIG has sun
-        extra = ~t02_shade & (su == 0)  # SOLWEIG full (building) shade where T02 has no building shade
-        tm, ut = vec["tmrt"][b], vec["utci"][b]
-        shade_ref = su == 0
-        d_tm = float(tm[sol_sun].mean() - tm[shade_ref].mean()) if shade_ref.any() and sol_sun.any() else None
-        d_ut = float(ut[sol_sun].mean() - ut[shade_ref].mean()) if shade_ref.any() and sol_sun.any() else None
-        per_tile = np.bincount(tile_of[miss], minlength=len(names))
-        far.append(dict(step=b, label=labels[b], el=t02_desc[b].split("el=")[-1], n=npx,
-                        t02_bldg_shade=round(float(t02_shade.mean()), 4), solweig_sunlit=round(float(sol_sun.mean()), 4),
-                        solweig_full_shade=round(float(shade_ref.mean()), 4),
-                        t02_shade_solweig_sun=int(miss.sum()), share_t02_shade_solweig_sun=round(float(miss.mean()), 4),
-                        share_of_t02_shade_missed=round(float(miss.sum() / max(1, t02_shade.sum())), 4),
-                        solweig_shade_t02_no_bldg=int(extra.sum()), share_solweig_shade_t02_no_bldg=round(float(extra.mean()), 4),
-                        tmrt_sun_minus_shade=None if d_tm is None else round(d_tm, 2),
-                        utci_sun_minus_shade=None if d_ut is None else round(d_ut, 2),
-                        utci_excess_mean_over_walkable=None if d_ut is None else round(d_ut * float(miss.mean()), 3),
-                        per_tile={names[i]: int(v) for i, v in enumerate(per_tile) if v}))
-        if labels[b] in ("19:00", "19:30", "20:00", "20:30", "13:00"):
-            m = np.full((H, W), np.nan, np.float32)
-            m.ravel()[idx] = miss.astype(np.float32)
-            far_maps[labels[b]] = block_mean(m, 8)
-            del m
-        log(f"far casters {labels[b]}: {miss.mean():.4f}")
-    checks["far_casters"] = far
-    for k_, v_ in far_maps.items():
-        prev[f"far_{k_.replace(':', '')}"] = v_
-    p_both.unlink()
-    del Bv
+            B = Bv[b]
+            su = vec["sun"][b]
+            sol_sun = su >= 125            # SOLWEIG: more than half the direct beam (no building, no tree shadow)
+            t02_shade = (B >= 125) & (B != 255)
+            miss = t02_shade & sol_sun      # T02 has building shade, SOLWEIG has sun
+            extra = ~t02_shade & (su == 0)  # SOLWEIG full (building) shade where T02 has no building shade
+            tm, ut = vec["tmrt"][b], vec["utci"][b]
+            shade_ref = su == 0
+            d_tm = float(tm[sol_sun].mean() - tm[shade_ref].mean()) if shade_ref.any() and sol_sun.any() else None
+            d_ut = float(ut[sol_sun].mean() - ut[shade_ref].mean()) if shade_ref.any() and sol_sun.any() else None
+            per_tile = np.bincount(tile_of[miss], minlength=len(names))
+            far.append(dict(step=b, label=labels[b], el=t02_desc[b].split("el=")[-1], n=npx,
+                            t02_bldg_shade=round(float(t02_shade.mean()), 4), solweig_sunlit=round(float(sol_sun.mean()), 4),
+                            solweig_full_shade=round(float(shade_ref.mean()), 4),
+                            t02_shade_solweig_sun=int(miss.sum()), share_t02_shade_solweig_sun=round(float(miss.mean()), 4),
+                            share_of_t02_shade_missed=round(float(miss.sum() / max(1, t02_shade.sum())), 4),
+                            solweig_shade_t02_no_bldg=int(extra.sum()), share_solweig_shade_t02_no_bldg=round(float(extra.mean()), 4),
+                            tmrt_sun_minus_shade=None if d_tm is None else round(d_tm, 2),
+                            utci_sun_minus_shade=None if d_ut is None else round(d_ut, 2),
+                            utci_excess_mean_over_walkable=None if d_ut is None else round(d_ut * float(miss.mean()), 3),
+                            per_tile={names[i]: int(v) for i, v in enumerate(per_tile) if v}))
+            if labels[b] in ("19:00", "19:30", "20:00", "20:30", "13:00"):
+                m = np.full((H, W), np.nan, np.float32)
+                m.ravel()[idx] = miss.astype(np.float32)
+                far_maps[labels[b]] = block_mean(m, 8)
+                del m
+            log(f"far casters {labels[b]}: {miss.mean():.4f}")
+        checks["far_casters"] = far
 
-    # Previews: 8 m block means of walkable UTCI / Tmrt
-    for lab in ("13:00", "18:00", "20:00", "21:00"):
-        b = labels.index(lab)
-        for var in ("utci", "tmrt"):
-            m = np.full(W * H, np.nan, np.float32)
-            m[idx] = vec[var][b]
-            prev[f"{var}_{lab.replace(':', '')}"] = block_mean(m.reshape(H, W), 8)
-            del m
-    buf = io.BytesIO()
-    np.savez_compressed(buf, **prev)
-    bucket().blob(f"{OUT}/checks/previews_8m.npz").upload_from_string(buf.getvalue())
-    put_json("checks/checks.json", checks)
-    log("checks uploaded")
+        # Attribution: for a sample of missed pixels at low sun, how far away is T02's caster?
+        try:
+            surf, ext = caster_surface()
+            rng = np.random.default_rng(7)
+            halo_of = np.array([1000 if plan.get(n, 0) > 100 else 500 for n in names])
+            attr = []
+            for b in range(NB):
+                if b in night or labels[b] < "17:00":
+                    continue
+                B = Bv[b]
+                miss = np.nonzero((B >= 125) & (B != 255) & (vec["sun"][b] >= 125))[0]
+                if miss.size == 0:
+                    continue
+                smp = rng.choice(miss, size=min(3000, miss.size), replace=False)
+                az = float(t02_desc[b].split("az=")[1].split()[0])
+                el = float(t02_desc[b].split("el=")[1])
+                rr_, cc_ = np.divmod(idx[smp], W)
+                dist, hgt = caster_distance(rr_, cc_, az, el, surf, ext)
+                halo = halo_of[tile_of[smp]]
+                # distance beyond the tile core edge in the sun direction is what the halo has to cover; use the
+                # simpler bound: caster distance vs halo and vs SOLWEIG's max_shadow_distance_m (1000 m default)
+                attr.append(dict(step=b, label=labels[b], az=az, el=el, n_missed=int(miss.size), n_sample=int(smp.size),
+                                 no_caster_found=round(float(np.isnan(dist).mean()), 4),
+                                 dist_p10_p50_p90=[round(float(x), 0) for x in np.nanpercentile(dist, [10, 50, 90])] if np.isfinite(dist).any() else None,
+                                 share_le_200m=round(float((dist <= 200).mean()), 4),
+                                 share_200_500m=round(float(((dist > 200) & (dist <= 500)).mean()), 4),
+                                 share_500_1000m=round(float(((dist > 500) & (dist <= 1000)).mean()), 4),
+                                 share_gt_1000m=round(float((dist > 1000).mean()), 4),
+                                 share_beyond_halo=round(float((dist > halo).mean()), 4),
+                                 caster_height_above_px_p50=round(float(np.nanmedian(hgt)), 1) if np.isfinite(hgt).any() else None))
+                log(f"attribution {labels[b]}: {attr[-1]['dist_p10_p50_p90']}")
+            checks["far_caster_attribution"] = attr
+            del surf
+        except Exception as ex:  # noqa: BLE001
+            checks["far_caster_attribution"] = dict(error=repr(ex))
+            log("attribution failed", repr(ex))
+        for k_, v_ in far_maps.items():
+            prev[f"far_{k_.replace(':', '')}"] = v_
+        p_both.unlink()
+        del Bv
+
+        # Previews: 8 m block means of walkable UTCI / Tmrt
+        for lab in ("13:00", "18:00", "20:00", "21:00"):
+            b = labels.index(lab)
+            for var in ("utci", "tmrt"):
+                m = np.full(W * H, np.nan, np.float32)
+                m[idx] = vec[var][b]
+                prev[f"{var}_{lab.replace(':', '')}"] = block_mean(m.reshape(H, W), 8)
+                del m
+        buf = io.BytesIO()
+        np.savez_compressed(buf, **prev)
+        bucket().blob(f"{OUT}/checks/previews_8m.npz").upload_from_string(buf.getvalue())
+        put_json("checks/checks.json", checks)
+        log("checks uploaded")
 
     # ---------- rasters ----------
     if os.environ.get("SKIP_COG") != "1":
@@ -390,16 +474,17 @@ def main():
                     mask="T03 walkable.tif > 0", grid="EPSG:2180 1 m E634000-642000 N483000-492000",
                     bands="33 steps 2026-06-28 06:00-22:00 CEST every 30 min (04:00Z-20:00Z), descriptions as T02",
                     produced=t_start)
-        write_stack("utci", vec["utci"], idx, "float32", np.nan, t02_desc,
-                    dict(base, units="degC", variable="UTCI (pythermalcomfort, T05 ta_c, rh, max(0.5, wind_10m))"))
-        del vec["utci"]
-        write_stack("tmrt", vec["tmrt"], idx, "float32", np.nan, t02_desc,
-                    dict(base, units="degC", variable="mean radiant temperature, standing person, isotropic sky"))
-        del vec["tmrt"]
-        write_stack("sun_solweig", vec["sun"], idx, "uint8", 255, t02_desc,
-                    dict(base, units="share of direct beam reaching the pixel x 250 (SOLWEIG shadow: 250 sun, 0 shade, ~8 under trees)",
-                         scale_factor="0.004"))
-    put_json("checks/run.json", dict(started=t_start, finished=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        if "utci" in outputs:
+            write_stack("utci", vec["utci"], idx, "float32", np.nan, t02_desc,
+                        dict(base, units="degC", variable="UTCI (pythermalcomfort, T05 ta_c, rh, max(0.5, wind_10m))"))
+        if "tmrt" in outputs:
+            write_stack("tmrt", vec["tmrt"], idx, "float32", np.nan, t02_desc,
+                        dict(base, units="degC", variable="mean radiant temperature, standing person, isotropic sky"))
+        if "sun" in outputs:
+            write_stack("sun_solweig", vec["sun"], idx, "uint8", 255, t02_desc,
+                        dict(base, units="share of direct beam reaching the pixel x 250 (SOLWEIG shadow: 250 sun, 0 shade, ~8 under trees)",
+                             scale_factor="0.004"))
+    put_json(f"checks/run_{task}.json", dict(outputs=outputs, started=t_start, finished=datetime.now(timezone.utc).isoformat(timespec="seconds"),
                                      tiles=names, walkable_pixels_in_tiles=npx, seconds=round(time.time() - T0, 1)))
     log("done")
     shutil.rmtree(TMP, ignore_errors=True)

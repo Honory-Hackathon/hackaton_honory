@@ -30,6 +30,15 @@ def crop(a, f=8):
     return a[r0:r1, c0:c1], (635000, 641000, 484000, 491000)
 
 
+def agg(a, f):
+    h, w = a.shape[0] // f * f, a.shape[1] // f * f
+    with np.errstate(invalid="ignore"):
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return np.nanmean(a[:h, :w].reshape(h // f, f, w // f, f), axis=(1, 3))
+
+
 def maps(p, out, labels=("1300", "1800", "2000")):
     cmap, norm = utci_cmap()
     fig, ax = plt.subplots(1, len(labels), figsize=(4.2 * len(labels), 5), constrained_layout=True)
@@ -52,12 +61,12 @@ def far_map(p, out, labels=("1900", "2000", "2030")):
         k = f"far_{lab}"
         if k not in p:
             continue
-        arr, ext = crop(p[k])
-        a.imshow(np.isfinite(crop(p["walk"])[0]) & (crop(p["walk"])[0] > 0), extent=ext, cmap="Greys", vmin=0, vmax=3)
-        im = a.imshow(np.where(arr > 0, arr, np.nan), extent=ext, cmap="magma_r", vmin=0, vmax=1, interpolation="nearest")
+        arr, ext = crop(agg(p[k], 5), 40)
+        a.imshow(np.isfinite(crop(p["walk"])[0]) & (crop(p["walk"])[0] > 0), extent=ext, cmap="Greys", vmin=0, vmax=4)
+        im = a.imshow(np.where(arr > 0, arr, np.nan), extent=ext, cmap="magma_r", vmin=0, vmax=0.5, interpolation="nearest")
         a.set_title(f"{lab[:2]}:{lab[2:]}: T02 building shade, SOLWEIG sun", fontsize=9)
         a.set_xticks([]), a.set_yticks([])
-    fig.colorbar(im, ax=ax, shrink=0.7, label="share of walkable px in 8 m cell")
+    fig.colorbar(im, ax=ax, shrink=0.7, label="share of walkable px in 40 m cell")
     fig.savefig(out / "far_casters_map.png", dpi=80)
     plt.close(fig)
 
