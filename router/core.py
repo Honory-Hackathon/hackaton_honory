@@ -249,14 +249,14 @@ class Router:
 
     def _tr_dose(self, H) -> np.ndarray:
         """[33, n_pairs] transfer walk dose per step (static path)."""
-        k = id(H)
-        if k not in self._tr_dose_cache:
+        c = self._tr_dose_cache
+        if c.get("H") is not H:
             out = np.zeros((heatmod.N_STEPS, len(self.tr_t)))
             for i, e in enumerate(self.tr_edges):
                 if len(e):
                     out[:, i] = (H.seg_g[:, e] * self.edge_time[e]).sum(axis=1)
-            self._tr_dose_cache = {k: out}
-        return self._tr_dose_cache[k]
+            self._tr_dose_cache = c = {"H": H, "v": out}
+        return c["v"]
 
     # ------------------------------------------------------------------ helpers
     @staticmethod
