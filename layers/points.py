@@ -168,7 +168,8 @@ def write_outputs(df, note, areas=True):
     upload(p, PARQUET, "application/octet-stream")
     # GeoJSON (browser): compact properties, arrays rounded
     keep = ["point_id", "category", "subtype", "name", "operator", "opening_hours", "in_aoi", "area_m2",
-            "shade_share_t02", "shade_share", "utci", "tmrt", "shaded_rest", "shade_hours_10_18"]
+            "source", "solweig_covered", "shade_share_t02", "shade_share", "utci", "tmrt", "shaded_rest",
+            "shade_hours_10_18"]
     feats = []
     for r in pts.itertuples():
         pr = {}
