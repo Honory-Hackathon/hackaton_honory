@@ -16,8 +16,8 @@ The hackathon is judged on what people see. The story is the pensioner who plans
 
 | Input | Where | Notes |
 |---|---|---|
-| UTCI rasters | `gs://hackaton-honory-heat/T07/` | 1 m, EPSG:2180, 33 bands, walkable pixels only. Until T07 lands: `gs://hackaton-honory-heat/T06/cog/utci_*.tif` (pilot) |
-| Shade shares | `gs://hackaton-honory-heat/T02/` | uint8 / 250, 255 = night |
+| UTCI rasters | `gs://hackaton-honory-heat/T07/` | 1 m, EPSG:2180, 33 bands, walkable pixels only. SOLWEIG. Until T07 lands: `gs://hackaton-honory-heat/T06/cog/utci_solweig.tif` (pilot) |
+| Shade | SOLWEIG `shadow` in `gs://hackaton-honory-heat/T06/district/` | Same source as the UTCI |
 | Router | T09 function or endpoint | Option fields listed in [T09](T09_router.md) |
 | Segment and stop heat | `hackaton-honory.warsaw_heat.t08_*` | For hover details |
 

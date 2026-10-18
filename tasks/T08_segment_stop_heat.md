@@ -16,12 +16,12 @@ The router (T09) works on segments and stops, not pixels. How pixel values are s
 
 | Input | Where | Notes |
 |---|---|---|
-| UTCI, Tmrt | `gs://hackaton-honory-heat/T07/` (format in [T07](T07_utci_field.md)) | Until T07 lands: `gs://hackaton-honory-heat/T06/cog/utci_tuned_era5.tif` and `utci_solweig.tif` on the pilot (E 637300–638500, N 485100–485900) |
+| UTCI, Tmrt | `gs://hackaton-honory-heat/T07/` (format in [T07](T07_utci_field.md)) | SOLWEIG. Until T07 lands: `gs://hackaton-honory-heat/T06/cog/utci_solweig.tif` on the pilot (E 637300–638500, N 485100–485900), or finished district tiles in `T06/district/tiles/` |
 | Segments, pixels | BigQuery `hackaton-honory.warsaw_heat.t03_walk_segments`, `t03_segment_pixels`; or `gs://hackaton-honory-heat/T03/network/` | `segment_pixels`: `segment_id`, `row`, `col` (row 0 = northern edge y = 492000). A pixel can belong to several segments. `indoor` segments have no pixels. Schema: [`walk/README.md`](../walk/README.md) |
 | Stop waiting areas | `t03_stop_areas`, `gs://hackaton-honory-heat/T03/stops/stop_areas.parquet` | 360 stops, `shelter` flag (OSM), fixed-size rectangles where no platform polygon is mapped |
-| Shade shares | `gs://hackaton-honory-heat/T02/` | For "share walking in shade" per segment |
+| Shade | SOLWEIG `shadow` (`T06/district/`, same source as the UTCI) | For "share walking in shade" per segment |
 
-**Dose rate:** the working definition is g(U) = max(0, U − 26) + max(0, U − 32) + 2·max(0, U − 38), in K. Dose = ∫ g dt. It is used in T06 (`solweig_ref/analyze.py`); the weights are still open (spec §7) and should stay a parameter.
+**Dose rate:** the working definition is g(U) = max(0, U − 26) + max(0, U − 32) + 2·max(0, U − 38), in K. Dose = ∫ g dt. It is the one used in T06 (`solweig_ref/analyze.py`); the weights are still open (spec §7) and should stay a parameter.
 
 ## Expected output
 

@@ -19,9 +19,11 @@ The six tasks below were chosen because together they cover every input the UTCI
 
 First-wave results are in `reports/T01`–`T06`. Each second-wave task can start now: where an upstream output is not final yet, the brief names a stand-in with the same format (the T06 pilot rasters, placeholder heat costs, a stub router).
 
+**Thermal model (decision 2026-10-18):** SOLWEIG, run district-wide in T06, is the production model. The spec §13 simple model is not used.
+
 | Task | Aspect | Final run needs |
 |---|---|---|
-| [T07](T07_utci_field.md) | UTCI field: tuned §13 model on T02 shares → Tmrt and UTCI per walkable pixel and time step | T02 district shares |
+| [T07](T07_utci_field.md) | UTCI field from district SOLWEIG → Tmrt and UTCI per walkable pixel and time step, with seam, coverage and far-caster checks | T06 district run |
 | [T08](T08_segment_stop_heat.md) | UTCI and dose rate per walk segment and per stop and time step | T07 |
 | [T09](T09_router.md) | Router: walk + AC trams/buses, lowest heat dose, best departure time | T08 (heat costs) |
 | [T10](T10_app.md) | App: time-slider map and route cards on Cloud Run | T07, T09 |
