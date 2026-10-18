@@ -4,7 +4,8 @@
 accounts).
 
 **Status (2026-10-18 03:35 UTC, integration):** map on the T07 field, router on **T08 final**
-(`HEAT_SOURCE=final`, revision `heat-app-00014`, image `heat-app:int2` = `:latest`, 2 vCPU / 4 GiB, min 1 instance),
+(`HEAT_SOURCE=final`, revision `heat-app-00016`, image `heat-app:int3` = `:latest`, 2 vCPU / 4 GiB, min 1 instance,
+CPU always allocated),
 T13 links live. The five T11 demo trips plan in 0.6–0.9 s round trip (3.8 s for the 10-hour window); see
 [On the final field](#on-the-final-field). Code: [`app/`](../../app/README.md) (build, deploy and frame-render instructions are there).
 
@@ -47,7 +48,7 @@ Plac Zbawiciela → Uniwersytet, 12:30–14:30, router on T08 final, map at 13:3
   times and leg dose); clicking a card or a line selects it and **moves the time slider to that option's departure**,
   so the shade at departure time is what you see.
 - **Router:** the T09 package (`router/`) is vendored into the image and imported at startup (bundle + heat loaded
-  once, ~10 s at cold start); `HEAT_SOURCE=final` (T08 `t08_*` parquet from the bucket). Answers in **~0.5 s** server time (~1.2 s round trip). If `router/` fails to
+  once, 3.8 s at start); `HEAT_SOURCE=final` (T08 `t08_*` parquet from the bucket). Answers in **~0.5 s** server time (~1.2 s round trip). If `router/` fails to
   import, the app falls back to `app/server/stub_router.py` (contract-shaped fake options) and says so in the notes.
   `POST /api/price` exposes `price_path()` for T11 (ORS lines).
 - **T13 slots:** header chips *Route heat map / 3D shadows / Temperature & albedo* link to `HEAT_VIEWS_URL` +
@@ -108,7 +109,8 @@ the five T11 demo trips. Dose with spec §7 weights; "less" = coolest vs fastest
 - **Example trips** are the five T11 demo trips (`demo/demo_trips.json`); they live in `PRESETS` in
   `app/server/static/app.js`.
 - **Basemap:** OSM standard tiles, grey-filtered. CARTO's free basemaps now answer "API KEY REQUIRED".
-- `min-instances 1` so the router bundle is warm for the demo; `/healthz` is reserved by Cloud Run, so health is
+- `min-instances 1` so the router bundle is warm for the demo, and `--no-cpu-throttling`: the router loads in a
+  background thread after startup, and with request-only CPU that took 60–100 s instead of 3.8 s; `/healthz` is reserved by Cloud Run, so health is
   `/api/health`.
 
 ## Learned

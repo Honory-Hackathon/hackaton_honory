@@ -1,6 +1,6 @@
 # Integration report (T07–T13 on the final field)
 
-**Status (2026-10-18 03:40 UTC):** done. Every user-facing piece runs on the SOLWEIG district field: T07 UTCI →
+**Status (2026-10-18 03:45 UTC):** done. Every user-facing piece runs on the SOLWEIG district field: T07 UTCI →
 T08 `t08_*` → T09 router → T10 `heat-app` and T13 `heat-views`. T11's comparison is on the same field.
 
 | What | Where |
@@ -31,7 +31,7 @@ Shaded and building-only shade).
 |---|---|---|
 | 1. T07 / T08 final | already done | `T07/_SUCCESS` 02:46 UTC, `T08/_SUCCESS` 03:10 UTC (source t07). `t08_segment_heat` 1,937,595 rows = 58,715 segments × 33, 0 NULL; `t08_stop_heat` 11,880 rows = 360 stops × 33. |
 | 2. T09 on final | already done by T09 | `reports/T09` final-field table (4 test pairs × 8 windows); `t09-router` serves `HEAT_SOURCE=final`. Integration fixed `price_path` (below) and redeployed `t09-router`. |
-| 3. T10 | **done here** | Frames `t07_utci` / `t07_shade` were already rendered from the final T07 rasters (all 33 step stats written after the rasters' upload). heat-app was still on `HEAT_SOURCE=placeholder`: rebuilt with the current `router/` (image `heat-app:int2`, also tagged `:latest`) and redeployed with `HEAT_SOURCE=final`, 4 GiB. T13 links were already set. `/api/plan` smoke test on all five demo trips: router `final`, no notes, 0.6–0.9 s (3.8 s for 10 h). |
+| 3. T10 | **done here** | Frames `t07_utci` / `t07_shade` were already rendered from the final T07 rasters (all 33 step stats written after the rasters' upload). heat-app was still on `HEAT_SOURCE=placeholder`: rebuilt with the current `router/` (final image `heat-app:int3`, also tagged `:latest`) and redeployed with `HEAT_SOURCE=final`, 4 GiB, CPU always allocated (router warm-up 60–100 s → 3.8 s). T13 links were already set. `/api/plan` smoke test on all five demo trips: router `final`, no notes, 0.6–0.9 s (3.8 s for 10 h). |
 | 4. T13 | already done | heat-views rebuilt by T13 at 03:14 UTC on the final T08 tables (badge "Dane: T08 (SOLWEIG, końcowe)"). All three pages answer 200. |
 | 5. T11 | already done | `bash demo/run_final.sh` on the final field at 03:15 UTC; headline in `reports/T11/headline_final.md`. Not rerun: the `price_path` fix leaves the dense ORS lines T11 prices unchanged (checked on three cached ORS answers). |
 | 6. Verify gaps | partly | See below. |
@@ -45,11 +45,11 @@ Shaded and building-only shade).
 | T08 `stub/t08_segment_heat.parquet` has the same md5 as the final | Not a defect: T08 rewrote the stub at 02:40 from all 27 T06 tiles, and T07 copies those tile values unchanged (T07 spot check: max \|Δ\| = 0). T09's stub and final runs on segments are therefore the same field. |
 | T07: 909 walkable pixels outside the tiles (outside the AOI); 20:00–20:30 far shadows beyond 1 km; T01 DTM step at E 638000 | Left as is: user decisions (T07 `needs_user`). T08 fills the 15 affected segments from graph neighbours. |
 | T08 special-case rules (indoor 26 °C, shelter = local shade, under-roof cap) | Left for the user to review against spec §8. |
-| Router: custom dose weights recompute g from mean UTCI, although T08 carries `exc26/32/38/46` that would give the pixel-mean g exactly | Not done (default weights use T08's g). |
+| Router: custom dose weights recompute g from mean UTCI, although T08 carries `exc26/32/38/46` that would give the pixel-mean g exactly | **Fixed** in `router/heat.py`: thresholds among 26/32/38/46 use Σ w·exc (spec weights passed explicitly now give the default answer, 8,282.8 vs 8,282.9 K·s; before 8,254.4). Other thresholds still use mean UTCI, with a note. T11's weight study uses its own pricer and is unaffected. |
 | T12: city water points need an API token | Not done. |
 
 ## Cloud changes
 
-- Cloud Build images `heat-app:int1` (superseded), `heat-app:int2` (= `:latest`), `t09-router:latest` (rebuilt).
-- Cloud Run `heat-app` revision `heat-app-00014-67s`: image `:int2`, `HEAT_SOURCE=final`, memory 2 → 4 GiB.
-- Cloud Run `t09-router` revision `t09-router-00006-24v` (router with the `price_path` fix).
+- Cloud Build images `heat-app:int1`, `:int2` (superseded), `heat-app:int3` (= `:latest`), `t09-router:latest` (rebuilt twice).
+- Cloud Run `heat-app` revision `heat-app-00016-99b`: image `:int3`, `HEAT_SOURCE=final`, memory 2 → 4 GiB, `--no-cpu-throttling`.
+- Cloud Run `t09-router` revision `t09-router-00008-r2c`: both router fixes, `--no-cpu-throttling` (load 3.7 s).
