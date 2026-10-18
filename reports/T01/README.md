@@ -15,7 +15,7 @@ Everything is in `gs://hackaton-honory-heat/T01/`:
 | `laz/2023/`, `laz/2025/` | All 538 raw LAZ sheets (269 per flight, 44.4 GiB), so nobody has to download them again |
 | `tiles/` | Per-1 km intermediate npz files (one per tile) |
 | `meta/` | AOI, halo and grid GeoJSON, `grid.json`, sheet lists with URLs, tree inventory extract |
-| `code/` | The scripts and Dockerfile that produced all of this |
+| `code/` | The scripts and Dockerfile that produced all of this (mirrored in [`lidar/`](../../lidar/README.md)) |
 
 **Grid** (matches the shared conventions): EPSG:2180, 1 m cells, bounds E 634000–642000, N 483000–492000, 8000 × 9000 px. The halo bbox is 634163–641922 / 483246–491255, snapped outward to whole kilometres. The AOI is PRG `146510_8` (15.56 km²); the halo is 37.4 km². Sheets were taken for the **whole grid**, not just the halo, so every cell has data.
 
